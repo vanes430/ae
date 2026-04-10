@@ -1,0 +1,218 @@
+prefix: "&7[&9進階附魔&7]&r "
+
+effects:
+  steal-money: "&6%attacker% &7偷走了 &6%amount% &7從 &6%victim%&7!"
+  used: "&f已使用 &r%enchant-color% %level%"
+
+commands:
+  no-permission: "&c你沒有權限執行此操作!"
+  offline-player: "&c該玩家不在線上!"
+  enchantment-not-found: "&c找不到附魔 &c&n%enchant%&c."
+  invalid-amount: "&c數量無效。必須介於 1-64 之間。"
+  invalid-enchant: "&c%enchant% 不是有效的附魔!"
+  invalid-level: "&c附魔等級無效! 請嘗試使用: %levels%"
+  invalid-usage: "&c使用方法錯誤: %usage%"
+  not-a-number: "&c%number% 不是數字!"
+  not-holding-item: "&c你必須持有一個物品!"
+  enchantment-info:
+    invalid-usage: "&c使用方法錯誤! 正確用法: %command% <enchantment>"
+    open-menu-message: "&7關於 &e%enchant% &7附魔的資訊."
+  enchants:
+    open-menu-message: "&7顯示所有附魔列表..."
+  apply:
+    cooldown: "&c你需要等待 %seconds% 秒才能再次使用此指令."
+    no-args: "&c請指定要影響的玩家。"
+    reapplied: "&a你的裝備已重新應用。"
+    reapplied-other: "&a%player%的裝備已重新應用。"
+    reapplied-for-all: "&a所有人的裝備已重新應用！"
+  withdrawsouls:
+    invalid-usage: "&c使用方法錯誤: /withdrawsouls <count>"
+    less-than-one: "&c數量必須為正數。"
+    invalid-item: "&c物品無效。"
+  aegive:
+    invalid-material: "&c材料無效。請參照 'materials.yml' 檔案中的所有有效材料。"
+    invalid-item-flag: "&c物品標籤無效! 可選項目: %itemflags%"
+    invalid-enchantment: "&c附魔無效!"
+    success: "&a成功給予 %player% &2%amount%x %material%!"
+  gedit:
+    unknown-gkit: "&c%gkit% 不是有效的裝備包！"
+    edit:
+      invalid-usage: "&c使用方法錯誤: /gedit edit <gkit>"
+    set-permission:
+      invalid-usage: "&c使用方法錯誤: /gedit setpermission <gkit> <perm>"
+      success: "&e已將 %gkit% 的裝備包權限更改為 &6%permission%"
+    reset:
+      invalid-usage: "&c使用方法錯誤: /gedit reset <gkit> <player>"
+      success: "&6已為玩家 %player% 重置 %gkit% 裝備包"
+    list: "&e裝備包列表: &6%gkits%"
+    setdelay:
+      invalid-usage: "&c使用方法錯誤: /gedit setdelay <gkit> <delay (in seconds)>"
+      invalid-delay: "&c%delay% 不是有效的整數!"
+      success: "&e已將 %gkit% 裝備包的延遲更改為 &6%delay%"
+  main:
+    unknown-command: "&c指令用法錯誤! 請輸入 \"/ae\" 以獲得正確用法。"
+    setsouls:
+      invalid-usage: "&c使用方法錯誤: /ae setsouls <amount>"
+      invalid-item: "&c物品無效。"
+      success: "&c已將物品靈魂數設置為: %amount%"
+    unenchant:
+      invalid-usage: "&c使用方法錯誤: /ae unenchant <enchant>"
+      invalid-enchant: "&c%enchant% 不是有效的附魔!"
+      not-holding-item: "&c你必須持有一個物品!"
+      does-not-have-enchant: "&c該物品沒有 &4%enchant%&c 附魔!"
+      success: "&a已移除附魔 %enchant%!"
+    zip:
+      zip-exists: "&c請再試一次。"
+      success: "&e已在 %path% 創建一個包含所有插件數據的壓縮檔。"
+      error: "&c壓縮檔案時發生錯誤! 請檢查控制台以獲得更多資訊。"
+    greset:
+      reset: "&a已為 %player% 重置 %gkit% 裝備包！"
+      reset-all: "&a已為 %player% 重置所有裝備包！"
+    claim:
+      invalid-usage: "&c請輸入附魔代幣。"
+    givegkit:
+      success: "&c已將裝備包 %gkit% 給予玩家 %player%"
+    giverandombook:
+      success: "&a已給予 %player% &2%amount%x %group% 隨機附魔書！"
+    givebook:
+      success: "&a已給予 %player% &2%amount%x 附魔書: %enchant% %level%！"
+    enchant:
+      added: "&a已添加附魔 %enchant%!"
+      upgraded: "&2已將 %enchant% 從 %previous-level% 升級到 %level%。"
+      downgraded: "&2已將 %enchant% 從 %previous-level% 降級到 %level%。"
+      removed: "&c已從物品上移除附魔 %enchant%。"
+    giveitem:
+      success: "&7已為玩家 &b%player% &7添加了 &f%amount%x %item%"
+    givercbook:
+      success: "&a已給予 %player% &2%amount%x %group% 右鍵書！"
+    give:
+      success: "&a成功給予 %player% 一本 %enchant% %level% 附魔書！"
+    tinkereritem:
+      success: "&c已給予 %player% x%amount% 工匠物品"
+    admin:
+      invalid-page: "&c頁碼無效"
+    info:
+      - "&e關於附魔 &6%enchant% &e的資訊:"
+      - "&6描述&7: &e%description%"
+      - "&6適用於&7: &e%applies%"
+      - "&6最高等級&7: &e%max-level%"
+
+    pastetypes: "&a附魔類型列表: %url%"
+    pasteenchants: "&a附魔列表: %url%"
+    open: "&a已為 %player% 打開 %menu%！"
+
+token:
+  success: "&2&lx &a成功下載附魔代幣 &l%token%&a，正在重新加載..."
+
+interact:
+  main-hand-only: "&c你只能用主手操作！"
+
+enchanter:
+  re-buy: "&c請從附魔商重新購買該物品。"
+  disabled-in-world: "&c該世界已禁用附魔商。"
+  full-inventory: "&c你的背包已滿！"
+  examine-book: "&7你檢查了 %group-color%%group-name% 書，發現 %enchant-color% %level%"
+  unknown-payment-method: "&c無法驗證付款方式 %paymentType%，請聯繫管理員。"
+  successful-purchase: "&a購買成功！"
+  cannot-afford:
+    - "&c你的經驗不足以購買此物品。"
+    - "&7你的經驗: %exp%"
+
+tinkerer:
+  trade-accepted: "&a交易已接受！"
+  non-tradeable-item:
+    - "&c伺服器的工匠不接受此物品！"
+    - "&7它只接受具有自定義附魔的裝備"
+
+alchemist:
+  doesnt-accept: "&c煉金術士不接受此物品！"
+  trade-cancelled: "&c交易已取消。"
+  cannot-afford: "&c你無法負擔此交易！"
+  exceeds-max-level: "&c你的總等級超過了最高附魔等級！"
+  take-currency: "&c- %price%"
+
+gkits:
+  no-permission: "&e你沒有權限使用裝備包 &e%gkit%&6。"
+  cooldown: "&e你暫時無法使用此裝備包，裝備包 &6%gkit% &e正在冷卻中 &7(%cooldown%)"
+  used-kit: "&e你已使用裝備包 &6%gkit%。"
+  missing-permission: "&c裝備包 %gkit% 的權限無效或不存在"
+  unknown-gkit: "&c找不到裝備包 %gkit%！"
+  unknown-enchant: "&7附魔 %enchant% 無法解析。"
+
+heroic:
+  cannot-apply: "&c你無法對該物品使用水晶升級。"
+  upgrade-failed: "&c水晶升級 &n失敗&c！"
+
+orbs:
+  cannot-apply: "&c無法對該物品使用寶珠！"
+  failed: "&c寶珠失敗！"
+  incompatible: "&c不能對槽位不足的物品使用低階寶珠！"
+
+sets:
+  commands:
+    unknown-command: "&c找不到該指令！請輸入 \"/asets\" 以查看所有有效指令列表。"
+    invalid-usage: "&c使用方法錯誤！請參考 /asets 獲取正確用法。"
+    invalid-set: "&c裝備組無效。"
+    invalid-set-piece: "&c裝備組件無效，你可以使用以下之一: \n%set pieces%"
+    invalid-weapon: "&c武器無效。"
+    offline-player: "&c玩家不在線。"
+    invalid-chances: "&c機率無效。"
+    list:
+      header: "&e所有可用裝備組列表 &7[%size%]"
+      set: " &8>> &f%set%"
+    listweapons:
+      header: "&e所有可用武器列表 &7[%size%]"
+      weapon: " &8>> &f%weapon%"
+    give:
+      success: "&e已將裝備組 &f %set% &e給予玩家 &f %player%"
+    givepiece:
+      success: "&e已將裝備組 %set% 的 %piece% 給予玩家 &f %player%"
+    weapon:
+      success: "&e已將武器 &f %weapon% &e給予玩家 &f %player%"
+
+items:
+  randomization-scroll:
+    cannot-apply: "&c無法將隨機附魔卷軸應用於此物品！"
+    single-items-only: "&c你只能在單個物品上使用此卷軸！"
+  black-scroll:
+    full-inventory: "&c你的背包已滿！"
+    no-enchants: "&c此物品沒有任何附魔！"
+    invalid-enchant: "&c無法移除附魔，因其無效！"
+    cannot-remove: "&c無法移除附魔 %enchant%！"
+  soul-tracker:
+    disabled: "&c此伺服器未啟用靈魂系統！"
+    non-stacked-only: "&c你只能對單一物品使用此功能！"
+    apply-successful: "&7成功將 &f&l靈魂追蹤器 &7應用於你的物品！"
+  magic-dust:
+    full-inventory: "&c你的背包已滿！"
+    single-items-only: "&c你只能在單個物品上使用此物品！"
+  white-scroll:
+    full-inventory: "&c你的背包已滿！"
+    apply-successful: "&a成功將白卷軸應用於你的物品！"
+    item-saved: "&a白卷軸已保存該物品！"
+
+combining:
+  already-max-level: "此附魔已達到最高等級！"
+  success: "&a成功！ &7附魔 %enchant% 現在為等級 %level%！"
+  failure: "&c合併失敗！"
+  something-went-wrong: "&c合併時發生錯誤。"
+
+enchant-limitations:
+  cannot-be-modified: "&c該物品無法修改！"
+
+applying:
+  not-applicable-with: "&c附魔 &4%enchant1% &c不能與 &4%enchant2%&7 同時應用！"
+  requires-enchant: "&c附魔 &4%enchant1% &c需要先應用 &4%enchant2%&7 才能使用！"
+  already-applied: "&c該物品已經具有此附魔。"
+  applied: "&a附魔已應用於你的物品。"
+  max-level: "&c此附魔已達最高等級！"
+  wrong-material: "&c該附魔無法應用於此物品。"
+
+slots:
+  limit-reached: "&c無法應用此附魔！沒有可用槽位！"
+
+chances:
+  book-failed: "&c你的附魔書失敗，但物品未被毀壞！"
+
+destroy:
+  book-failed: "&c附魔失敗！"

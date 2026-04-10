@@ -1,0 +1,221 @@
+# Använd %p% för att infoga pluginets prefix.
+# Alla meddelanden stöder HEX-färgkoder på 1.16+. Format: {#FFFFFF}
+# Nästan alla meddelanden stöder PlaceholderAPI.
+prefix: "&7[&9AdvancedEnchantments&7]&r "
+
+effects:
+  steal-money: "&6%attacker% &7stal &6%amount% &7från &6%victim%&7!"
+  used: "&fAnvände &r%enchant-color% %level%"
+
+commands:
+  no-permission: "&cDu har inte behörighet att göra det!"
+  offline-player: "&cDen spelaren är inte online!"
+  enchantment-not-found: "&cFörtrollningen &c&n%enchant%&c kunde inte hittas."
+  invalid-amount: "&cOgiltigt antal. Måste vara mellan 1-64."
+  invalid-enchant: "&c%enchant% är inte en giltig förtrollning!"
+  invalid-level: "&cOgiltig förtrollningsnivå! Prova med: %levels%"
+  invalid-usage: "&cAnvändning: %usage%"
+  not-a-number: "&c%number% är inte ett nummer!"
+  not-holding-item: "&cDu måste hålla ett föremål!"
+  enchantment-info:
+    invalid-usage: "&cOgiltig användning! Korrekt användning: %command% <förtrollning>"
+    open-menu-message: "&7Information om &e%enchant% &7förtrollning."
+  enchants:
+    open-menu-message: "&7Visar lista över alla förtrollningar..."
+  apply:
+    cooldown: "&cDu kan använda detta kommando om %seconds% sekunder."
+    no-args: "&cAnge vilken spelare som ska påverkas."
+    reapplied: "&aDin rustning har applicerats på nytt."
+    reapplied-other: "&aRustning har applicerats på nytt för %player%."
+    reapplied-for-all: "&aRustning har applicerats på nytt för alla!"
+  withdrawsouls:
+    invalid-usage: "&cAnvändning: /withdrawsouls <antal>"
+    less-than-one: "&cAntalet måste vara positivt."
+    invalid-item: "&cOgiltigt föremål."
+  aegive:
+    invalid-material: "&cOgiltigt material. Se filen 'materials.yml' för alla giltiga material."
+    invalid-item-flag: "&cOgiltig ItemFlag! Du kan välja bland följande: %itemflags%"
+    invalid-enchantment: "&cOgiltig förtrollning!"
+    success: "&aGav &2%amount%x %material% &atill %player%&a!"
+  gedit:
+    unknown-gkit: "&c%gkit% är inte en giltig gkit!"
+    edit:
+      invalid-usage: "&cAnvändning: /gedit edit <gkit>"
+    set-permission:
+      invalid-usage: "&cAnvändning: /gedit setpermission <gkit> <behörighet>"
+      success: "&eÄndrade &6%gkit%&e:s kit-behörighet till &6%permission%"
+    reset:
+      invalid-usage: "&cAnvändning: /gedit reset <gkit> <spelare>"
+      success: "&6%gkit% &6gkit har återställts för spelaren &e%player%"
+    list: "&eGKits: &6%gkits%"
+    setdelay:
+      invalid-usage: "&cAnvändning: /gedit setdelay <gkit> <fördröjning (i sekunder)>"
+      invalid-delay: "&c%delay% är inte ett giltigt heltal!"
+      success: "&eÄndrade &6%gkit%&e:s kit-fördröjning till &6%delay%"
+  main:
+    unknown-command: "&cFelaktig kommandoanvändning! Skriv \"/ae\" för korrekt användning."
+    setsouls:
+      invalid-usage: "&cOgiltig användning: /ae setsouls <antal>"
+      invalid-item: "&cOgiltigt föremål."
+      success: "&cStällde in föremålets själsantal till: %amount%"
+    unenchant:
+      invalid-usage: "&cOgiltig användning: /ae unenchant <förtrollning>"
+      invalid-enchant: "&c%enchant% är inte en giltig förtrollning!"
+      not-holding-item: "&cDu måste hålla ett föremål!"
+      does-not-have-enchant: "&cDet föremålet har inte &4%enchant%&c!"
+      success: "&aTog bort förtrollningen %enchant%!"
+    zip:
+      zip-exists: "&cFörsök igen."
+      success: "&eEn zip-fil med all plugin-data har skapats på %path%."
+      error: "&cEtt fel uppstod vid zippning av filer! Kolla konsolen för mer information."
+    greset:
+      reset: "&aÅterställde %gkit%-kiten för %player%!"
+      reset-all: "&aÅterställde alla GKits för %player%!"
+    claim:
+      invalid-usage: "&cAnge förtrollningstoken."
+    givegkit:
+      success: "&cKit %gkit% gavs till spelaren %player%"
+    giverandombook:
+      success: "&aGav &2%player% %amount%x %group% &aböcker!"
+    givebook:
+      success: "&aGav &2%player% %amount%x %enchant% %level% &aböcker!"
+    enchant:
+      added: "&aLa till %enchant%-förtrollningen!"
+      upgraded: "&2Uppgraderade %enchant% från nivå %previous-level% till %level%."
+      downgraded: "&2Nedgraderade %enchant% från nivå %previous-level% till %level%."
+      removed: "&cTog bort %enchant%-förtrollningen från föremålet."
+    giveitem:
+      success: "&7La till %amount%x %item%&7 för spelaren &b%player%"
+    givercbook:
+      success: "&aGav &2%player% %amount%x %group% &ahögerklicksböcker!"
+    give:
+      success: "&aGav %player% en %enchant% %level% bok!"
+    tinkereritem:
+      success: "&cGav x%amount% tinkerer-föremål till %player%"
+    admin:
+      invalid-page: "&cOgiltig sida"
+    info:
+      - "&eInformation om &6%enchant% &eförtrollning&7:"
+      - "&6Beskrivning&7: &e%description%"
+      - "&6Appliceras på&7: &e%applies%"
+      - "&6Maxnivå&7: &e%max-level%"
+
+    pastetypes: "&aFörtrollningstypslista: %url%"
+    pasteenchants: "&aFörtrollningslista: %url%"
+    open: "&aÖppnade %menu% för %player%!"
+
+token:
+  success: "&2&lx &aHämtade framgångsrikt token &l%token%&a förtrollning, laddar om..."
+
+interact:
+  main-hand-only: "&cDu kan bara göra det med din huvudhand!"
+
+enchanter:
+  re-buy: "&cKöp föremålet på nytt från förtrollaren."
+  disabled-in-world: "&cFörtrollaren är inaktiverad i den här världen."
+  full-inventory: "&cDitt inventory är fullt!"
+  examine-book: "&7Du undersökte %group-color%%group-name%&7-boken och hittade %enchant-color% %level%"
+  unknown-payment-method: "&cKunde inte validera %paymentType% betalningsmetod, kontakta en administratör."
+  successful-purchase: "&aKöp lyckades!"
+  cannot-afford:
+    - "&cDu har inte tillräckligt med EXP för att köpa det."
+    - "&7Din XP: %exp%"
+
+tinkerer:
+  trade-accepted: "&aHandel accepterad!"
+  non-tradeable-item:
+    - "&cServer-Tinkerern vill inte ha det föremålet!"
+    - "&7Den accepterar endast specialförtrollad utrustning"
+
+alchemist:
+  doesnt-accept: "&cAlkemisten accepterar inte detta föremål!"
+  trade-cancelled: "&cHandel avbruten."
+  cannot-afford: "&cDu har inte råd med denna transaktion!"
+  exceeds-max-level: "&cDin kombinerade nivå överskrider maximal förtrollningsnivå!"
+  take-currency: "&c- %price%"
+
+gkits:
+  no-permission: "&eDu har inte behörighet att använda &e%gkit%&6-kiten."
+  cooldown: "&eDu kan inte använda denna kit ännu, kit &6%gkit%&e är på cooldown &7(%cooldown%)"
+  used-kit: "&eDu använde kit &6%gkit%."
+  missing-permission: "&cGkit %gkit%:s behörighet är ogiltig eller existerar inte"
+  unknown-gkit: "&cGKit %gkit% existerar inte!"
+  unknown-enchant: "&7Förtrollningen %enchant% kan inte lösas."
+
+heroic:
+  cannot-apply: "&cDu kan inte applicera en kristalluppgradering på detta föremål."
+  upgrade-failed: "&cKristalluppgraderingen &nmisslyckades&c!"
+
+orbs:
+  cannot-apply: "&cKan inte applicera orb på detta föremål!"
+  failed: "&cOrb misslyckades!"
+  incompatible: "&cKan inte applicera orb med färre platser än tillgängliga platser!"
+
+sets:
+  commands:
+    unknown-command: "&cKommandot hittades inte! Skriv \"/asets\" för en lista över alla giltiga kommandon."
+    invalid-usage: "&cOgiltig användning! Se /asets för korrekt användning."
+    invalid-set: "&cSet är ogiltigt."
+    invalid-set-piece: "&cOgiltig set-del, du kan använda en av dessa: \n%set pieces%"
+    invalid-weapon: "&cVapnet är ogiltigt."
+    offline-player: "&cSpelaren är offline."
+    invalid-chances: "&cOgiltiga chanser."
+    list:
+      header: "&eLista över alla tillgängliga set &7[%size%]"
+      set: " &8>> &f%set%"
+    listweapons:
+      header: "&eLista över alla tillgängliga vapen &7[%size%]"
+      weapon: " &8>> &f%weapon%"
+    give:
+      success: "&eGav &f %set% &e-set till &f %player%"
+    givepiece:
+      success: "&eGav &f%piece% &efrån &f%set% &etill &f %player%"
+    weapon:
+      success: "&eGav &f %weapon% &e-set till &f %player%"
+
+items:
+  randomization-scroll:
+    cannot-apply: "&cDu kan inte applicera en randomizer på detta!"
+    single-items-only: "&cDu kan bara använda detta på enskilda föremål!"
+  black-scroll:
+    full-inventory: "&cDitt inventory är fullt!"
+    no-enchants: "&cDetta föremål har inga förtrollningar!"
+    invalid-enchant: "&cKan inte ta bort förtrollningen eftersom den är ogiltig!"
+    cannot-remove: "&cFörtrollningen %enchant% kan inte tas bort!"
+  soul-tracker:
+    disabled: "&cSjälar är inte aktiverade på den här servern!"
+    non-stacked-only: "&cDu kan bara använda detta på icke-stackade föremål!"
+    apply-successful: "&7Du applicerade framgångsrikt &f&lSoul Tracker &7på ditt föremål!"
+  magic-dust:
+    full-inventory: "&cDitt inventory är fullt!"
+    single-items-only: "&cDu kan bara använda detta på enskilda föremål!"
+  white-scroll:
+    full-inventory: "&cDitt inventory är fullt!"
+    apply-successful: "&aVit skroll har applicerats på ditt föremål!"
+    item-saved: "&aVit skroll sparade föremålet!"
+
+combining:
+  already-max-level: "Denna förtrollning är redan på maxnivå!"
+  success: "&aFramgång! &7%enchant% är nu nivå %level%!"
+  failure: "&cKombinering misslyckades!"
+  something-went-wrong: "&cNågot gick fel vid kombinerandet."
+
+enchant-limitations:
+  cannot-be-modified: "&cDetta föremål kan inte modifieras!"
+
+applying:
+  not-applicable-with: "&cFörtrollningen &4%enchant1% &ckan inte appliceras tillsammans med &4%enchant2%&7 &c!"
+  requires-enchant: "&cFörtrollningen &4%enchant1% &ckräver att &4%enchant2%&7 &cappliceras!"
+  already-applied: "&cFöremålet har redan denna förtrollning."
+  applied: "&aFörtrollningen applicerades på ditt föremål."
+  max-level: "&cDenna förtrollning är redan på maxnivå!"
+  wrong-material: "&cDenna förtrollning kan inte appliceras på detta föremål."
+
+slots:
+  limit-reached: "&cDu kan inte applicera den förtrollningen! Det finns inga lediga platser kvar!"
+
+chances:
+  book-failed: "&cDin bok misslyckades men föremålet förstördes inte!"
+
+destroy:
+  book-failed: "&cFörtrollningen misslyckades!"

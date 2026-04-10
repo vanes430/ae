@@ -1,0 +1,218 @@
+prefix: "&7[&9AdvancedEnchantments&7]&r "
+
+effects:
+  steal-money: "&6%attacker% &7سرق &6%amount% &7من &6%victim%&7!"
+  used: "&fتم استخدام &r%enchant-color% %level%"
+
+commands:
+  no-permission: "&cليس لديك إذن للقيام بذلك!"
+  offline-player: "&cهذا اللاعب غير متصل!"
+  enchantment-not-found: "&cالتعويذة &c&n%enchant%&c غير موجودة."
+  invalid-amount: "&cالكمية غير صحيحة. يجب أن تكون بين 1-64."
+  invalid-enchant: "&c%enchant% ليست تعويذة صحيحة!"
+  invalid-level: "&cمستوى التعويذة غير صحيح! حاول استخدام: %levels%"
+  invalid-usage: "&cالاستخدام غير صحيح: %usage%"
+  not-a-number: "&c%number% ليس رقمًا!"
+  not-holding-item: "&cيجب أن تحمل عنصرًا!"
+  enchantment-info:
+    invalid-usage: "&cالاستخدام غير صحيح! الاستخدام الصحيح: %command% <enchantment>"
+    open-menu-message: "&7معلومات عن تعويذة &e%enchant% &7."
+  enchants:
+    open-menu-message: "&7عرض قائمة بكل التعويذات..."
+  apply:
+    cooldown: "&cيمكنك استخدام هذا الأمر مجددًا بعد %seconds% ثانية."
+    no-args: "&cيرجى تحديد اللاعب الذي سيتم التأثير عليه."
+    reapplied: "&aتم إعادة تطبيق العتاد الخاص بك."
+    reapplied-other: "&aتم إعادة تطبيق العتاد الخاص بـ %player%."
+    reapplied-for-all: "&aتم إعادة تطبيق العتاد للجميع!"
+  withdrawsouls:
+    invalid-usage: "&cالاستخدام غير صحيح: /withdrawsouls <count>"
+    less-than-one: "&cيجب أن تكون القيمة موجبة."
+    invalid-item: "&cالعنصر غير صحيح."
+  aegive:
+    invalid-material: "&cالمادة غير صحيحة. يرجى الرجوع إلى ملف 'materials.yml' للمواد الصحيحة."
+    invalid-item-flag: "&cعلامة العنصر غير صحيحة! يمكنك الاختيار من: %itemflags%"
+    invalid-enchantment: "&cالتعويذة غير صحيحة!"
+    success: "&aتم إعطاء &2%amount%x %material% &aإلى %player%!"
+  gedit:
+    unknown-gkit: "&c%gkit% ليست مجموعة معدات صحيحة!"
+    edit:
+      invalid-usage: "&cالاستخدام غير صحيح: /gedit edit <gkit>"
+    set-permission:
+      invalid-usage: "&cالاستخدام غير صحيح: /gedit setpermission <gkit> <perm>"
+      success: "&eتم تغيير إذن مجموعة %gkit% إلى &6%permission%"
+    reset:
+      invalid-usage: "&cالاستخدام غير صحيح: /gedit reset <gkit> <player>"
+      success: "&6تم إعادة تعيين مجموعة %gkit% للاعب &e%player%"
+    list: "&eمجموعات المعدات: &6%gkits%"
+    setdelay:
+      invalid-usage: "&cالاستخدام غير صحيح: /gedit setdelay <gkit> <delay (in seconds)>"
+      invalid-delay: "&c%delay% ليس رقمًا صحيحًا!"
+      success: "&eتم تغيير تأخير مجموعة %gkit% إلى &6%delay%"
+  main:
+    unknown-command: "&cالاستخدام غير صحيح للأمر! اكتب \"/ae\" للاستخدام الصحيح."
+    setsouls:
+      invalid-usage: "&cالاستخدام غير صحيح: /ae setsouls <amount>"
+      invalid-item: "&cالعنصر غير صحيح."
+      success: "&cتم ضبط عدد الأرواح في العنصر إلى: %amount%"
+    unenchant:
+      invalid-usage: "&cالاستخدام غير صحيح: /ae unenchant <enchant>"
+      invalid-enchant: "&c%enchant% ليست تعويذة صحيحة!"
+      not-holding-item: "&cيجب أن تحمل عنصرًا!"
+      does-not-have-enchant: "&cهذا العنصر لا يحتوي على تعويذة &4%enchant%&c!"
+      success: "&aتمت إزالة التعويذة %enchant%!"
+    zip:
+      zip-exists: "&cيرجى المحاولة مرة أخرى."
+      success: "&eتم إنشاء ملف مضغوط يحتوي على بيانات الإضافة في %path%."
+      error: "&cحدث خطأ أثناء ضغط الملفات! تحقق من الكونسول لمزيد من المعلومات."
+    greset:
+      reset: "&aتمت إعادة تعيين مجموعة %gkit% للاعب %player%!"
+      reset-all: "&aتمت إعادة تعيين جميع مجموعات المعدات للاعب %player%!"
+    claim:
+      invalid-usage: "&cيرجى إدخال رمز التعويذة."
+    givegkit:
+      success: "&cتم إعطاء مجموعة %gkit% للاعب %player%"
+    giverandombook:
+      success: "&aتم إعطاء &2%player% %amount%x %group% &aكتب عشوائية!"
+    givebook:
+      success: "&aتم إعطاء &2%player% %amount%x كتاب تعويذة %enchant% %level%!"
+    enchant:
+      added: "&aتمت إضافة التعويذة %enchant%!"
+      upgraded: "&2تم رفع مستوى %enchant% من المستوى %previous-level% إلى %level%."
+      downgraded: "&2تم تخفيض مستوى %enchant% من المستوى %previous-level% إلى %level%."
+      removed: "&cتمت إزالة التعويذة %enchant% من العنصر."
+    giveitem:
+      success: "&7تمت إضافة %amount%x %item% &7لللاعب &b%player%"
+    givercbook:
+      success: "&aتم إعطاء &2%player% %amount%x %group% &aكتب للنقر بالزر الأيمن!"
+    give:
+      success: "&aتم إعطاء اللاعب %player% كتاب تعويذة %enchant% %level% بنجاح!"
+    tinkereritem:
+      success: "&cتم إعطاء x%amount% من عناصر الحرفي لـ %player%"
+    admin:
+      invalid-page: "&cرقم الصفحة غير صحيح"
+    info:
+      - "&eمعلومات عن تعويذة &6%enchant% &e:"
+      - "&6الوصف&7: &e%description%"
+      - "&6ينطبق على&7: &e%applies%"
+      - "&6الحد الأقصى للمستوى&7: &e%max-level%"
+
+    pastetypes: "&aقائمة أنواع التعويذات: %url%"
+    pasteenchants: "&aقائمة التعويذات: %url%"
+    open: "&aتم فتح %menu% لـ %player%!"
+
+token:
+  success: "&2&lx &aتم تنزيل رمز التعويذة &l%token%&a بنجاح، جارٍ إعادة التحميل..."
+
+interact:
+  main-hand-only: "&cيمكنك القيام بذلك بيدك الرئيسية فقط!"
+
+enchanter:
+  re-buy: "&cيرجى إعادة شراء العنصر من المُحسّن."
+  disabled-in-world: "&cتم تعطيل المُحسّن في هذا العالم."
+  full-inventory: "&cجردك ممتلئ!"
+  examine-book: "&7لقد فحصت كتاب %group-color%%group-name%&7 ووجدت %enchant-color% %level%"
+  unknown-payment-method: "&cفشل التحقق من وسيلة الدفع %paymentType%، يرجى الاتصال بالمسؤول."
+  successful-purchase: "&aتم الشراء بنجاح!"
+  cannot-afford:
+    - "&cليس لديك خبرة كافية لشراء ذلك."
+    - "&7خبرتك: %exp%"
+
+tinkerer:
+  trade-accepted: "&aتم قبول الصفقة!"
+  non-tradeable-item:
+    - "&cالحرفي في السيرفر لا يقبل هذا العنصر!"
+    - "&7فقط يقبل المعدات المخصصة بالتعويذات."
+
+alchemist:
+  doesnt-accept: "&cالخيميائي لا يقبل هذا العنصر!"
+  trade-cancelled: "&cتم إلغاء الصفقة."
+  cannot-afford: "&cلا يمكنك تحمل تكلفة هذه المعاملة!"
+  exceeds-max-level: "&cمجموع مستوياتك يتجاوز الحد الأقصى للتعويذات!"
+  take-currency: "&c- %price%"
+
+gkits:
+  no-permission: "&eليس لديك إذن لاستخدام مجموعة &e%gkit%&6."
+  cooldown: "&eلا يمكنك استخدام هذه المجموعة بعد، مجموعة &6%gkit%&e في فترة تبريد &7(%cooldown%)"
+  used-kit: "&eلقد استخدمت مجموعة &6%gkit%."
+  missing-permission: "&cإذن مجموعة %gkit% غير صالح أو غير موجود"
+  unknown-gkit: "&cمجموعة %gkit% غير موجودة!"
+  unknown-enchant: "&7لا يمكن التعرف على التعويذة %enchant%."
+
+heroic:
+  cannot-apply: "&cلا يمكنك تطبيق ترقية الكريستال على هذا العنصر."
+  upgrade-failed: "&cفشلت ترقية الكريستال &n!"
+
+orbs:
+  cannot-apply: "&cلا يمكن تطبيق الكرة على هذا العنصر!"
+  failed: "&cفشلت الكرة!"
+  incompatible: "&cلا يمكن تطبيق كرة ذات فتحات أقل من الفتحات المتوفرة!"
+
+sets:
+  commands:
+    unknown-command: "&cالأمر غير موجود! اكتب \"/asets\" لقائمة الأوامر الصحيحة."
+    invalid-usage: "&cالاستخدام غير صحيح! يرجى الرجوع إلى /asets للاستخدام الصحيح."
+    invalid-set: "&cالمجموعة غير صحيحة."
+    invalid-set-piece: "&cقطعة المجموعة غير صحيحة، يمكنك استخدام واحدة من هذه: \n%set pieces%"
+    invalid-weapon: "&cالسلاح غير صحيح."
+    offline-player: "&cاللاعب غير متصل."
+    invalid-chances: "&cالفرص غير صحيحة."
+    list:
+      header: "&eقائمة بجميع المجموعات المتاحة &7[%size%]"
+      set: " &8>> &f%set%"
+    listweapons:
+      header: "&eقائمة بجميع الأسلحة المتاحة &7[%size%]"
+      weapon: " &8>> &f%weapon%"
+    give:
+      success: "&eتم إعطاء مجموعة &f %set% &eلللاعب &f %player%"
+    givepiece:
+      success: "&eتم إعطاء القطعة %piece% من المجموعة %set% لـ &f %player%"
+    weapon:
+      success: "&eتم إعطاء السلاح &f %weapon% &eلللاعب &f %player%"
+
+items:
+  randomization-scroll:
+    cannot-apply: "&cلا يمكنك تطبيق العشوائية على هذا العنصر!"
+    single-items-only: "&cيمكنك استخدام هذا على العناصر الفردية فقط!"
+  black-scroll:
+    full-inventory: "&cجردك ممتلئ!"
+    no-enchants: "&cهذا العنصر لا يحتوي على أي تعويذات!"
+    invalid-enchant: "&cلا يمكن إزالة التعويذة لأنها غير صحيحة!"
+    cannot-remove: "&cلا يمكن إزالة التعويذة %enchant%!"
+  soul-tracker:
+    disabled: "&cالأرواح غير مفعلة في هذا السيرفر!"
+    non-stacked-only: "&cيمكنك استخدام هذا على العناصر المفردة فقط!"
+    apply-successful: "&7تم تطبيق &f&lمتتبع الأرواح &7على عنصرك بنجاح!"
+  magic-dust:
+    full-inventory: "&cجردك ممتلئ!"
+    single-items-only: "&cيمكنك استخدام هذا على العناصر الفردية فقط!"
+  white-scroll:
+    full-inventory: "&cجردك ممتلئ!"
+    apply-successful: "&aتم تطبيق التمرير الأبيض على عنصرك!"
+    item-saved: "&aتم حفظ العنصر بواسطة التمرير الأبيض!"
+
+combining:
+  already-max-level: "هذه التعويذة بالفعل في أقصى مستوى!"
+  success: "&aنجاح! &7أصبحت التعويذة %enchant% الآن في المستوى %level%!"
+  failure: "&cفشل الدمج!"
+  something-went-wrong: "&cحدث خطأ أثناء الدمج."
+
+enchant-limitations:
+  cannot-be-modified: "&cلا يمكن تعديل هذا العنصر!"
+
+applying:
+  not-applicable-with: "&cتعويذة &4%enchant1% &cلا يمكن تطبيقها مع &4%enchant2%&7!"
+  requires-enchant: "&cتعويذة &4%enchant1% &cتتطلب تطبيق تعويذة &4%enchant2%&7!"
+  already-applied: "&cالعنصر يحتوي بالفعل على هذه التعويذة."
+  applied: "&aتم تطبيق التعويذة على عنصرك."
+  max-level: "&cهذه التعويذة في أقصى مستوى بالفعل!"
+  wrong-material: "&cلا يمكن تطبيق هذه التعويذة على هذا العنصر."
+
+slots:
+  limit-reached: "&cلا يمكنك تطبيق هذه التعويذة! لم يتبقَّ فتحات متاحة!"
+
+chances:
+  book-failed: "&cفشل كتاب التعويذات لكن العنصر لم يتلف!"
+
+destroy:
+  book-failed: "&cلم تنجح التعويذة!"

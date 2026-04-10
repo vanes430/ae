@@ -81,10 +81,19 @@ val extractOriginalJar = tasks.register<Copy>("extractOriginalJar") {
 // ─── Custom resources override ───
 val copyCustomResources = tasks.register<Copy>("copyCustomResources") {
     dependsOn(extractOriginalJar)
+
+    // General extracted resources
     val extractedResources = file("src-patched/main/resources/_extracted")
     if (extractedResources.exists()) {
         from(extractedResources)
         into(extractDir)
+    }
+
+    // Dedicated armorSets override (always overwrites original armorSets in JAR)
+    val armorSetsDir = file("src-patched/main/resources/armorSets")
+    if (armorSetsDir.exists()) {
+        from(armorSetsDir)
+        into(file("${extractDir.get()}/armorSets"))
     }
 }
 
