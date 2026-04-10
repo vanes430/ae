@@ -1,0 +1,83 @@
+name: '&b&lPhantom Armor'
+material: DIAMOND
+settings:
+  equipped:
+    - '&a&l(!) &aYou have activated the Phantom set!'
+  unequipped:
+    - '&c&l(!) &cYou have deactivated the Phantom set!'
+items:
+  helmet:
+    name: '&c&lPhantom Hood'
+    customModelData: 0
+    itemFlags: []
+    lore:
+      - '&cThe fabled hood of the phantom'
+      - ''
+      - '&c&lPHANTOM SET BONUS'
+      - '&cDeal +25% damage to all enemies.'
+      - '&7&o(Requires all 4 phantom items.)'
+    enchants:
+      - "protection:30"
+      - "unbreaking:3"
+      - "armored:%1-3%"
+      - "implants:%1-2%"
+      - "angelic:%1-4%"
+      - "tank:%1-3%"
+  chestplate:
+    name: '&c&lPhantom Shroud'
+    customModelData: 0
+    itemFlags: []
+    lore:
+      - '&cThe legendary shroud of the Phantom.'
+      - ''
+      - '&c&lPHANTOM SET BONUS'
+      - '&cDeal +25% damage to all enemies.'
+      - '&7&o(Requires all 4 phantom items.)'
+    enchants:
+      - "protection:30"
+      - "unbreaking:3"
+      - "armored:%1-3%"
+      - "overload:%1-2%"
+      - "dodge:%1-3%"
+      - "angelic:%1-4%"
+      - "tank:%1-3%"
+  leggings:
+    name: '&c&lPhantom Robeset'
+    customModelData: 0
+    itemFlags: []
+    lore:
+      - '&cThe demonic robe of the Phantom.'
+      - ''
+      - '&c&lPHANTOM SET BONUS'
+      - '&cDeal +25% damage to all enemies.'
+      - '&7&o(Requires all 4 phantom items.)'
+    enchants:
+      - "protection:30"
+      - "unbreaking:3"
+      - "armored:%1-3%"
+      - "obsidianshield:1"
+      - "angelic:%1-4%"
+      - "tank:%1-3%"
+  boots:
+    name: '&c&lPhantom Sandals'
+    customModelData: 0
+    itemFlags: []
+    lore:
+      - '&cThe silent sandals of the Phantom.'
+      - ''
+      - '&c&lPHANTOM SET BONUS'
+      - '&cDeal +25% damage to all enemies.'
+      - '&7&o(Requires all 4 phantom items.)'
+    enchants:
+      - "protection:30"
+      - "unbreaking:3"
+      - "armored:%1-3%"
+      - "gears:%1-2%"
+      - "springs:%1-2%"
+      - "tank:%1-3%"
+      - "rocketescape:%1-2%"
+events:
+  ATTACK:
+    chance: 100
+    effects:
+      - 'INCREASE_DAMAGE:25'

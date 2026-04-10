@@ -1,0 +1,47 @@
+# Advanced Sets Weapons
+
+# What set should be required in order to apply effects from this weapon?
+# Set to '' to not require a set
+requireSet: 'Yeti'
+
+# Currently supported are only melee weapons
+material: DIAMOND_SWORD
+
+# Custom Model Data (for 1.13+ servers with custom item packs)
+# Set custom model data integer
+customModelData: 0
+
+# Item Flags
+# https://hub.spigotmc.org/javadocs/spigot/org/bukkit/inventory/ItemFlag.html
+itemFlags: []
+#  - 'HIDE_POTION_EFFECTS' # An Example Item Flag
+
+# Weapon's name
+name: '&b&lYeti Sword'
+
+# Weapon's lore
+lore:
+  - '&7A blade forged from ancient ice,'
+  - '&7freezing all who dare oppose it.'
+  - ''
+  - '&b&lYETI WEAPON BONUS'
+  - '&b* Deal +10% damage to all enemies.'
+  - '&b* Enemies deal 10% less damage to you.'
+  - '&7(Requires all 4 yeti items.)'
+
+# These enchants will be applied by default when giving out weapons
+# Advanced Enchantments are supported
+enchants:
+  - 'sharpness:20'
+  - 'unbreaking:3'
+
+# ** Enchantment effects are supported - view enchantments.yml to see all effects available for custom weapons
+events:
+  ATTACK:
+    chance: 100
+    effects:
+      - 'INCREASE_DAMAGE:10'
+  DEFENSE:
+    chance: 100
+    effects:
+      - 'DECREASE_DAMAGE:10'

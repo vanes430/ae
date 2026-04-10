@@ -1,0 +1,45 @@
+# Advanced Sets Weapons
+
+# What set should be required in order to apply effects from this weapon?
+# Set to '' to not require a set
+requireSet: 'Darkness'
+
+# Currently supported are only melee weapons
+material: NETHERITE_SWORD
+
+# Custom Model Data (for 1.13+ servers with custom item packs)
+# Set custom model data integer
+customModelData: 0
+
+# Item Flags
+# https://hub.spigotmc.org/javadocs/spigot/org/bukkit/inventory/ItemFlag.html
+itemFlags: []
+#  - 'HIDE_POTION_EFFECTS' # An Example Item Flag
+
+# Weapon's name
+name: '&8&lDarkness Blade'
+
+# Weapon's lore
+lore:
+  - '&8&oA blade born from the void,'
+  - '&8&oconsuming all light in its path.'
+  - ''
+  - '&8&lDARKNESS WEAPON BONUS'
+  - '&8Deal +25% damage to all enemies.'
+  - '&8Lifesteal: +15% on hit.'
+  - '&7(Requires all 4 darkness items.)'
+
+# These enchants will be applied by default when giving out weapons
+# Advanced Enchantments are supported
+enchants:
+  - 'sharpness:50'
+  - 'unbreaking:3'
+  - 'lifesteal:3'
+
+# ** Enchantment effects are supported - view enchantments.yml to see all effects available for custom weapons
+events:
+  ATTACK:
+    chance: 100
+    effects:
+      - 'INCREASE_DAMAGE:25'
+      - 'LIFESTEAL:15'
