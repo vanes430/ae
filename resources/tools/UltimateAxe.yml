@@ -1,0 +1,54 @@
+requireSet: ''
+material: NETHERITE_AXE
+customModelData: 0
+itemFlags:
+  - 'HIDE_ENCHANTS'
+name: '&6&lUltimate Axe'
+lore:
+  - '&6&oThe ultimate combat and woodcutting tool'
+  - '&6&oforged for absolute perfection.'
+  - ''
+  - '&6&lULTIMATE TOOL'
+  - '&6Sharpness V'
+  - '&6Efficiency V'
+  - '&6Unbreaking III'
+  - '&6All CE Enchants at Max Level'
+enchants:
+  - 'sharpness:50'
+  - 'efficiency:5'
+  - 'unbreaking:50'
+  - 'mending:1'
+  # ALL_AXE enchants (max level)
+  - 'ambit:7'
+  - 'arrowbreak:6'
+  - 'axeofspirits:3'
+  - 'barbarian:4'
+  - 'beastslayer:4'
+  - 'berserk:5'
+  - 'blacksmith:5'
+  - 'bleed:6'
+  - 'bluntforce:4'
+  - 'bonecrusher:3'
+  - 'cleave:7'
+  - 'deathpunch:5'
+  - 'decapitation:3'
+  - 'diminish:1'
+  - 'featherweight:3'
+  - 'immolate:3'
+  - 'infernal:3'
+  - 'inflame:3'
+  - 'paralyze:4'
+  - 'poison:3'
+  - 'ravenous:4'
+  - 'reaper:4'
+  - 'restore:4'
+  - 'shatter:4'
+  - 'slayer:4'
+  - 'timber:3'
+  # Weapons
+  - 'famine:4'
+events:
+  ATTACK:
+    chance: 100
+    effects:
+      - 'INCREASE_DAMAGE:25'

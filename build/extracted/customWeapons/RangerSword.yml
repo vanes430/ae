@@ -1,0 +1,39 @@
+requireSet: 'Ranger'
+material: DIAMOND_SWORD
+customModelData: 0
+itemFlags: []
+name: '&a&lRanger Blade'
+lore:
+  - '&a&oA blade wielded by'
+  - '&a&othe legendary ranger.'
+  - ''
+  - '&a&lRANGER WEAPON BONUS'
+  - '&aDeal +15% damage.'
+  - '&7(Requires all 4 ranger items.)'
+enchants:
+  - 'sharpness:20'
+  - 'unbreaking:20'
+      # Vanilla enchants (max level, all tiers same)
+      - 'fire_aspect:2'
+      - 'looting:3'
+      - 'sweeping_edge:3'
+      - 'knockback:2'
+      - 'mending:1'
+  # ALL_SWORD (10 CEs)
+  - 'berserk:5'
+  - 'critical:5'
+  - 'execute:5'
+  - 'forcefield:5'
+  - 'hunter:5'
+  - 'judgement:5'
+  - 'spark:5'
+  - 'strike:3'
+  - 'strife:5'
+  # Weapons
+  - 'distance:4'
+  - 'famine:4'
+events:
+  ATTACK:
+    chance: 100
+    effects:
+      - 'INCREASE_DAMAGE:15'

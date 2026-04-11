@@ -1,0 +1,32 @@
+requireSet: ''
+material: CROSSBOW
+customModelData: 0
+itemFlags:
+  - 'HIDE_ENCHANTS'
+name: '&6&lUltimate Crossbow'
+lore:
+  - '&6&oThe ultimate crossbow'
+  - '&6&oforged for absolute perfection.'
+  - ''
+  - '&6&lULTIMATE WEAPON'
+  - '&6Quick Charge III'
+  - '&6Multishot I / Piercing IV'
+  - '&6All CE Enchants at Max Level'
+enchants:
+  # Vanilla (no Riptide/Loyalty - crossbow specific)
+  - 'quick_charge:3'
+  - 'multishot:1'
+  - 'piercing:4'
+  - 'unbreaking:50'
+  - 'mending:1'
+  # Crossbow enchants (max level)
+  - 'marksman:4'
+  - 'strike:3'
+  # Weapons
+  - 'distance:4'
+  - 'famine:4'
+events:
+  SHOOT:
+    chance: 100
+    effects:
+      - 'INCREASE_DAMAGE:25'

@@ -1,0 +1,60 @@
+requireSet: 'DimensionalTraveller'
+material: DIAMOND_SWORD
+customModelData: 0
+itemFlags: []
+name: '&5&lDimensional Blade'
+lore:
+  - '&7A blade that cuts through'
+  - '&7dimensions themselves.'
+  - ''
+  - '&5&lTRAVELLER WEAPON BONUS'
+  - '&5Deal +30% damage.'
+  - '&5+12 Attack Damage'
+  - '&7(Requires all 4 traveller items.)'
+attributes:
+  GENERIC_ATTACK_DAMAGE:
+    amount: 12.0
+    operation: ADD_NUMBER
+enchants:
+  - 'sharpness:40'
+  - 'unbreaking:40'
+      # Vanilla enchants (max level, all tiers same)
+      - 'fire_aspect:2'
+      - 'looting:3'
+      - 'sweeping_edge:3'
+      - 'knockback:2'
+      - 'mending:1'
+  # ALL_SWORD (30 CEs)
+  - 'ambush:3'
+  - 'berserk:5'
+  - 'blind:4'
+  - 'critical:5'
+  - 'deathpunch:5'
+  - 'decapitation:3'
+  - 'doublestrike:3'
+  - 'execute:5'
+  - 'forcefield:5'
+  - 'hunter:5'
+  - 'iceaspect:3'
+  - 'immolate:3'
+  - 'interrupt:4'
+  - 'judgement:5'
+  - 'lifesteal:3'
+  - 'paralyze:4'
+  - 'slayer:4'
+  - 'spark:5'
+  - 'strike:3'
+  - 'strife:5'
+  - 'suspend:5'
+  - 'tantrum:5'
+  - 'teleport:3'
+  - 'vampire:3'
+  - 'witherstrike:3'
+  # Weapons
+  - 'distance:4'
+  - 'famine:4'
+events:
+  ATTACK:
+    chance: 100
+    effects:
+      - 'INCREASE_DAMAGE:30'

@@ -274,7 +274,6 @@ public class Core extends JavaPlugin {
             Bukkit.getGlobalRegionScheduler().execute(this, () -> {
                   Core.this.again = true;
                   MainCommand.name = "pluginLoaded";
-                  Bukkit.getLogger().info("[AdvancedEnchantments] Thanks for using Black-Minecraft.com");
                });
          } catch (Exception var6) {
             var6.printStackTrace();

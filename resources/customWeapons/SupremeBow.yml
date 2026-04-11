@@ -1,0 +1,40 @@
+requireSet: 'Supreme'
+material: BOW
+customModelData: 0
+itemFlags: []
+name: '&4&lSupreme Bow'
+lore:
+  - '&4&oA bow designed for flight'
+  - '&4&oand deadly accuracy.'
+  - ''
+  - '&4&lSUPREME WEAPON BONUS'
+  - '&4Deal +15% damage to all enemies.'
+  - '&7(Requires all 4 supreme items.)'
+enchants:
+  - 'power:45'
+  - 'unbreaking:45'
+      # Vanilla enchants (max level, all tiers same)
+      - 'flame:1'
+      - 'infinity:1'
+      - 'mending:1'
+  - 'infinity:1'
+  # BOW (13 CEs)
+  - 'arrowretrieval:1'
+  - 'bowmaster:3'
+  - 'deadshot:5'
+  - 'distance:4'
+  - 'homing:5'
+  - 'implosion:5'
+  - 'longbow:5'
+  - 'missile:3'
+  - 'sniper:3'
+  - 'strike:3'
+  - 'trickshot:3'
+  - 'venom:3'
+  # Weapons
+  - 'famine:4'
+events:
+  SHOOT:
+    chance: 100
+    effects:
+      - 'INCREASE_DAMAGE:15'

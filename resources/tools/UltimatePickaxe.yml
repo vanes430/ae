@@ -1,0 +1,36 @@
+requireSet: ''
+material: NETHERITE_PICKAXE
+customModelData: 0
+itemFlags:
+  - 'HIDE_ENCHANTS'
+name: '&6&lUltimate Pickaxe'
+lore:
+  - '&6&oThe ultimate mining tool'
+  - '&6&oforged for absolute perfection.'
+  - ''
+  - '&6&lULTIMATE TOOL'
+  - '&6Efficiency & Efficiency II & Efficiency III & Efficiency IV & Efficiency V'
+  - '&6Fortune III'
+  - '&6Unbreaking III'
+  - '&6All CE Enchants at Max Level'
+enchants:
+  - 'efficiency:5'
+  - 'fortune:3'
+  - 'unbreaking:50'
+  - 'mending:1'
+  # Tools enchants (max level, all tools same)
+  - 'autodetect:3'
+  - 'experience:5'
+  - 'haste:3'
+  - 'hasten:3'
+  - 'magnet:3'
+  - 'smelting:3'
+  - 'telepathy:3'
+  - 'trench:3'
+  - 'tunnel:5'
+  - 'restore:4'
+events:
+  MINING:
+    chance: 100
+    effects:
+      - 'INCREASE_DAMAGE:10'

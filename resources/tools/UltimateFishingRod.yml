@@ -1,0 +1,34 @@
+requireSet: ''
+material: FISHING_ROD
+customModelData: 0
+itemFlags:
+  - 'HIDE_ENCHANTS'
+name: '&6&lUltimate Fishing Rod'
+lore:
+  - '&6&oThe ultimate fishing tool'
+  - '&6&oforged for absolute perfection.'
+  - ''
+  - '&6&lULTIMATE TOOL'
+  - '&6Unbreaking III'
+  - '&6Lure III'
+  - '&6Luck of the Sea III'
+  - '&6All CE Enchants at Max Level'
+enchants:
+  # Vanilla
+  - 'lure:3'
+  - 'luck_of_the_sea:3'
+  - 'unbreaking:50'
+  - 'mending:1'
+  # Fishing Rod enchants (max level)
+  - 'allure:5'
+  - 'autoreel:4'
+  - 'bait:5'
+  - 'hook:5'
+  - 'lucky:4'
+  - 'permafrost:3'
+  - 'snap:3'
+events:
+  CATCH_FISH:
+    chance: 100
+    effects:
+      - 'EXPERIENCE:10'

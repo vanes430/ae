@@ -1,0 +1,33 @@
+requireSet: 'Ranger'
+material: BOW
+customModelData: 0
+itemFlags: []
+name: '&a&lRanger Bow'
+lore:
+  - '&a&oA ranger bow, precise'
+  - '&a&oand deadly accurate.'
+  - ''
+  - '&a&lRANGER WEAPON BONUS'
+  - '&aDeal +15% damage.'
+  - '&7(Requires all 4 ranger items.)'
+enchants:
+  - 'power:20'
+  - 'unbreaking:20'
+      # Vanilla enchants (max level, all tiers same)
+      - 'flame:1'
+      - 'infinity:1'
+      - 'mending:1'
+  - 'infinity:1'
+  # BOW (5 CEs)
+  - 'bowmaster:3'
+  - 'deadshot:5'
+  - 'distance:4'
+  - 'homing:5'
+  - 'strike:3'
+  # Weapons
+  - 'famine:4'
+events:
+  SHOOT:
+    chance: 100
+    effects:
+      - 'INCREASE_DAMAGE:15'

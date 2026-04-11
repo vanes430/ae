@@ -1,0 +1,35 @@
+requireSet: ''
+material: NETHERITE_HOE
+customModelData: 0
+itemFlags:
+  - 'HIDE_ENCHANTS'
+name: '&6&lUltimate Hoe'
+lore:
+  - '&6&oThe ultimate farming tool'
+  - '&6&oforged for absolute perfection.'
+  - ''
+  - '&6&lULTIMATE TOOL'
+  - '&6All CE Farming Enchants at Max Level'
+enchants:
+  - 'efficiency:5'
+  - 'unbreaking:50'
+  - 'mending:1'
+  # Hoes enchants (max level)
+  - 'harvest:9'
+  - 'planter:3'
+  - 'carrotplanter:3'
+  - 'potatoplanter:3'
+  - 'replanter:3'
+  # Tools enchants (max level, all tools same)
+  - 'autodetect:3'
+  - 'experience:5'
+  - 'haste:3'
+  - 'hasten:3'
+  - 'magnet:3'
+  - 'telepathy:3'
+  - 'restore:4'
+events:
+  MINING:
+    chance: 100
+    effects:
+      - 'INCREASE_DAMAGE:5'

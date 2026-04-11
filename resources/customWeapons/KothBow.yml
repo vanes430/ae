@@ -1,0 +1,37 @@
+requireSet: 'KOTH'
+material: BOW
+customModelData: 0
+itemFlags: []
+name: '&d&lKOTH Bow'
+lore:
+  - '&d&oA bow for the champion'
+  - '&d&oof the battlefield.'
+  - ''
+  - '&d&lKOTH WEAPON BONUS'
+  - '&dDeal +20% damage.'
+  - '&7(Requires all 4 koth items.)'
+enchants:
+  - 'power:35'
+  - 'unbreaking:35'
+      # Vanilla enchants (max level, all tiers same)
+      - 'flame:1'
+      - 'infinity:1'
+      - 'mending:1'
+  - 'infinity:1'
+  # BOW (10 CEs)
+  - 'bowmaster:3'
+  - 'deadshot:5'
+  - 'distance:4'
+  - 'homing:5'
+  - 'implosion:5'
+  - 'longbow:5'
+  - 'sniper:3'
+  - 'strike:3'
+  - 'trickshot:3'
+  # Weapons
+  - 'famine:4'
+events:
+  SHOOT:
+    chance: 100
+    effects:
+      - 'INCREASE_DAMAGE:20'

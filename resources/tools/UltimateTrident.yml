@@ -1,0 +1,27 @@
+requireSet: ''
+material: TRIDENT
+customModelData: 0
+itemFlags:
+  - 'HIDE_ENCHANTS'
+name: '&6&lUltimate Trident'
+lore:
+  - '&6&oThe ultimate thrown weapon'
+  - '&6&oforged for absolute perfection.'
+  - ''
+  - '&6&lULTIMATE TOOL'
+  - '&6Impaling V'
+  - '&6All CE Enchants at Max Level'
+enchants:
+  # Vanilla (no Riptide/Loyalty/Channeling - conflicts)
+  - 'impaling:5'
+  - 'unbreaking:50'
+  - 'mending:1'
+  # Trident enchants (max level)
+  - 'impact:4'
+  - 'strike:3'
+  - 'twinge:4'
+events:
+  ATTACK:
+    chance: 100
+    effects:
+      - 'INCREASE_DAMAGE:25'

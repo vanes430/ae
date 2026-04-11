@@ -1,0 +1,159 @@
+name: '&c&lPhantom Armor'
+material: DIAMOND
+settings:
+  equipped:
+    - '&a&l(!) &aYou have activated the Phantom set!'
+  unequipped:
+    - '&c&l(!) &cYou have deactivated the Phantom set!'
+items:
+  helmet:
+    name: '&c&lPhantom Hood'
+    customModelData: 0
+    itemFlags: []
+    lore:
+      - '&cThe fabled hood of the phantom'
+      - ''
+      - '&c&lPHANTOM SET BONUS'
+      - '&cDeal +25% damage to all enemies.'
+      - '&7&o(Requires all 4 phantom items.)'
+    enchants:
+      - "protection:25"
+      - "unbreaking:25"
+      # ALL_ARMOR (basic enchants)
+      - "armored:1"
+      - "divert:2"
+      - "dodge:2"
+      - "guardians:4"
+      - "heavy:2"
+      - "immortal:1"
+      - "molten:1"
+      - "overload:1"
+      - "poisoned:1"
+      - "reflect:2"
+      - "spirits:3"
+      - "swordsman:2"
+      - "tank:1"
+      - "trickster:2"
+      - "unholy:2"
+      - "voodoo:1"
+      - "ward:1"
+      - "wither:1"
+      # ALL_HELMET
+      - "smokebomb:2"
+      # Extra
+      - "angelic:2"
+  chestplate:
+    name: '&c&lPhantom Shroud'
+    customModelData: 0
+    itemFlags: []
+    lore:
+      - '&cThe legendary shroud of the Phantom.'
+      - ''
+      - '&c&lPHANTOM SET BONUS'
+      - '&cDeal +25% damage to all enemies.'
+      - '&7&o(Requires all 4 phantom items.)'
+    enchants:
+      - "protection:25"
+      - "unbreaking:25"
+      # ALL_ARMOR
+      - "armored:1"
+      - "divert:2"
+      - "dodge:2"
+      - "guardians:4"
+      - "heavy:2"
+      - "immortal:1"
+      - "molten:1"
+      - "overload:1"
+      - "poisoned:1"
+      - "reflect:2"
+      - "spirits:3"
+      - "swordsman:2"
+      - "tank:1"
+      - "trickster:2"
+      - "unholy:2"
+      - "voodoo:1"
+      - "ward:1"
+      - "wither:1"
+      # ALL_CHESTPLATE
+      - "angelic:2"
+      - "chunky:2"
+      - "shockwave:1"
+  leggings:
+    name: '&c&lPhantom Robeset'
+    customModelData: 0
+    itemFlags: []
+    lore:
+      - '&cThe demonic robe of the Phantom.'
+      - ''
+      - '&c&lPHANTOM SET BONUS'
+      - '&cDeal +25% damage to all enemies.'
+      - '&7&o(Requires all 4 phantom items.)'
+    enchants:
+      - "protection:25"
+      - "unbreaking:25"
+      # ALL_ARMOR
+      - "armored:1"
+      - "divert:2"
+      - "dodge:2"
+      - "guardians:4"
+      - "heavy:2"
+      - "immortal:1"
+      - "molten:1"
+      - "overload:1"
+      - "poisoned:1"
+      - "reflect:2"
+      - "spirits:3"
+      - "swordsman:2"
+      - "tank:1"
+      - "trickster:2"
+      - "unholy:2"
+      - "voodoo:1"
+      - "ward:1"
+      - "wither:1"
+      # ALL_LEGGINGS
+      - "explosivedemise:2"
+      # Extra
+      - "angelic:2"
+      - "obsidianshield:1"
+  boots:
+    name: '&c&lPhantom Sandals'
+    customModelData: 0
+    itemFlags: []
+    lore:
+      - '&cThe silent sandals of the Phantom.'
+      - ''
+      - '&c&lPHANTOM SET BONUS'
+      - '&cDeal +25% damage to all enemies.'
+      - '&7&o(Requires all 4 phantom items.)'
+    enchants:
+      - "protection:25"
+      - "unbreaking:25"
+      # ALL_ARMOR
+      - "armored:1"
+      - "divert:2"
+      - "dodge:2"
+      - "guardians:4"
+      - "heavy:2"
+      - "immortal:1"
+      - "molten:1"
+      - "overload:1"
+      - "poisoned:1"
+      - "reflect:2"
+      - "spirits:3"
+      - "swordsman:2"
+      - "tank:1"
+      - "trickster:2"
+      - "unholy:2"
+      - "voodoo:1"
+      - "ward:1"
+      - "wither:1"
+      # ALL_BOOTS
+      - "gears:1"
+      - "rocketescape:1"
+      - "springs:1"
+      - "undeadruse:2"
+events:
+  ATTACK:
+    chance: 100
+    effects:
+      - 'INCREASE_DAMAGE:25'

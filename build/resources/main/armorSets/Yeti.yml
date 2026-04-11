@@ -1,0 +1,144 @@
+# Advanced Sets
+# These sets are fully creatable, to create your own simply copy this file, rename it and edit it however you want!
+
+name: '&b&lYeti Armor'
+material: DIAMOND
+settings:
+  equipped:
+    - '&a&l(!) &aYou have activated the Yeti set!'
+  unequipped:
+    - '&c&l(!) &cYou have deactivated the Yeti set!'
+items:
+  helmet:
+    name: '&b&lYeti Facemask'
+    customModelData: 0
+    itemFlags: []
+    lore:
+      - '&bThe savage mask of the Yeti.'
+      - ''
+      - '&b&lYETI SET BONUS'
+      - '&b* Deal +10% damage to all enemies.'
+      - '&b* Enemies deal 10% less damage to you.'
+      - '&7&o(Requires all 4 yeti items.)'
+    enchants:
+      - "protection:15"
+      - "unbreaking:15"
+      # ALL_ARMOR (basic enchants)
+      - "armored:1"
+      - "guardians:2"
+      - "heavy:1"
+      - "poisoned:1"
+      - "reflect:1"
+      - "spirits:1"
+      - "swordsman:1"
+      - "tank:1"
+      - "trickster:1"
+      - "unholy:1"
+      - "voodoo:1"
+      - "ward:1"
+      - "wither:1"
+      # Extra
+      - "angelic:1"
+  chestplate:
+    name: '&b&lBloody Yeti Torso'
+    customModelData: 0
+    itemFlags: []
+    lore:
+      - '&bThe impermeable chestplate of the Yeti.'
+      - ''
+      - '&b&lYETI SET BONUS'
+      - '&b* Deal +10% damage to all enemies.'
+      - '&b* Enemies deal 10% less damage to you.'
+      - '&7&o(Requires all 4 yeti items.)'
+    enchants:
+      - "protection:15"
+      - "unbreaking:15"
+      # ALL_ARMOR
+      - "armored:1"
+      - "guardians:2"
+      - "heavy:1"
+      - "poisoned:1"
+      - "reflect:1"
+      - "spirits:1"
+      - "swordsman:1"
+      - "tank:1"
+      - "trickster:1"
+      - "unholy:1"
+      - "voodoo:1"
+      - "ward:1"
+      - "wither:1"
+      # ALL_CHESTPLATE
+      - "angelic:1"
+      - "chunky:1"
+  leggings:
+    name: '&b&lFuzzy Yeti Leggings'
+    customModelData: 0
+    itemFlags: []
+    lore:
+      - '&bThe cozy yet monstrous legs of the Yeti.'
+      - ''
+      - '&b&lYETI SET BONUS'
+      - '&b* Deal +10% damage to all enemies.'
+      - '&b* Enemies deal 10% less damage to you.'
+      - '&7&o(Requires all 4 yeti items.)'
+    enchants:
+      - "protection:15"
+      - "unbreaking:15"
+      # ALL_ARMOR
+      - "armored:1"
+      - "guardians:2"
+      - "heavy:1"
+      - "poisoned:1"
+      - "reflect:1"
+      - "spirits:1"
+      - "swordsman:1"
+      - "tank:1"
+      - "trickster:1"
+      - "unholy:1"
+      - "voodoo:1"
+      - "ward:1"
+      - "wither:1"
+      # Extra
+      - "angelic:1"
+      - "obsidianshield:1"
+  boots:
+    name: '&b&lBig-Yeti Boots'
+    customModelData: 0
+    itemFlags: []
+    lore:
+      - '&bBigfoot has nothing on these boots.'
+      - ''
+      - '&b&lYETI SET BONUS'
+      - '&b* Deal +10% damage to all enemies.'
+      - '&b* Enemies deal 10% less damage to you.'
+      - '&7&o(Requires all 4 yeti items.)'
+    enchants:
+      - "protection:15"
+      - "unbreaking:15"
+      # ALL_ARMOR
+      - "armored:1"
+      - "guardians:2"
+      - "heavy:1"
+      - "poisoned:1"
+      - "reflect:1"
+      - "spirits:1"
+      - "swordsman:1"
+      - "tank:1"
+      - "trickster:1"
+      - "unholy:1"
+      - "voodoo:1"
+      - "ward:1"
+      - "wither:1"
+      # ALL_BOOTS
+      - "gears:1"
+      - "springs:1"
+      - "undeadruse:1"
+events:
+  ATTACK:
+    chance: 100
+    effects:
+      - 'INCREASE_DAMAGE:10'
+  DEFENSE:
+    chance: 100
+    effects:
+      - 'DECREASE_DAMAGE:10'

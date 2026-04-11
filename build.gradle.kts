@@ -47,6 +47,10 @@ java {
             srcDir("src-patched")
             exclude("**/MainCommand.java")
         }
+        resources {
+            srcDir("src-patched/main/resources")
+            exclude("_extracted/**")
+        }
     }
 }
 
@@ -82,29 +86,48 @@ val extractOriginalJar = tasks.register<Copy>("extractOriginalJar") {
 val copyCustomResources = tasks.register<Copy>("copyCustomResources") {
     dependsOn(extractOriginalJar)
 
-    // General extracted resources
+    // General extracted resources (EXCEPT armorSets, customWeapons, enchantments.yml)
     val extractedResources = file("src-patched/main/resources/_extracted")
     if (extractedResources.exists()) {
-        from(extractedResources)
+        from(extractedResources) {
+            exclude("armorSets/**")
+            exclude("customWeapons/**")
+            exclude("enchantments.yml")
+        }
         into(extractDir)
     }
 
-    // Dedicated armorSets override (always overwrites original armorSets in JAR)
-    val armorSetsDir = file("src-patched/main/resources/armorSets")
+    // Our edited enchantments.yml override
+    val editedEnchantments = file("resources/enchantments.yml")
+    if (editedEnchantments.exists()) {
+        from(editedEnchantments)
+        into(extractDir)
+    }
+
+    // ArmorSets override (overwrite original armorSets in JAR)
+    val armorSetsDir = file("resources/armorSets")
     if (armorSetsDir.exists()) {
         from(armorSetsDir)
         into(file("${extractDir.get()}/armorSets"))
+    }
+
+    // Custom Weapons override (overwrite original customWeapons in JAR)
+    val customWeaponsDir = file("resources/customWeapons")
+    if (customWeaponsDir.exists()) {
+        from(customWeaponsDir)
+        into(file("${extractDir.get()}/customWeapons"))
     }
 }
 
 // ─── Build patched JAR ───
 val buildPatchedJar = tasks.register<Jar>("buildPatchedJar") {
-    dependsOn(copyCustomResources, tasks.compileJava)
+    dependsOn(extractOriginalJar, copyCustomResources, tasks.compileJava)
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     archiveFileName.set("AdvancedEnchantments-9.22.7-folia-patched.jar")
     destinationDirectory.set(layout.buildDirectory.dir("libs"))
 
-    // Layer 1: Original extracted JAR (exclude classes we're patching)
+    // Layer 1: Original extracted JAR (exclude classes + resources we're overriding)
     from(extractDir) {
         exclude("net/advancedplugins/ae/Core.class")
         exclude("net/advancedplugins/ae/Core\$*.class")
@@ -116,10 +139,45 @@ val buildPatchedJar = tasks.register<Jar>("buildPatchedJar") {
         exclude("net/advancedplugins/ae/impl/effects/effects/effects/internal/GuardEffect.class")
         exclude("net/advancedplugins/ae/impl/utils/fanciful/FancyMessage.class")
         exclude("net/advancedplugins/ae/utils/fanciful/FancyMessage.class")
+        exclude("net/advancedplugins/ae/impl/effects/effects/actions/execution/ExecutionTask.class")
+        exclude("net/advancedplugins/ae/impl/effects/effects/actions/execution/ExecutionTask\$*.class")
+        exclude("net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportBehindEffect.class")
+        exclude("net/advancedplugins/ae/impl/effects/effects/effects/internal/BoostEffect.class")
+        exclude("net/advancedplugins/ae/impl/effects/effects/effects/internal/ExtinguishEffect.class")
+        exclude("net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.class")
+        exclude("net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger\$*.class")
+        exclude("net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/UserRepeaters.class")
+        exclude("net/advancedplugins/ae/features/tinkerer/TinkererInventory.class")
+        exclude("net/advancedplugins/ae/features/tinkerer/TinkererInventory\$*.class")
+        exclude("net/advancedplugins/ae/features/weapons/AdvancedWeapon.class")
+        // Exclude original armorSets and customWeapons (we override entirely)
+        exclude("armorSets/**")
+        exclude("customWeapons/**")
+        exclude("enchantments.yml")
     }
 
-    // Layer 2: Patched classes (no duplicates)
+    // Layer 2: Patched classes
     from(patchedClassesDir)
+
+    // Layer 3: Our armorSets (only our 10 files)
+    from("resources/armorSets") {
+        into("armorSets")
+    }
+
+    // Layer 4: Our customWeapons (only our 20 files)
+    from("resources/customWeapons") {
+        into("customWeapons")
+    }
+
+    // Layer 5: Our edited enchantments.yml
+    from("resources/enchantments.yml") {
+        into("")
+    }
+
+    // Layer 6: Our custom tools
+    from("resources/tools") {
+        into("tools")
+    }
 
     // Exclude original META-INF
     exclude("META-INF/**")

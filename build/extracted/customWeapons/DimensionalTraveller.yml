@@ -1,0 +1,224 @@
+name: '&5&lDimensionalTraveller Armor'
+material: DIAMOND
+settings:
+  equipped:
+    - '&5&l(!) You have activated the &5&lDimensionalTraveller set!'
+  unequipped:
+    - '§7(!) You have deactivated the &5&lDimensionalTraveller set!'
+items:
+  helmet:
+    name: '&5&lDimensionalTraveller Helm'
+    customModelData: 0
+    itemFlags: []
+    lore:
+      - '&7A dimensionaltraveller armor piece'
+      - ''
+      - '&5&lDIMENSIONALTRAVELLER SET BONUS'
+      - '&D* Set bonus active'
+      - '&7(Requires all 4 dimensionaltraveller items.)'
+    enchants:
+      - "protection:40"
+      - "unbreaking:40"
+      # Vanilla enchants (max level, all tiers same)
+      - "fire_protection:4"
+      - "blast_protection:4"
+      - "projectile_protection:4"
+      - "thorns:3"
+      - "mending:1"
+      - "respiration:3"
+      - "aqua_affinity:1"
+      # ALL_ARMOR CEs
+      - "armored:4"
+      - "arrowdeflect:4"
+      - "creeperarmor:3"
+      - "curse:2"
+      - "disappear:4"
+      - "divert:5"
+      - "dodge:5"
+      - "frozen:3"
+      - "guardians:10"
+      - "hardened:3"
+      - "heavy:5"
+      - "immortal:4"
+      - "lucid:3"
+      - "molten:4"
+      - "obsidianshield:1"
+      - "overload:3"
+      - "patch:3"
+      - "poisoned:4"
+      - "ragdoll:4"
+      - "reflect:5"
+      - "safeguard:2"
+      - "spirits:10"
+      # ALL_HELMET CEs
+      - "aquatic:1"
+      - "glowing:1"
+      - "implants:3"
+  chestplate:
+    name: '&5&lDimensionalTraveller Chest'
+    customModelData: 0
+    itemFlags: []
+    lore:
+      - '&7A dimensionaltraveller armor piece'
+      - ''
+      - '&5&lDIMENSIONALTRAVELLER SET BONUS'
+      - '&D* Set bonus active'
+      - '&7(Requires all 4 dimensionaltraveller items.)'
+    enchants:
+      - "protection:40"
+      - "unbreaking:40"
+      # Vanilla enchants (max level, all tiers same)
+      - "fire_protection:4"
+      - "blast_protection:4"
+      - "projectile_protection:4"
+      - "thorns:3"
+      - "mending:1"
+      # ALL_ARMOR CEs
+      - "armored:4"
+      - "arrowdeflect:4"
+      - "creeperarmor:3"
+      - "curse:2"
+      - "disappear:4"
+      - "divert:5"
+      - "dodge:5"
+      - "frozen:3"
+      - "guardians:10"
+      - "hardened:3"
+      - "heavy:5"
+      - "immortal:4"
+      - "lucid:3"
+      - "molten:4"
+      - "obsidianshield:1"
+      - "overload:3"
+      - "patch:3"
+      - "poisoned:4"
+      - "ragdoll:4"
+      - "reflect:5"
+      - "safeguard:2"
+      - "spirits:10"
+      # ALL_CHESTPLATE CEs
+      - "angelic:5"
+      - "chunky:6"
+      - "fumble:3"
+      - "phoenix:3"
+  leggings:
+    name: '&5&lDimensionalTraveller Legs'
+    customModelData: 0
+    itemFlags: []
+    lore:
+      - '&7A dimensionaltraveller armor piece'
+      - ''
+      - '&5&lDIMENSIONALTRAVELLER SET BONUS'
+      - '&D* Set bonus active'
+      - '&7(Requires all 4 dimensionaltraveller items.)'
+    enchants:
+      - "protection:40"
+      - "unbreaking:40"
+      # Vanilla enchants (max level, all tiers same)
+      - "fire_protection:4"
+      - "blast_protection:4"
+      - "projectile_protection:4"
+      - "thorns:3"
+      - "mending:1"
+      # ALL_ARMOR CEs
+      - "armored:4"
+      - "arrowdeflect:4"
+      - "creeperarmor:3"
+      - "curse:2"
+      - "disappear:4"
+      - "divert:5"
+      - "dodge:5"
+      - "frozen:3"
+      - "guardians:10"
+      - "hardened:3"
+      - "heavy:5"
+      - "immortal:4"
+      - "lucid:3"
+      - "molten:4"
+      - "obsidianshield:1"
+      - "overload:3"
+      - "patch:3"
+      - "poisoned:4"
+      - "ragdoll:4"
+      - "reflect:5"
+      - "safeguard:2"
+      - "spirits:10"
+      # ALL_LEGGINGS CEs
+      - "explosivedemise:8"
+      - "extinguish:3"
+  boots:
+    name: '&5&lDimensionalTraveller Boots'
+    customModelData: 0
+    itemFlags: []
+    lore:
+      - '&7A dimensionaltraveller armor piece'
+      - ''
+      - '&5&lDIMENSIONALTRAVELLER SET BONUS'
+      - '&D* Set bonus active'
+      - '&7(Requires all 4 dimensionaltraveller items.)'
+    enchants:
+      - "protection:40"
+      - "unbreaking:40"
+      # Vanilla enchants (max level, all tiers same)
+      - "fire_protection:4"
+      - "blast_protection:4"
+      - "projectile_protection:4"
+      - "thorns:3"
+      - "mending:1"
+      - "feather_falling:4"
+      - "depth_strider:3"
+      - "frost_walker:2"
+      # ALL_ARMOR CEs
+      - "armored:4"
+      - "arrowdeflect:4"
+      - "creeperarmor:3"
+      - "curse:2"
+      - "disappear:4"
+      - "divert:5"
+      - "dodge:5"
+      - "frozen:3"
+      - "guardians:10"
+      - "hardened:3"
+      - "heavy:5"
+      - "immortal:4"
+      - "lucid:3"
+      - "molten:4"
+      - "obsidianshield:1"
+      - "overload:3"
+      - "patch:3"
+      - "poisoned:4"
+      - "ragdoll:4"
+      - "reflect:5"
+      - "safeguard:2"
+      - "spirits:10"
+      # ALL_BOOTS CEs
+      - "aegis:3"
+      - "aqua:4"
+      - "convulse:6"
+      - "gears:3"
+      - "jellylegs:3"
+      - "lavawalker:1"
+      - "plummet:3"
+      - "rocketescape:3"
+      - "springs:3"
+      - "undeadruse:10"
+      - "waterwalker:1"
+events:
+  ATTACK:
+    chance: 100
+    effects:
+      - 'INCREASE_DAMAGE:30'
+  EFFECT_STATIC:
+    chance: 100
+    effects:
+      - 'POTION:SPEED:3'
+      - 'POTION:SATURATION:0'
+      - 'FLY'
+  DEFENSE_BOW:
+    chance: 100
+    effects:
+      - 'DECREASE_DAMAGE:20 %attacker%'
+  FALL_DAMAGE:
+    chance: 100
+    effects:
+      - 'CANCEL_EVENT'

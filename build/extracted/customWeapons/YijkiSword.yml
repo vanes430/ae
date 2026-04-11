@@ -1,0 +1,47 @@
+requireSet: 'Yijki'
+material: DIAMOND_SWORD
+customModelData: 0
+itemFlags: []
+name: '&f&lBlade of Yijki'
+lore:
+  - '&fA blade blessed by'
+  - '&fthe destroyer of worlds.'
+  - ''
+  - '&f&lYIJKI WEAPON BONUS'
+  - '&fDeal +15% damage.'
+  - '&7(Requires all 4 yijki items.)'
+enchants:
+  - 'sharpness:30'
+  - 'unbreaking:30'
+      # Vanilla enchants (max level, all tiers same)
+      - 'fire_aspect:2'
+      - 'looting:3'
+      - 'sweeping_edge:3'
+      - 'knockback:2'
+      - 'mending:1'
+  # ALL_SWORD (20 CEs)
+  - 'berserk:5'
+  - 'critical:5'
+  - 'deathpunch:5'
+  - 'execute:5'
+  - 'forcefield:5'
+  - 'hunter:5'
+  - 'iceaspect:3'
+  - 'judgement:5'
+  - 'lifesteal:3'
+  - 'paralyze:4'
+  - 'slayer:4'
+  - 'spark:5'
+  - 'strike:3'
+  - 'strife:5'
+  - 'suspend:5'
+  - 'tantrum:5'
+  - 'teleport:3'
+  # Weapons
+  - 'distance:4'
+  - 'famine:4'
+events:
+  ATTACK:
+    chance: 100
+    effects:
+      - 'INCREASE_DAMAGE:15'

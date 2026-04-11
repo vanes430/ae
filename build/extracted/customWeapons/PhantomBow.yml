@@ -1,0 +1,34 @@
+requireSet: 'Phantom'
+material: BOW
+customModelData: 0
+itemFlags: []
+name: '&c&lPhantom Bow'
+lore:
+  - '&cA bow that shoots'
+  - '&cghostly arrows.'
+  - ''
+  - '&c&lPHANTOM WEAPON BONUS'
+  - '&cDeal +25% damage.'
+  - '&7(Requires all 4 phantom items.)'
+enchants:
+  - 'power:25'
+  - 'unbreaking:25'
+      # Vanilla enchants (max level, all tiers same)
+      - 'flame:1'
+      - 'infinity:1'
+      - 'mending:1'
+  - 'infinity:1'
+  # BOW (6 CEs)
+  - 'bowmaster:3'
+  - 'deadshot:5'
+  - 'distance:4'
+  - 'homing:5'
+  - 'strike:3'
+  - 'trickshot:3'
+  # Weapons
+  - 'famine:4'
+events:
+  SHOOT:
+    chance: 100
+    effects:
+      - 'INCREASE_DAMAGE:25'

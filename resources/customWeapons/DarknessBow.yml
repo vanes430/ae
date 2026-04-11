@@ -1,0 +1,43 @@
+requireSet: 'Darkness'
+material: BOW
+customModelData: 0
+itemFlags: []
+name: '&8&lDarkness Longbow'
+lore:
+  - '&8&oA bow forged in shadows,'
+  - '&8&odelivering silent but deadly shots.'
+  - ''
+  - '&8&lDARKNESS WEAPON BONUS'
+  - '&8Deal +25% damage to all enemies.'
+  - '&7(Requires all 4 darkness items.)'
+enchants:
+  - 'power:50'
+  - 'unbreaking:50'
+      # Vanilla enchants (max level, all tiers same)
+      - 'flame:1'
+      - 'infinity:1'
+      - 'mending:1'
+  - 'infinity:1'
+  # BOW (15 CEs, max level)
+  - 'arrowretrieval:1'
+  - 'bowmaster:3'
+  - 'deadshot:5'
+  - 'distance:4'
+  - 'explosive:2'
+  - 'homing:5'
+  - 'implosion:5'
+  - 'longbow:5'
+  - 'missile:3'
+  - 'poisonarrow:3'
+  - 'precision:3'
+  - 'sniper:3'
+  - 'strike:3'
+  - 'trickshot:3'
+  - 'venom:3'
+  # Weapons
+  - 'famine:4'
+events:
+  SHOOT:
+    chance: 100
+    effects:
+      - 'INCREASE_DAMAGE:25'

@@ -1,0 +1,38 @@
+requireSet: 'Yeti'
+material: DIAMOND_SWORD
+customModelData: 0
+itemFlags: []
+name: '&b&lYeti Blade'
+lore:
+  - '&b&oA savage blade forged'
+  - '&b&oin the frozen wastes.'
+  - ''
+  - '&b&lYETI WEAPON BONUS'
+  - '&bDeal +10% damage.'
+  - '&7(Requires all 4 yeti items.)'
+enchants:
+  - 'sharpness:15'
+  - 'unbreaking:15'
+      # Vanilla enchants (max level, all tiers same)
+      - 'fire_aspect:2'
+      - 'looting:3'
+      - 'sweeping_edge:3'
+      - 'knockback:2'
+      - 'mending:1'
+  # ALL_SWORD (8 CEs)
+  - 'berserk:5'
+  - 'critical:5'
+  - 'execute:5'
+  - 'forcefield:5'
+  - 'hunter:5'
+  - 'spark:5'
+  - 'strike:3'
+  - 'strife:5'
+  # Weapons
+  - 'distance:4'
+  - 'famine:4'
+events:
+  ATTACK:
+    chance: 100
+    effects:
+      - 'INCREASE_DAMAGE:10'

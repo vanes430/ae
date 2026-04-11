@@ -1,0 +1,175 @@
+name: '&f&lYijki Armor'
+material: DIAMOND
+settings:
+  equipped:
+    - '&f&l(!) You have activated the &f&lYijki set!'
+  unequipped:
+    - '§f(!) You have deactivated the &f&lYijki set!'
+items:
+  helmet:
+    name: '&f&lYijki Helm'
+    customModelData: 0
+    itemFlags: []
+    lore:
+      - '&fA yijki armor piece'
+      - ''
+      - '&f&lYIJKI SET BONUS'
+      - '&F* Set bonus active'
+      - '&f(Requires all 4 yijki items.)'
+    enchants:
+      - "protection:30"
+      - "unbreaking:30"
+      # Vanilla enchants (max level, all tiers same)
+      - "fire_protection:4"
+      - "blast_protection:4"
+      - "projectile_protection:4"
+      - "thorns:3"
+      - "mending:1"
+      - "respiration:3"
+      - "aqua_affinity:1"
+      # ALL_ARMOR CEs
+      - "armored:4"
+      - "arrowdeflect:4"
+      - "creeperarmor:3"
+      - "curse:2"
+      - "disappear:4"
+      - "divert:5"
+      - "dodge:5"
+      - "frozen:3"
+      - "guardians:10"
+      - "hardened:3"
+      - "heavy:5"
+      - "immortal:4"
+      - "lucid:3"
+      - "molten:4"
+      - "obsidianshield:1"
+      # ALL_HELMET CEs
+      - "aquatic:1"
+      - "glowing:1"
+  chestplate:
+    name: '&f&lYijki Chest'
+    customModelData: 0
+    itemFlags: []
+    lore:
+      - '&fA yijki armor piece'
+      - ''
+      - '&f&lYIJKI SET BONUS'
+      - '&F* Set bonus active'
+      - '&f(Requires all 4 yijki items.)'
+    enchants:
+      - "protection:30"
+      - "unbreaking:30"
+      # Vanilla enchants (max level, all tiers same)
+      - "fire_protection:4"
+      - "blast_protection:4"
+      - "projectile_protection:4"
+      - "thorns:3"
+      - "mending:1"
+      # ALL_ARMOR CEs
+      - "armored:4"
+      - "arrowdeflect:4"
+      - "creeperarmor:3"
+      - "curse:2"
+      - "disappear:4"
+      - "divert:5"
+      - "dodge:5"
+      - "frozen:3"
+      - "guardians:10"
+      - "hardened:3"
+      - "heavy:5"
+      - "immortal:4"
+      - "lucid:3"
+      - "molten:4"
+      - "obsidianshield:1"
+      # ALL_CHESTPLATE CEs
+      - "angelic:5"
+      - "chunky:6"
+      - "fumble:3"
+  leggings:
+    name: '&f&lYijki Legs'
+    customModelData: 0
+    itemFlags: []
+    lore:
+      - '&fA yijki armor piece'
+      - ''
+      - '&f&lYIJKI SET BONUS'
+      - '&F* Set bonus active'
+      - '&f(Requires all 4 yijki items.)'
+    enchants:
+      - "protection:30"
+      - "unbreaking:30"
+      # Vanilla enchants (max level, all tiers same)
+      - "fire_protection:4"
+      - "blast_protection:4"
+      - "projectile_protection:4"
+      - "thorns:3"
+      - "mending:1"
+      # ALL_ARMOR CEs
+      - "armored:4"
+      - "arrowdeflect:4"
+      - "creeperarmor:3"
+      - "curse:2"
+      - "disappear:4"
+      - "divert:5"
+      - "dodge:5"
+      - "frozen:3"
+      - "guardians:10"
+      - "hardened:3"
+      - "heavy:5"
+      - "immortal:4"
+      - "lucid:3"
+      - "molten:4"
+      - "obsidianshield:1"
+      # ALL_LEGGINGS CEs
+      - "explosivedemise:8"
+  boots:
+    name: '&f&lYijki Boots'
+    customModelData: 0
+    itemFlags: []
+    lore:
+      - '&fA yijki armor piece'
+      - ''
+      - '&f&lYIJKI SET BONUS'
+      - '&F* Set bonus active'
+      - '&f(Requires all 4 yijki items.)'
+    enchants:
+      - "protection:30"
+      - "unbreaking:30"
+      # Vanilla enchants (max level, all tiers same)
+      - "fire_protection:4"
+      - "blast_protection:4"
+      - "projectile_protection:4"
+      - "thorns:3"
+      - "mending:1"
+      - "feather_falling:4"
+      - "depth_strider:3"
+      - "frost_walker:2"
+      # ALL_ARMOR CEs
+      - "armored:4"
+      - "arrowdeflect:4"
+      - "creeperarmor:3"
+      - "curse:2"
+      - "disappear:4"
+      - "divert:5"
+      - "dodge:5"
+      - "frozen:3"
+      - "guardians:10"
+      - "hardened:3"
+      - "heavy:5"
+      - "immortal:4"
+      - "lucid:3"
+      - "molten:4"
+      - "obsidianshield:1"
+      # ALL_BOOTS CEs
+      - "aegis:3"
+      - "aqua:4"
+      - "convulse:6"
+      - "gears:3"
+      - "jellylegs:3"
+      - "lavawalker:1"
+      - "plummet:3"
+events:
+  ATTACK:
+    chance: 100
+    effects:
+      - 'INCREASE_DAMAGE:15'

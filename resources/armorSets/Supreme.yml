@@ -1,0 +1,234 @@
+name: '&4&lSupreme Armor'
+material: DIAMOND
+settings:
+  equipped:
+    - '&4&l(!) You have activated the &4&lSupreme set!'
+  unequipped:
+    - '§4§o(!) You have deactivated the &4&lSupreme set!'
+items:
+  helmet:
+    name: '&4&lSupreme Helm'
+    customModelData: 0
+    itemFlags: []
+    lore:
+      - '&4&oA supreme armor piece'
+      - ''
+      - '&4&lSUPREME SET BONUS'
+      - '&4* Set bonus active'
+      - '&4&o(Requires all 4 supreme items.)'
+    enchants:
+      - "protection:45"
+      - "unbreaking:45"
+      # Vanilla enchants (max level, all tiers same)
+      - "fire_protection:4"
+      - "blast_protection:4"
+      - "projectile_protection:4"
+      - "thorns:3"
+      - "mending:1"
+      - "respiration:3"
+      - "aqua_affinity:1"
+      # ALL_ARMOR CEs
+      - "armored:4"
+      - "arrowdeflect:4"
+      - "creeperarmor:3"
+      - "curse:2"
+      - "disappear:4"
+      - "divert:5"
+      - "dodge:5"
+      - "frozen:3"
+      - "guardians:10"
+      - "hardened:3"
+      - "heavy:5"
+      - "immortal:4"
+      - "lucid:3"
+      - "molten:4"
+      - "obsidianshield:1"
+      - "overload:3"
+      - "patch:3"
+      - "poisoned:4"
+      - "ragdoll:4"
+      - "reflect:5"
+      - "safeguard:2"
+      - "spirits:10"
+      - "swordsman:5"
+      - "tank:4"
+      - "trickster:8"
+      # ALL_HELMET CEs
+      - "aquatic:1"
+      - "glowing:1"
+      - "implants:3"
+  chestplate:
+    name: '&4&lSupreme Chest'
+    customModelData: 0
+    itemFlags: []
+    lore:
+      - '&4&oA supreme armor piece'
+      - ''
+      - '&4&lSUPREME SET BONUS'
+      - '&4* Set bonus active'
+      - '&4&o(Requires all 4 supreme items.)'
+    enchants:
+      - "protection:45"
+      - "unbreaking:45"
+      # Vanilla enchants (max level, all tiers same)
+      - "fire_protection:4"
+      - "blast_protection:4"
+      - "projectile_protection:4"
+      - "thorns:3"
+      - "mending:1"
+      # ALL_ARMOR CEs
+      - "armored:4"
+      - "arrowdeflect:4"
+      - "creeperarmor:3"
+      - "curse:2"
+      - "disappear:4"
+      - "divert:5"
+      - "dodge:5"
+      - "frozen:3"
+      - "guardians:10"
+      - "hardened:3"
+      - "heavy:5"
+      - "immortal:4"
+      - "lucid:3"
+      - "molten:4"
+      - "obsidianshield:1"
+      - "overload:3"
+      - "patch:3"
+      - "poisoned:4"
+      - "ragdoll:4"
+      - "reflect:5"
+      - "safeguard:2"
+      - "spirits:10"
+      - "swordsman:5"
+      - "tank:4"
+      - "trickster:8"
+      # ALL_CHESTPLATE CEs
+      - "angelic:5"
+      - "chunky:6"
+      - "fumble:3"
+      - "phoenix:3"
+      - "shockwave:5"
+  leggings:
+    name: '&4&lSupreme Legs'
+    customModelData: 0
+    itemFlags: []
+    lore:
+      - '&4&oA supreme armor piece'
+      - ''
+      - '&4&lSUPREME SET BONUS'
+      - '&4* Set bonus active'
+      - '&4&o(Requires all 4 supreme items.)'
+    enchants:
+      - "protection:45"
+      - "unbreaking:45"
+      # Vanilla enchants (max level, all tiers same)
+      - "fire_protection:4"
+      - "blast_protection:4"
+      - "projectile_protection:4"
+      - "thorns:3"
+      - "mending:1"
+      # ALL_ARMOR CEs
+      - "armored:4"
+      - "arrowdeflect:4"
+      - "creeperarmor:3"
+      - "curse:2"
+      - "disappear:4"
+      - "divert:5"
+      - "dodge:5"
+      - "frozen:3"
+      - "guardians:10"
+      - "hardened:3"
+      - "heavy:5"
+      - "immortal:4"
+      - "lucid:3"
+      - "molten:4"
+      - "obsidianshield:1"
+      - "overload:3"
+      - "patch:3"
+      - "poisoned:4"
+      - "ragdoll:4"
+      - "reflect:5"
+      - "safeguard:2"
+      - "spirits:10"
+      - "swordsman:5"
+      - "tank:4"
+      - "trickster:8"
+      # ALL_LEGGINGS CEs
+      - "explosivedemise:8"
+      - "extinguish:3"
+  boots:
+    name: '&4&lSupreme Boots'
+    customModelData: 0
+    itemFlags: []
+    lore:
+      - '&4&oA supreme armor piece'
+      - ''
+      - '&4&lSUPREME SET BONUS'
+      - '&4* Set bonus active'
+      - '&4&o(Requires all 4 supreme items.)'
+    enchants:
+      - "protection:45"
+      - "unbreaking:45"
+      # Vanilla enchants (max level, all tiers same)
+      - "fire_protection:4"
+      - "blast_protection:4"
+      - "projectile_protection:4"
+      - "thorns:3"
+      - "mending:1"
+      - "feather_falling:4"
+      - "depth_strider:3"
+      - "frost_walker:2"
+      # ALL_ARMOR CEs
+      - "armored:4"
+      - "arrowdeflect:4"
+      - "creeperarmor:3"
+      - "curse:2"
+      - "disappear:4"
+      - "divert:5"
+      - "dodge:5"
+      - "frozen:3"
+      - "guardians:10"
+      - "hardened:3"
+      - "heavy:5"
+      - "immortal:4"
+      - "lucid:3"
+      - "molten:4"
+      - "obsidianshield:1"
+      - "overload:3"
+      - "patch:3"
+      - "poisoned:4"
+      - "ragdoll:4"
+      - "reflect:5"
+      - "safeguard:2"
+      - "spirits:10"
+      - "swordsman:5"
+      - "tank:4"
+      - "trickster:8"
+      # ALL_BOOTS CEs
+      - "aegis:3"
+      - "aqua:4"
+      - "convulse:6"
+      - "gears:3"
+      - "jellylegs:3"
+      - "lavawalker:1"
+      - "plummet:3"
+      - "rocketescape:3"
+      - "springs:3"
+      - "undeadruse:10"
+      - "waterwalker:1"
+      - "wings:1"
+events:
+  ATTACK:
+    chance: 100
+    effects:
+      - 'INCREASE_DAMAGE:15'
+  EFFECT_STATIC:
+    chance: 100
+    effects:
+      - 'POTION:SPEED:3'
+      - 'POTION:SATURATION:0'
+      - 'FLY'
+  FALL_DAMAGE:
+    chance: 100
+    effects:
+      - 'CANCEL_EVENT'

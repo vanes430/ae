@@ -1,0 +1,26 @@
+requireSet: ''
+material: ELYTRA
+customModelData: 0
+itemFlags:
+  - 'HIDE_ENCHANTS'
+name: '&6&lUltimate Elytra'
+lore:
+  - '&6&oThe ultimate gliding armor'
+  - '&6&oforged for absolute perfection.'
+  - ''
+  - '&6&lULTIMATE TOOL'
+  - '&6Unbreaking III'
+  - '&6All CE Enchants at Max Level'
+enchants:
+  - 'unbreaking:50'
+  - 'mending:1'
+  # Elytra enchants (max level)
+  - 'momentum:3'
+  - 'rush:3'
+  - 'slingshot:3'
+events:
+  EFFECT_STATIC:
+    chance: 100
+    effects:
+      - 'POTION:SPEED:3'
+      - 'FLY'

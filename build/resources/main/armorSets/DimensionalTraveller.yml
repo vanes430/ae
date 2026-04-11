@@ -1,0 +1,159 @@
+name: '&5&lDimensional Traveller Armor'
+material: DIAMOND
+settings:
+  equipped:
+    - '&a&l(!) &aYou have activated the Dimensional Traveller Armor Set!'
+  unequipped:
+    - '&c&l(!) &cYou have deactivated the Dimensional Traveller Armor Set!'
+items:
+  helmet:
+    name: '&5&lInterdimensional Hood'
+    customModelData: 0
+    itemFlags: []
+    lore:
+      - '&7A hood that fades in and out'
+      - '&7Existance inside the dimension of the owner'
+      - ''
+      - '&5&lTRAVELLER SET BONUS"'
+      - '&D* You deal 30% more damage.'
+      - '&D* Dimensional Shift Passive Ability'
+      - '&7&o(Requires all four traveller items)'
+    enchants:
+      - "protection:40"
+      - "unbreaking:40"
+      - "armored:4"
+      - "dodge:5"
+      - "divert:4"
+      - "guardians:10"
+      - "spirits:8"
+      - "heavy:4"
+      - "immortal:3"
+      - "reflect:4"
+      - "safeguard:2"
+      - "tank:4"
+      - "trickster:6"
+      - "ward:4"
+      - "wither:4"
+      # ALL_HELMET
+      - "glowing:1"
+      - "implants:3"
+      - "smokebomb:6"
+      # Extra
+      - "angelic:5"
+      - "hardened:3"
+  chestplate:
+    name: '&5&lChestplate of Ad Infinitum'
+    customModelData: 0
+    itemFlags: []
+    lore:
+      - '&7A cross-dimensional chestplate'
+      - '&7with impossibly infinite density'
+      - '&7and defensive properties.'
+      - ''
+      - '&5&lTRAVELLER SET BONUS"'
+      - '&D* You deal 30% more damage.'
+      - '&D* Dimensional Shift Passive Ability'
+      - '&7&o(Requires all four traveller items)'
+    enchants:
+      - "protection:40"
+      - "unbreaking:40"
+      - "armored:4"
+      - "arrowdeflect:4"
+      - "dodge:5"
+      - "divert:4"
+      - "guardians:10"
+      - "spirits:8"
+      - "heavy:4"
+      - "immortal:3"
+      - "reflect:4"
+      - "tank:4"
+      - "trickster:6"
+      - "ward:4"
+      - "wither:4"
+      # ALL_CHESTPLATE
+      - "angelic:5"
+      - "chunky:5"
+      - "fumble:3"
+      - "phoenix:3"
+      - "shockwave:4"
+  leggings:
+    name: '&5&lTimeless Robes'
+    customModelData: 0
+    itemFlags: []
+    lore:
+      - '&7Robes that evade the 4th dimension'
+      - '&7are in a state of constant existence'
+      - '&7cross all planets of reality.'
+      - ''
+      - '&5&lTRAVELLER SET BONUS"'
+      - '&D* You deal 30% more damage.'
+      - '&D* Dimensional Shift Passive Ability'
+      - '&7&o(Requires all four traveller items)'
+    enchants:
+      - "protection:40"
+      - "unbreaking:40"
+      - "armored:4"
+      - "dodge:5"
+      - "divert:4"
+      - "guardians:10"
+      - "spirits:8"
+      - "heavy:4"
+      - "immortal:3"
+      - "reflect:4"
+      - "tank:4"
+      - "trickster:6"
+      - "ward:4"
+      - "wither:4"
+      # ALL_LEGGINGS
+      - "explosivedemise:6"
+      - "extinguish:3"
+      # Extra
+      - "angelic:5"
+      - "obsidianshield:1"
+  boots:
+    name: '&5&lWarp Speed Sandals'
+    customModelData: 0
+    itemFlags: []
+    lore:
+      - '&7Sandals capable of breaking through'
+      - '&7dimensional barriers to allow the barer'
+      - '&7to preform impossible feats.'
+      - ''
+      - '&5&lTRAVELLER SET BONUS"'
+      - '&D* You deal 30% more damage.'
+      - '&D* Dimensional Shift Passive Ability'
+      - '&7&o(Requires all four traveller items)'
+    enchants:
+      - "protection:40"
+      - "unbreaking:40"
+      - "armored:4"
+      - "dodge:5"
+      - "divert:4"
+      - "guardians:10"
+      - "spirits:8"
+      - "heavy:4"
+      - "immortal:3"
+      - "reflect:4"
+      - "tank:4"
+      - "trickster:6"
+      - "ward:4"
+      - "wither:4"
+      # ALL_BOOTS
+      - "aegis:3"
+      - "convulse:5"
+      - "gears:3"
+      - "jellylegs:3"
+      - "plummet:3"
+      - "rocketescape:3"
+      - "springs:3"
+      - "undeadruse:8"
+      - "waterwalker:1"
+      - "wings:1"
+      # Extra
+      - "angelic:5"
+      - "hardened:3"
+events:
+  FALL_DAMAGE:
+    chance: 100
+    effects:
+      - 'CANCEL_EVENT'

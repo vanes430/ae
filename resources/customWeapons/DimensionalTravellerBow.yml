@@ -1,0 +1,39 @@
+requireSet: 'DimensionalTraveller'
+material: BOW
+customModelData: 0
+itemFlags: []
+name: '&5&lDimensional Bow'
+lore:
+  - '&7A bow that shoots arrows'
+  - '&7across dimensional rifts.'
+  - ''
+  - '&5&lTRAVELLER WEAPON BONUS'
+  - '&5Deal +30% damage.'
+  - '&7(Requires all 4 traveller items.)'
+enchants:
+  - 'power:40'
+  - 'unbreaking:40'
+      # Vanilla enchants (max level, all tiers same)
+      - 'flame:1'
+      - 'infinity:1'
+      - 'mending:1'
+  - 'infinity:1'
+  # BOW (12 CEs)
+  - 'arrowretrieval:1'
+  - 'bowmaster:3'
+  - 'deadshot:5'
+  - 'distance:4'
+  - 'homing:5'
+  - 'implosion:5'
+  - 'longbow:5'
+  - 'missile:3'
+  - 'sniper:3'
+  - 'strike:3'
+  - 'trickshot:3'
+  # Weapons
+  - 'famine:4'
+events:
+  SHOOT:
+    chance: 100
+    effects:
+      - 'INCREASE_DAMAGE:30'
