@@ -1,0 +1,46 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0001] Infrastructure: Migrate to GlobalRegionScheduler and AsyncScheduler
+
+AE PATCH REASON: Bukkit scheduler incompatible with Folia plugin lifecycle
+AE PATCH FIX: Migrate to GlobalRegionScheduler and AsyncScheduler
+AE PATCH RISK: LOW
+AE PATCH EXCLUDES: net/advancedplugins/ae/Core.class, net/advancedplugins/ae/Core$*.class, net/advancedplugins/ae/globallisteners/listeners/ReloadEvent.class, net/advancedplugins/ae/impl/utils/plugin/UpdateChecker.class
+
+---
+diff --git a/net/advancedplugins/ae/Core.java b/net/advancedplugins/ae/Core.java
+index 4c293a5..c4045b3 100644
+--- a/net/advancedplugins/ae/Core.java
++++ b/net/advancedplugins/ae/Core.java
+@@ -165,7 +165,7 @@ public class Core extends JavaPlugin {
+             populationHandler = new PopulationHandler(getInstance());
+          }
+ 
+-         Bukkit.getScheduler().runTaskLater(getInstance(), this::onPostLoad, 2L);
++         Bukkit.getGlobalRegionScheduler().runDelayed(getInstance(), (task) -> this.onPostLoad(), 2L);
+          paymentHandler = new PaymentHandler();
+          List<String> configItems = YamlFile.CONFIG
+             .getStringList(
+@@ -180,7 +180,7 @@ public class Core extends JavaPlugin {
+          new EmeraldsPayment(this);
+          new GoldIngotsPayment(this);
+          new ConfigUpdater().resetTinkerer();
+-         Bukkit.getScheduler().runTaskLater(instance, () -> {
++         Bukkit.getGlobalRegionScheduler().runDelayed(instance, (task) -> {
+             TinkererInventory.init();
+             new AlchemistInventory();
+          }, 15L);
+
+diff --git a/net/advancedplugins/ae/globallisteners/listeners/ReloadEvent.java b/net/advancedplugins/ae/globallisteners/listeners/ReloadEvent.java
+index fc8c535..a2d69d7 100644
+--- a/net/advancedplugins/ae/globallisteners/listeners/ReloadEvent.java
++++ b/net/advancedplugins/ae/globallisteners/listeners/ReloadEvent.java
+@@ -11,7 +11,7 @@ public class ReloadEvent implements Listener {
+    @EventHandler
+    public void reloadEvent(ServerLoadEvent e) {
+       if (e.getType() == LoadType.RELOAD) {
+-         Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> Bukkit.getOnlinePlayers().forEach(p -> {}), 2L);
++         Bukkit.getGlobalRegionScheduler().runDelayed(Core.getInstance(), (task) -> Bukkit.getOnlinePlayers().forEach(p -> {}), 2L);
+       }
+    }
+ }
+

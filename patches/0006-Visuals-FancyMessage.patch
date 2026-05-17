@@ -1,0 +1,37 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0006] Visuals-FancyMessage: Replace dispatchCommand logic with ComponentSerializer.parse()
+
+AE PATCH REASON: FancyMessage uses legacy JSON conversion incompatible with modern Adventure API
+AE PATCH FIX: Replace dispatchCommand logic with ComponentSerializer.parse()
+AE PATCH RISK: LOW
+AE PATCH EXCLUDES: net/advancedplugins/ae/impl/utils/fanciful/FancyMessage.class, net/advancedplugins/ae/utils/fanciful/FancyMessage.class
+
+---
+diff --git a/net/advancedplugins/ae/impl/utils/fanciful/FancyMessage.java b/net/advancedplugins/ae/impl/utils/fanciful/FancyMessage.java
+index 63a0fa9..39f23eb 100644
+--- a/net/advancedplugins/ae/impl/utils/fanciful/FancyMessage.java
++++ b/net/advancedplugins/ae/impl/utils/fanciful/FancyMessage.java
+@@ -358,7 +358,7 @@ public class FancyMessage implements JsonRepresentedObject, Cloneable, Iterable<
+       if (!(sender instanceof Player player)) {
+          sender.sendMessage(this.toOldMessageFormat());
+       } else {
+-         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "tellraw " + player.getName() + " " + jsonString);
++         player.sendMessage(net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson().deserialize(jsonString));
+       }
+    }
+ 
+
+diff --git a/net/advancedplugins/ae/utils/fanciful/FancyMessage.java b/net/advancedplugins/ae/utils/fanciful/FancyMessage.java
+index 5e4fc3b..a852a14 100644
+--- a/net/advancedplugins/ae/utils/fanciful/FancyMessage.java
++++ b/net/advancedplugins/ae/utils/fanciful/FancyMessage.java
+@@ -364,7 +364,7 @@ public class FancyMessage implements JsonRepresentedObject, Cloneable, Iterable<
+       if (!(sender instanceof Player player)) {
+          sender.sendMessage(this.toOldMessageFormat());
+       } else {
+-         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "tellraw " + player.getName() + " " + jsonString);
++         player.sendMessage(net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson().deserialize(jsonString));
+       }
+    }
+ 
+

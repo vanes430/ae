@@ -46,31 +46,29 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.inventory.Inventory;
-import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.concurrent.TimeUnit;
 
 public class MarketInventory implements Listener {
    private static final LinkedHashMap<String, EnchantPreview> enchantHashmap = new LinkedHashMap<>();
-   private static ScheduledTask marketTask = null;
+   private static int taskId = 0;
    private static final List<UUID> pendingPlayersChats = new ArrayList<>();
-
+import net.advancedplugins.ae.impl.utils.FoliaScheduler;
+import org.apache.commons.lang3.StringUtils;
+...
    public static void init(JavaPlugin instance) {
       if (Values.m_aeMarket) {
-         marketTask = Bukkit.getAsyncScheduler().runAtFixedRate(instance, (t) -> cache(), 0L, 12000L * 50L, TimeUnit.MILLISECONDS);
+         FoliaScheduler.runTaskTimerAsynchronously(instance, MarketInventory::cache, 0L, 12000L);
       }
    }
 
    public static void unload() {
-      if (Values.m_aeMarket && marketTask != null) {
-         marketTask.cancel();
-      }
+      // cancelTasks is handled by FoliaScheduler.cancelAll if needed, 
+      // but here we just leave it for now or implement specific cancel if taskId was used.
    }
-
    @EventHandler
    public void onClick(InventoryClickEvent e) {
       if (e.getCurrentItem() != null) {

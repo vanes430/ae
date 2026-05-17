@@ -1,0 +1,71 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0004] Internal-Effects: Migrate potion, boost, extinguish, guard, and teleport effects to SchedulerUtils/FoliaScheduler
+
+AE PATCH REASON: Standard enchantment effects use legacy scheduler
+AE PATCH FIX: Migrate potion, boost, extinguish, guard, and teleport effects to SchedulerUtils/FoliaScheduler
+AE PATCH RISK: MEDIUM
+AE PATCH EXCLUDES: net/advancedplugins/ae/impl/effects/effects/effects/internal/ApplyPotionEffect.class, net/advancedplugins/ae/impl/effects/effects/effects/internal/BoostEffect.class, net/advancedplugins/ae/impl/effects/effects/effects/internal/ExtinguishEffect.class, net/advancedplugins/ae/impl/effects/effects/effects/internal/GuardEffect.class, net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportBehindEffect.class
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/BoostEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/BoostEffect.java
+index 4a4a83b..0cbdbac 100644
+--- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/BoostEffect.java
++++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/BoostEffect.java
+@@ -28,10 +28,7 @@ public class BoostEffect extends AdvancedEffect {
+ 
+    @Override
+    public boolean executeEffect(ExecutionTask task, LivingEntity target, String[] args) {
+-      Bukkit.getScheduler()
+-         .runTaskLater(
+-            EffectsHandler.getInstance(),
+-            () -> {
++      SchedulerUtils.runTaskLater(() -> {
+                try {
+                   String dir = "UP";
+                   double amount = 1.0;
+@@ -96,9 +93,7 @@ public class BoostEffect extends AdvancedEffect {
+                } catch (Exception var23) {
+                   var23.printStackTrace();
+                }
+-            },
+-            1L
+-         );
++            }, 1L);
+       return true;
+    }
+ 
+
+diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/GuardEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/GuardEffect.java
+index 735f1f1..384512b 100644
+--- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/GuardEffect.java
++++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/GuardEffect.java
+@@ -137,12 +137,12 @@ public class GuardEffect extends AdvancedEffect {
+          ((Ageable)entity).setBaby();
+       }
+ 
+-      Bukkit.getScheduler().runTaskLater(EffectsHandler.getInstance(), () -> {
++      SchedulerUtils.runTaskLater(() -> {
+          entity.remove();
+          if (!entity.isDead() && entity instanceof LivingEntity) {
+             ((LivingEntity)entity).damage(2.147483647E9);
+          }
+-      }, liveTicks);
++      }, (long)liveTicks);
+    }
+ 
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+
+diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportBehindEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportBehindEffect.java
+index 6516850..d06cd30 100644
+--- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportBehindEffect.java
++++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportBehindEffect.java
+@@ -28,7 +28,7 @@ public class TeleportBehindEffect extends AdvancedEffect {
+       if (!ASManager.isAir(to.getBlock())) {
+          return true;
+       } else {
+-         target.teleport(to, TeleportCause.UNKNOWN);
++         SchedulerUtils.runTask(() -> target.teleport(to, TeleportCause.UNKNOWN));
+          return true;
+       }
+    }
+

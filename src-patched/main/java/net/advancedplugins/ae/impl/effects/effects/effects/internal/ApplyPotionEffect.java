@@ -34,11 +34,6 @@ public class ApplyPotionEffect extends AdvancedEffect {
 
    @Override
    public boolean executeEffect(ExecutionTask task, LivingEntity target, String[] args) {
-      target.getScheduler().execute(ASManager.getInstance(), () -> executeEffectInternal(task, target, args), null, 1L);
-      return true;
-   }
-
-   private boolean executeEffectInternal(ExecutionTask task, LivingEntity target, String[] args) {
       PotionEffectType potionEffectType = PotionEffectMatcher.matchPotion(args[0]);
       int level = ASManager.parseInt(args[1]);
       if (target == null) {

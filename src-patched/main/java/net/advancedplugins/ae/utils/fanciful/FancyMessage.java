@@ -23,9 +23,6 @@ import net.advancedplugins.ae.impl.utils.fanciful.JsonRepresentedObject;
 import net.advancedplugins.ae.impl.utils.fanciful.JsonString;
 import net.advancedplugins.ae.impl.utils.fanciful.MessagePart;
 import net.advancedplugins.ae.impl.utils.fanciful.TextualComponent;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -301,7 +298,7 @@ public class FancyMessage implements JsonRepresentedObject, Cloneable, Iterable<
    }
 
    public FancyMessage then(String text) {
-      return this.then(TextualComponent.rawText(text));
+      return this.then(TextualComponent.rawText(ColorUtils.format(text)));
    }
 
    private FancyMessage then(TextualComponent text) {
@@ -367,13 +364,7 @@ public class FancyMessage implements JsonRepresentedObject, Cloneable, Iterable<
       if (!(sender instanceof Player player)) {
          sender.sendMessage(this.toOldMessageFormat());
       } else {
-         try {
-            BaseComponent[] components = ComponentSerializer.parse(jsonString);
-            player.spigot().sendMessage(ChatMessageType.CHAT, components);
-         } catch (Exception e) {
-            Bukkit.getLogger().log(Level.WARNING, "Failed to send FancyMessage to " + player.getName(), e);
-            player.sendMessage(this.toOldMessageFormat());
-         }
+         player.sendMessage(net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson().deserialize(jsonString));
       }
    }
 

@@ -1,0 +1,78 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0003] Effect-Engine: Migrate ExecutionTask to SchedulerUtils and update AdvancedWeapon attributes
+
+AE PATCH REASON: Core effect engine uses synchronous waits and incompatible attributes
+AE PATCH FIX: Migrate ExecutionTask to SchedulerUtils and update AdvancedWeapon attributes
+AE PATCH RISK: HIGH
+AE PATCH EXCLUDES: net/advancedplugins/ae/impl/effects/effects/actions/execution/ExecutionTask.class, net/advancedplugins/ae/impl/effects/effects/actions/execution/ExecutionTask$*.class, net/advancedplugins/ae/features/weapons/AdvancedWeapon.class, net/advancedplugins/ae/features/weapons/AdvancedWeapon$*.class
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/effects/actions/execution/ExecutionTask.java b/net/advancedplugins/ae/impl/effects/effects/actions/execution/ExecutionTask.java
+index d83497d..64b6b39 100644
+--- a/net/advancedplugins/ae/impl/effects/effects/actions/execution/ExecutionTask.java
++++ b/net/advancedplugins/ae/impl/effects/effects/actions/execution/ExecutionTask.java
+@@ -96,20 +96,18 @@ public class ExecutionTask {
+                }
+             } else {
+                final String finalEffect = effect;
+-               (new BukkitRunnable() {
+-                  public void run() {
+-                     ExecutionTask.this.builder.setDamageEventNotGoingToRun(true);
+-                     if (!targetLocations.isEmpty()) {
+-                        for (Location loc : targetLocations) {
+-                           ExecutionTask.this.activate(finalEffect, ExecutionTask.this.builder.getMain(), loc);
+-                        }
+-                     } else {
+-                        for (LivingEntity target : targetEntities) {
+-                           ExecutionTask.this.activate(finalEffect, target, null);
+-                        }
++               SchedulerUtils.runTaskLater(() -> {
++                  ExecutionTask.this.builder.setDamageEventNotGoingToRun(true);
++                  if (!targetLocations.isEmpty()) {
++                     for (Location loc : targetLocations) {
++                        ExecutionTask.this.activate(finalEffect, ExecutionTask.this.builder.getMain(), loc);
++                     }
++                  } else {
++                     for (LivingEntity target : targetEntities) {
++                        ExecutionTask.this.activate(finalEffect, target, null);
+                      }
+                   }
+-               }).runTaskLater(EffectsHandler.getInstance(), this.currentWait);
++               }, (long)this.currentWait);
+             }
+          }
+       }
+
+diff --git a/net/advancedplugins/ae/features/weapons/AdvancedWeapon.java b/net/advancedplugins/ae/features/weapons/AdvancedWeapon.java
+index b00b2c1..9603d0e 100644
+--- a/net/advancedplugins/ae/features/weapons/AdvancedWeapon.java
++++ b/net/advancedplugins/ae/features/weapons/AdvancedWeapon.java
+@@ -15,6 +15,8 @@ import net.advancedplugins.ae.impl.utils.nbt.utils.MinecraftVersion;
+ import net.advancedplugins.ae.utils.AManager;
+ import net.advancedplugins.ae.utils.YamlFile;
+ import net.advancedplugins.ae.utils.nbt.NBTapi;
++import org.bukkit.attribute.Attribute;
++import org.bukkit.attribute.AttributeModifier;
+ import org.bukkit.enchantments.Enchantment;
+ import org.bukkit.inventory.ItemFlag;
+ import org.bukkit.inventory.ItemStack;
+@@ -93,6 +95,18 @@ public class AdvancedWeapon {
+             this.itemFlags.forEach(s -> im.addItemFlags(new ItemFlag[]{ItemFlag.valueOf(s)}));
+          }
+ 
++         if (this.config.isConfigSection("attributes")) {
++            for (String key : this.config.getConfigurationSection("attributes").getKeys(false)) {
++               try {
++                  Attribute attribute = Attribute.valueOf(key.toUpperCase(Locale.ROOT));
++                  double value = this.config.getDouble("attributes." + key);
++                  im.addAttributeModifier(attribute, new AttributeModifier(UUID.randomUUID(), "ae_attribute", value, AttributeModifier.Operation.ADD_NUMBER));
++               } catch (Exception var15) {
++                  Core.getInstance().getLogger().warning("Invalid attribute: " + key);
++               }
++            }
++         }
++
+          item.setItemMeta(im);
+          if (this.enchants != null) {
+             for (String enchant : this.enchants) {
+

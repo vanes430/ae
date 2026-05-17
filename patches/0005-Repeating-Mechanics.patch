@@ -1,0 +1,97 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0005] Repeating-Mechanics: Migrate RepeatingTrigger and UserRepeaters to FoliaScheduler.Task
+
+AE PATCH REASON: Repeating enchantment triggers use incompatible BukkitTask management
+AE PATCH FIX: Migrate RepeatingTrigger and UserRepeaters to FoliaScheduler.Task
+AE PATCH RISK: HIGH
+AE PATCH EXCLUDES: net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.class, net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger$*.class, net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/UserRepeaters.class
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.java b/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.java
+index de0e8d0..45e3947 100644
+--- a/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.java
++++ b/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.java
+@@ -16,6 +16,7 @@ import net.advancedplugins.ae.impl.effects.effects.actions.ActionExecution;
+ import net.advancedplugins.ae.impl.effects.effects.actions.AdvancedTrigger;
+ import net.advancedplugins.ae.impl.effects.effects.actions.utils.RollItemType;
+ import net.advancedplugins.ae.impl.utils.ASManager;
++import net.advancedplugins.ae.impl.utils.FoliaScheduler;
+ import org.bukkit.Bukkit;
+ import org.bukkit.entity.Entity;
+ import org.bukkit.entity.LivingEntity;
+@@ -74,7 +75,7 @@ public class RepeatingTrigger extends AdvancedTrigger {
+    public void stopAll(LivingEntity ent) {
+       UserRepeaters r = getRepeaters().get(ent.getUniqueId());
+       if (r != null) {
+-         r.itemRunnables.values().stream().flatMap(Collection::stream).forEach(BukkitTask::cancel);
++         r.itemRunnables.values().stream().flatMap(Collection::stream).forEach(FoliaScheduler.Task::cancel);
+          r.itemRunnables.clear();
+       }
+    }
+@@ -82,9 +83,9 @@ public class RepeatingTrigger extends AdvancedTrigger {
+    public void stop(LivingEntity ent, RollItemType type, Event e) {
+       UserRepeaters r = getRepeaters().get(ent.getUniqueId());
+       if (r != null) {
+-         List<BukkitTask> tasks = r.itemRunnables.get(type.getSlot());
++         List<FoliaScheduler.Task> tasks = r.itemRunnables.get(type.getSlot());
+          if (tasks != null && !tasks.isEmpty()) {
+-            tasks.forEach(BukkitTask::cancel);
++            tasks.forEach(FoliaScheduler.Task::cancel);
+             tasks.clear();
+             r.itemRunnables.remove(type.getSlot());
+          }
+@@ -102,7 +103,7 @@ public class RepeatingTrigger extends AdvancedTrigger {
+          if (entity instanceof LivingEntity finalEntity) {
+             if (finalEntity.getEquipment() != null) {
+                Map<String, Long> cooldowns = (Map<String, Long>)COOLDOWN_QUEUE.getIfPresent(user);
+-               List<BukkitTask> runnables = new ArrayList<>();
++               List<FoliaScheduler.Task> runnables = new ArrayList<>();
+ 
+                for (final AdvancedAbility ability : effects) {
+                   Long remainingCooldown = null;
+@@ -120,10 +121,12 @@ public class RepeatingTrigger extends AdvancedTrigger {
+                   }
+ 
+                   long delay = remainingCooldown != null ? remainingCooldown : (ability.isRepeatingInstantApply() ? 0L : ability.getRepeatingDelay() * 20L);
+-                  BukkitTask runnable = (new BukkitRunnable() {
+-                        public void run() {
++                  FoliaScheduler.Task runnable = FoliaScheduler.runTaskTimer(EffectsHandler.getInstance(), () -> {
+                            if (!ASManager.itemStackEquals(item, finalEntity.getEquipment().getItem(type.getSlot()), false)) {
+-                              this.cancel();
++                              UserRepeaters repeaters = getRepeaters().get(user);
++                              if (repeaters != null && repeaters.itemRunnables.get(type.getSlot()) != null) {
++                                 repeaters.itemRunnables.get(type.getSlot()).forEach(FoliaScheduler.Task::cancel);
++                              }
+                            } else {
+                               RepeatingTrigger.this.executionBuilder()
+                                  .setAttacker(finalEntity)
+@@ -135,9 +138,7 @@ public class RepeatingTrigger extends AdvancedTrigger {
+                                  .only(ability)
+                                  .buildAndExecute();
+                            }
+-                        }
+-                     })
+-                     .runTaskTimer(EffectsHandler.getInstance(), delay, ability.getRepeatingDelay() * 20L);
++                        }, delay, ability.getRepeatingDelay() * 20L);
+                   runnables.add(runnable);
+                }
+ 
+
+diff --git a/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/UserRepeaters.java b/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/UserRepeaters.java
+index 82df3ed..b503f66 100644
+--- a/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/UserRepeaters.java
++++ b/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/UserRepeaters.java
+@@ -1,10 +1,8 @@
+ package net.advancedplugins.ae.impl.effects.effects.mechanics.triggers.internal;
+ 
+-import java.util.HashMap;
+-import java.util.List;
++import net.advancedplugins.ae.impl.utils.FoliaScheduler;
+ import org.bukkit.inventory.EquipmentSlot;
+-import org.bukkit.scheduler.BukkitTask;
+ 
+ class UserRepeaters {
+-   public final HashMap<EquipmentSlot, List<BukkitTask>> itemRunnables = new HashMap<>();
++   public final HashMap<EquipmentSlot, List<FoliaScheduler.Task>> itemRunnables = new HashMap<>();
+ }
+

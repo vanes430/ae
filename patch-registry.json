@@ -1,0 +1,116 @@
+{
+  "version": "9.22.7",
+  "generated": "2026-05-17",
+  "patches": [
+    {
+      "id": "0001",
+      "name": "Infrastructure",
+      "patchFile": "patches/0001-Infrastructure.patch",
+      "files": [
+        "net/advancedplugins/ae/Core.java",
+        "net/advancedplugins/ae/globallisteners/listeners/ReloadEvent.java",
+        "net/advancedplugins/ae/impl/utils/plugin/UpdateChecker.java"
+      ],
+      "issue": "Bukkit scheduler incompatible with Folia plugin lifecycle",
+      "fix": "Migrate to GlobalRegionScheduler and AsyncScheduler",
+      "risk": "LOW",
+      "excludes": [
+        "net/advancedplugins/ae/Core.class",
+        "net/advancedplugins/ae/Core$*.class",
+        "net/advancedplugins/ae/globallisteners/listeners/ReloadEvent.class",
+        "net/advancedplugins/ae/impl/utils/plugin/UpdateChecker.class"
+      ]
+    },
+    {
+      "id": "0002",
+      "name": "Inventory-Systems",
+      "patchFile": "patches/0002-Inventory-Systems.patch",
+      "files": [
+        "net/advancedplugins/ae/handlers/netsharing/MarketInventory.java",
+        "net/advancedplugins/ae/features/tinkerer/TinkererInventory.java"
+      ],
+      "issue": "Async inventory and market operations incompatible",
+      "fix": "Proper Folia scheduling for market cache and tinkerer trade",
+      "risk": "HIGH",
+      "excludes": [
+        "net/advancedplugins/ae/handlers/netsharing/MarketInventory.class",
+        "net/advancedplugins/ae/handlers/netsharing/MarketInventory$*.class",
+        "net/advancedplugins/ae/features/tinkerer/TinkererInventory.class",
+        "net/advancedplugins/ae/features/tinkerer/TinkererInventory$*.class"
+      ]
+    },
+    {
+      "id": "0003",
+      "name": "Effect-Engine",
+      "patchFile": "patches/0003-Effect-Engine.patch",
+      "files": [
+        "net/advancedplugins/ae/impl/effects/effects/actions/execution/ExecutionTask.java",
+        "net/advancedplugins/ae/features/weapons/AdvancedWeapon.java"
+      ],
+      "issue": "Core effect engine uses synchronous waits and incompatible attributes",
+      "fix": "Migrate ExecutionTask to SchedulerUtils and update AdvancedWeapon attributes",
+      "risk": "HIGH",
+      "excludes": [
+        "net/advancedplugins/ae/impl/effects/effects/actions/execution/ExecutionTask.class",
+        "net/advancedplugins/ae/impl/effects/effects/actions/execution/ExecutionTask$*.class",
+        "net/advancedplugins/ae/features/weapons/AdvancedWeapon.class",
+        "net/advancedplugins/ae/features/weapons/AdvancedWeapon$*.class"
+      ]
+    },
+    {
+      "id": "0004",
+      "name": "Internal-Effects",
+      "patchFile": "patches/0004-Internal-Effects.patch",
+      "files": [
+        "net/advancedplugins/ae/impl/effects/effects/effects/internal/ApplyPotionEffect.java",
+        "net/advancedplugins/ae/impl/effects/effects/effects/internal/BoostEffect.java",
+        "net/advancedplugins/ae/impl/effects/effects/effects/internal/ExtinguishEffect.java",
+        "net/advancedplugins/ae/impl/effects/effects/effects/internal/GuardEffect.java",
+        "net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportBehindEffect.java"
+      ],
+      "issue": "Standard enchantment effects use legacy scheduler",
+      "fix": "Migrate potion, boost, extinguish, guard, and teleport effects to SchedulerUtils/FoliaScheduler",
+      "risk": "MEDIUM",
+      "excludes": [
+        "net/advancedplugins/ae/impl/effects/effects/effects/internal/ApplyPotionEffect.class",
+        "net/advancedplugins/ae/impl/effects/effects/effects/internal/BoostEffect.class",
+        "net/advancedplugins/ae/impl/effects/effects/effects/internal/ExtinguishEffect.class",
+        "net/advancedplugins/ae/impl/effects/effects/effects/internal/GuardEffect.class",
+        "net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportBehindEffect.class"
+      ]
+    },
+    {
+      "id": "0005",
+      "name": "Repeating-Mechanics",
+      "patchFile": "patches/0005-Repeating-Mechanics.patch",
+      "files": [
+        "net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.java",
+        "net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/UserRepeaters.java"
+      ],
+      "issue": "Repeating enchantment triggers use incompatible BukkitTask management",
+      "fix": "Migrate RepeatingTrigger and UserRepeaters to FoliaScheduler.Task",
+      "risk": "HIGH",
+      "excludes": [
+        "net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.class",
+        "net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger$*.class",
+        "net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/UserRepeaters.class"
+      ]
+    },
+    {
+      "id": "0006",
+      "name": "Visuals-FancyMessage",
+      "patchFile": "patches/0006-Visuals-FancyMessage.patch",
+      "files": [
+        "net/advancedplugins/ae/impl/utils/fanciful/FancyMessage.java",
+        "net/advancedplugins/ae/utils/fanciful/FancyMessage.java"
+      ],
+      "issue": "FancyMessage uses legacy JSON conversion incompatible with modern Adventure API",
+      "fix": "Replace dispatchCommand logic with ComponentSerializer.parse()",
+      "risk": "LOW",
+      "excludes": [
+        "net/advancedplugins/ae/impl/utils/fanciful/FancyMessage.class",
+        "net/advancedplugins/ae/utils/fanciful/FancyMessage.class"
+      ]
+    }
+  ]
+}

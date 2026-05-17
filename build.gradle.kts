@@ -9,10 +9,10 @@ val originalJar = file("libs/AdvancedEnchantments-9.22.7.jar")
 val extractDir = layout.buildDirectory.dir("extracted")
 val patchedClassesDir = layout.buildDirectory.dir("classes/java/main")
 
-// ─── Dependencies (all from local libs) ───
+// ─── Dependencies ───
 repositories {
-    flatDir { dirs("libs") }
     mavenCentral()
+    flatDir { dirs("libs") }
 }
 
 dependencies {
@@ -20,13 +20,17 @@ dependencies {
     compileOnly(files("libs/canvas-api.jar"))
     compileOnly(files("libs/canvas-server.jar"))
     compileOnly(files("libs/bungeecord-chat.jar"))
-    compileOnly(files("libs/adventure-api.jar"))
-    compileOnly(files("libs/adventure-key.jar"))
-    compileOnly(files("libs/adventure-text-minimessage.jar"))
-    compileOnly(files("libs/adventure-text-serializer-gson.jar"))
-    compileOnly(files("libs/adventure-text-serializer-plain.jar"))
-    compileOnly(files("libs/examination-api.jar"))
-    compileOnly(files("libs/jetbrains-annotations.jar"))
+    
+    // Adventure API (Maven)
+    val adventureVersion = "4.17.0"
+    compileOnly("net.kyori:adventure-api:$adventureVersion")
+    compileOnly("net.kyori:adventure-text-minimessage:$adventureVersion")
+    compileOnly("net.kyori:adventure-text-serializer-gson:$adventureVersion")
+    compileOnly("net.kyori:adventure-text-serializer-plain:$adventureVersion")
+    compileOnly("net.kyori:adventure-key:$adventureVersion")
+    compileOnly("net.kyori:examination-api:1.3.0")
+    
+    compileOnly("org.jetbrains:annotations:24.1.0")
 
     // Plugin hooks
     compileOnly(files("libs/Vault.jar"))
@@ -41,7 +45,7 @@ dependencies {
 }
 
 java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+    toolchain.languageVersion.set(JavaLanguageVersion.of(25))
     sourceSets.main {
         java {
             srcDir("src-patched")
@@ -54,26 +58,9 @@ java {
     }
 }
 
-// ─── Compile stubs first ───
-val stubsClassesDir = layout.buildDirectory.dir("classes/stubs")
-
-val compileStubs by tasks.registering(JavaCompile::class) {
-    onlyIf { file("stubs-patched").exists() }
-    source = fileTree("stubs-patched").matching { include("**/*.java") }
-    destinationDirectory.set(stubsClassesDir)
-    options.encoding = "UTF-8"
-    classpath = files(originalJar) + fileTree("libs")
-}
-
+// ─── Compile Java ───
 tasks.named<JavaCompile>("compileJava") {
-    dependsOn(compileStubs)
     options.encoding = "UTF-8"
-    doFirst {
-        val stubsOut = stubsClassesDir.get().asFile
-        if (stubsOut.exists()) {
-            classpath = classpath + files(stubsOut)
-        }
-    }
 }
 
 // ─── Extract original JAR ───
@@ -98,57 +85,49 @@ val copyCustomResources = tasks.register<Copy>("copyCustomResources") {
     }
 
     // Our edited enchantments.yml override
-    val editedEnchantments = file("resources/enchantments.yml")
+    val editedEnchantments = file("resources/overrides/enchantments.yml")
     if (editedEnchantments.exists()) {
         from(editedEnchantments)
         into(extractDir)
     }
 
     // ArmorSets override (overwrite original armorSets in JAR)
-    val armorSetsDir = file("resources/armorSets")
+    val armorSetsDir = file("resources/overrides/armorSets")
     if (armorSetsDir.exists()) {
         from(armorSetsDir)
         into(file("${extractDir.get()}/armorSets"))
     }
 
     // Custom Weapons override (overwrite original customWeapons in JAR)
-    val customWeaponsDir = file("resources/customWeapons")
+    val customWeaponsDir = file("resources/overrides/customWeapons")
     if (customWeaponsDir.exists()) {
         from(customWeaponsDir)
         into(file("${extractDir.get()}/customWeapons"))
     }
 }
 
-// ─── Build patched JAR ───
-val buildPatchedJar = tasks.register<Jar>("buildPatchedJar") {
-    dependsOn(extractOriginalJar, copyCustomResources, tasks.compileJava)
+// ─── Standard Jar Task (Patched) ───
+tasks.named<Jar>("jar") {
+    dependsOn(extractOriginalJar, copyCustomResources)
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     archiveFileName.set("AdvancedEnchantments-9.22.7-folia-patched.jar")
-    destinationDirectory.set(layout.buildDirectory.dir("libs"))
 
     // Layer 1: Original extracted JAR (exclude classes + resources we're overriding)
     from(extractDir) {
-        exclude("net/advancedplugins/ae/Core.class")
-        exclude("net/advancedplugins/ae/Core\$*.class")
-        exclude("net/advancedplugins/ae/handlers/netsharing/MarketInventory.class")
-        exclude("net/advancedplugins/ae/handlers/netsharing/MarketInventory\$*.class")
-        exclude("net/advancedplugins/ae/globallisteners/listeners/ReloadEvent.class")
-        exclude("net/advancedplugins/ae/impl/utils/plugin/UpdateChecker.class")
-        exclude("net/advancedplugins/ae/impl/effects/effects/effects/internal/ApplyPotionEffect.class")
-        exclude("net/advancedplugins/ae/impl/effects/effects/effects/internal/GuardEffect.class")
-        exclude("net/advancedplugins/ae/impl/utils/fanciful/FancyMessage.class")
-        exclude("net/advancedplugins/ae/utils/fanciful/FancyMessage.class")
-        exclude("net/advancedplugins/ae/impl/effects/effects/actions/execution/ExecutionTask.class")
-        exclude("net/advancedplugins/ae/impl/effects/effects/actions/execution/ExecutionTask\$*.class")
-        exclude("net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportBehindEffect.class")
-        exclude("net/advancedplugins/ae/impl/effects/effects/effects/internal/BoostEffect.class")
-        exclude("net/advancedplugins/ae/impl/effects/effects/effects/internal/ExtinguishEffect.class")
-        exclude("net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.class")
-        exclude("net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger\$*.class")
-        exclude("net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/UserRepeaters.class")
-        exclude("net/advancedplugins/ae/features/tinkerer/TinkererInventory.class")
-        exclude("net/advancedplugins/ae/features/tinkerer/TinkererInventory\$*.class")
+        val registryFile = file("patch-registry.json")
+        if (registryFile.exists()) {
+            @Suppress("UNCHECKED_CAST")
+            val registry = groovy.json.JsonSlurper().parse(registryFile) as Map<String, Any>
+            @Suppress("UNCHECKED_CAST")
+            val patches = registry["patches"] as List<Map<String, Any>>
+            val allExcludes = patches.flatMap { 
+                @Suppress("UNCHECKED_CAST")
+                it["excludes"] as List<String> 
+            }
+            allExcludes.forEach { exclude(it) }
+        }
+
         exclude("net/advancedplugins/ae/features/weapons/AdvancedWeapon.class")
         // Exclude original armorSets and customWeapons (we override entirely)
         exclude("armorSets/**")
@@ -156,42 +135,23 @@ val buildPatchedJar = tasks.register<Jar>("buildPatchedJar") {
         exclude("enchantments.yml")
     }
 
-    // Layer 2: Patched classes
+    // Layer 2: Patched classes (from main sourceSet)
     from(patchedClassesDir)
 
-    // Layer 3: Our armorSets (only our 10 files)
-    from("resources/armorSets") {
-        into("armorSets")
-    }
-
-    // Layer 4: Our customWeapons (only our 20 files)
-    from("resources/customWeapons") {
-        into("customWeapons")
-    }
-
-    // Layer 5: Our edited enchantments.yml
-    from("resources/enchantments.yml") {
-        into("")
-    }
-
-    // Layer 6: Our custom tools
-    from("resources/tools") {
-        into("tools")
-    }
+    // Layer 3: Our overrides
+    from("resources/overrides/armorSets") { into("armorSets") }
+    from("resources/overrides/customWeapons") { into("customWeapons") }
+    from("resources/overrides/enchantments.yml") { into("") }
+    from("resources/overrides/tools") { into("tools") }
 
     // Exclude original META-INF
     exclude("META-INF/**")
 }
 
-// ─── Default build ───
-tasks.assemble {
-    dependsOn(buildPatchedJar)
-}
-
 // ─── Deploy ───
 val pluginsDir = "/var/lib/pterodactyl/volumes/876535db-74d8-415c-bc52-21157613398a/plugins"
 tasks.register<Copy>("deploy") {
-    dependsOn(buildPatchedJar)
+    dependsOn(tasks.jar)
 
     from(layout.buildDirectory.file("libs/AdvancedEnchantments-9.22.7-folia-patched.jar"))
     into(pluginsDir)

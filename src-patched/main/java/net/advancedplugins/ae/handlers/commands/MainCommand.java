@@ -160,8 +160,8 @@ public class MainCommand implements TabExecutor {
                      return true;
                   }
 
-                  Player p2 = (Player)sender;
-                  ItemStack app = new ItemInHand(p2).get();
+                  Player p = (Player)sender;
+                  ItemStack app = new ItemInHand(p).get();
                   if (app != null && !AManager.isAir(app)) {
                      if (!NBTapi.hasEnchantment(ae.getPath(), app)) {
                         Lang.sendMessage(sender, "commands.main.unenchant.does-not-have-enchant", "%enchant%;" + ae.getPath());
@@ -169,7 +169,7 @@ public class MainCommand implements TabExecutor {
                      }
 
                      app = NBTapi.removeEnchantment(ae.getPath(), app);
-                     p2.setItemInHand(app);
+                     p.setItemInHand(app);
                      Lang.sendMessage(sender, "commands.main.unenchant.success", "%enchant%;" + ae.getPath());
                      return true;
                   }
@@ -224,9 +224,9 @@ public class MainCommand implements TabExecutor {
                         );
                   }
 
-                  GuestPaste paste2 = new GuestPaste("Enchantments List", text.toString());
-                  paste2.paste();
-                  Lang.sendMessage(sender, "commands.main.pastetypes", "%url%;" + paste2.getPasteLink());
+                  GuestPaste paste = new GuestPaste("Enchantments List", text.toString());
+                  paste.paste();
+                  Lang.sendMessage(sender, "commands.main.pastetypes", "%url%;" + paste.getPasteLink());
                   return true;
                case "open":
                   if (!sender.hasPermission("ae.admin")) {
@@ -240,20 +240,20 @@ public class MainCommand implements TabExecutor {
                   }
 
                   String inv = args[2];
-                  Player p3 = Bukkit.getPlayer(args[1]);
-                  if (p3 != null && p3.isOnline()) {
+                  Player p = Bukkit.getPlayer(args[1]);
+                  if (p != null && p.isOnline()) {
                      switch (inv) {
                         case "enchanter":
-                           Enchanter.openForPlayer(p3);
+                           Enchanter.openForPlayer(p);
                            return true;
                         case "tinkerer":
-                           TinkererInventory.open(p3);
+                           TinkererInventory.open(p);
                            return true;
                         case "alchemist":
-                           AlchemistInventory.open(p3);
+                           AlchemistInventory.open(p);
                            return true;
                         default:
-                           Lang.sendMessage(sender, "commands.main.open", "%menu%;" + inv, "%player%;" + p3.getName());
+                           Lang.sendMessage(sender, "commands.main.open", "%menu%;" + inv, "%player%;" + p.getName());
                            return true;
                      }
                   }
@@ -267,7 +267,7 @@ public class MainCommand implements TabExecutor {
                   }
 
                   boolean includePlugins = args.length <= 1 || !args[1].equalsIgnoreCase("skipPlugins");
-                  Bukkit.getAsyncScheduler().runNow(Core.getInstance(), (t) -> {
+                  Bukkit.getScheduler().runTaskAsynchronously(Core.getInstance(), () -> {
                      sender.sendMessage(ColorUtils.format("&6Creating info link, please wait."));
                      sender.sendMessage(ColorUtils.format("&e" + PlInfo.createInfoLink(includePlugins)));
                   });
@@ -278,7 +278,7 @@ public class MainCommand implements TabExecutor {
                      return true;
                   }
 
-                  Bukkit.getAsyncScheduler().runNow(Core.getInstance(), (t) -> {
+                  Bukkit.getScheduler().runTaskAsynchronously(Core.getInstance(), () -> {
                      Date date = new Date();
                      SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy--HH-mm-ss");
                      String formattedDate = dateFormat.format(date);
@@ -856,8 +856,8 @@ public class MainCommand implements TabExecutor {
                }
          }
 
-         int argToMatch2 = args.length == 0 ? 0 : args.length - 1;
-         StringUtil.copyPartialMatches(args[argToMatch2], allArgs, argsList);
+         int argToMatch = args.length == 0 ? 0 : args.length - 1;
+         StringUtil.copyPartialMatches(args[argToMatch], allArgs, argsList);
          Collections.sort(argsList);
          return argsList;
       }

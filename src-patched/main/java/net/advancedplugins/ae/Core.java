@@ -82,6 +82,7 @@ import net.advancedplugins.ae.impl.utils.ReallyFastBlockHandler;
 import net.advancedplugins.ae.impl.utils.Registry;
 import net.advancedplugins.ae.impl.utils.RemoveDeathItems;
 import net.advancedplugins.ae.impl.utils.RunnableMetrics;
+import net.advancedplugins.ae.impl.utils.SchedulerUtils;
 import net.advancedplugins.ae.impl.utils.hooks.HookPlugin;
 import net.advancedplugins.ae.impl.utils.hooks.HooksHandler;
 import net.advancedplugins.ae.impl.utils.nbt.utils.MinecraftVersion;
@@ -107,6 +108,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.java.JavaPluginLoader;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public class Core extends JavaPlugin {
    private static Core instance;
@@ -163,7 +165,7 @@ public class Core extends JavaPlugin {
             populationHandler = new PopulationHandler(getInstance());
          }
 
-         Bukkit.getGlobalRegionScheduler().runDelayed(getInstance(), (t) -> this.onPostLoad(), 2L);
+         Bukkit.getGlobalRegionScheduler().runDelayed(getInstance(), (task) -> this.onPostLoad(), 2L);
          paymentHandler = new PaymentHandler();
          List<String> configItems = YamlFile.CONFIG
             .getStringList(
@@ -178,7 +180,7 @@ public class Core extends JavaPlugin {
          new EmeraldsPayment(this);
          new GoldIngotsPayment(this);
          new ConfigUpdater().resetTinkerer();
-         Bukkit.getGlobalRegionScheduler().runDelayed(instance, (t) -> {
+         Bukkit.getGlobalRegionScheduler().runDelayed(instance, (task) -> {
             TinkererInventory.init();
             new AlchemistInventory();
          }, 15L);
@@ -196,7 +198,7 @@ public class Core extends JavaPlugin {
          }
 
          effectsHandler = new EffectsHandler("ae", this, new ItemEnchantsReader());
-         Bukkit.getGlobalRegionScheduler().runDelayed(this, (t) -> {
+         SchedulerUtils.runTaskLater(() -> {
             AEnchantmentSorting.start();
             AEnchants.initializeEnchantsListBlacklist();
          }, 40L);
@@ -263,18 +265,25 @@ public class Core extends JavaPlugin {
             instance.getLogger().info("Successfully hooked into economy plugin (Vault)");
          }
 
-         Bukkit.getAsyncScheduler().runAtFixedRate(this, (t) -> {
-            YamlFile.PDATA.save();
-         }, 6000L * 50L, 6000L * 50L, java.util.concurrent.TimeUnit.MILLISECONDS);
+         (new BukkitRunnable() {
+            public void run() {
+               YamlFile.PDATA.save();
+            }
+         }).runTaskTimerAsynchronously(this, 6000L, 6000L);
          setWhiteScroll(YamlFile.CONFIG.getString("white-scroll.item.name", "&fWhite Scroll"));
          similarEnchantmentsHelper = new SimilarEnchantmentsHelper();
 
          try {
             this.lastId = Registry.get();
-            Bukkit.getGlobalRegionScheduler().execute(this, () -> {
+            (new BukkitRunnable() {
+               int conCount = 0;
+
+               public void run() {
                   Core.this.again = true;
                   MainCommand.name = "pluginLoaded";
-               });
+                  Bukkit.getLogger().info("[AdvancedEnchantments] Thanks for using Black-Minecraft.com");
+               }
+            }).runTask(this);
          } catch (Exception var6) {
             var6.printStackTrace();
             Bukkit.getPluginManager().disablePlugin(instance);
@@ -373,7 +382,7 @@ public class Core extends JavaPlugin {
    public void onDisable() {
       MarketInventory.unload();
       YamlFile.PDATA.save();
-      Bukkit.getGlobalRegionScheduler().cancelTasks(this);
+      Bukkit.getScheduler().cancelTasks(this);
       effectsHandler.unload();
    }
 

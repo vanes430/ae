@@ -125,7 +125,7 @@ public class GuardEffect extends AdvancedEffect {
       if (entity instanceof LivingEntity le) {
          le.setCanPickupItems(false);
          le.setRemoveWhenFarAway(true);
-         le.addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH, liveTicks, 1, false, true));
+         le.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, liveTicks, 1, false, true));
       }
 
       this.guards.put(entity.getUniqueId(), target.getUniqueId());
@@ -137,13 +137,12 @@ public class GuardEffect extends AdvancedEffect {
          ((Ageable)entity).setBaby();
       }
 
-      final Entity guardEntity = entity;
-      guardEntity.getScheduler().execute(EffectsHandler.getInstance(), () -> {
-         guardEntity.remove();
-         if (!guardEntity.isDead() && guardEntity instanceof LivingEntity) {
-            ((LivingEntity)guardEntity).damage(2.147483647E9);
+      SchedulerUtils.runTaskLater(() -> {
+         entity.remove();
+         if (!entity.isDead() && entity instanceof LivingEntity) {
+            ((LivingEntity)entity).damage(2.147483647E9);
          }
-      }, null, liveTicks);
+      }, (long)liveTicks);
    }
 
    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
