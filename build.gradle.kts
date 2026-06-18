@@ -160,7 +160,6 @@ tasks.named<Jar>("jar") {
     from("resources/armorSets") { into("armorSets") }
     from("resources/customWeapons") { into("customWeapons") }
     from("resources/enchantments.yml") { into("") }
-    from("resources/tools") { into("tools") }
 
     // Exclude original META-INF
     exclude("META-INF/**")
