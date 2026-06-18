@@ -8,17 +8,22 @@ AE PATCH EXCLUDES: net/advancedplugins/ae/handlers/netsharing/MarketInventory.cl
 
 ---
 diff --git a/net/advancedplugins/ae/handlers/netsharing/MarketInventory.java b/net/advancedplugins/ae/handlers/netsharing/MarketInventory.java
-index 1384946..7777cca 100644
+index f8d5ea7..96564f3 100644
 --- a/net/advancedplugins/ae/handlers/netsharing/MarketInventory.java
 +++ b/net/advancedplugins/ae/handlers/netsharing/MarketInventory.java
-@@ -56,23 +56,19 @@ public class MarketInventory implements Listener {
+@@ -32,6 +32,7 @@ import net.advancedplugins.ae.utils.AManager;
+ import net.advancedplugins.ae.utils.YamlFile;
+ import net.advancedplugins.ae.utils.fanciful.FancyMessage;
+ import net.advancedplugins.ae.utils.nbt.NBTapi;
++import net.advancedplugins.ae.impl.utils.FoliaScheduler;
+ import org.apache.commons.lang3.StringUtils;
+ import org.bukkit.Bukkit;
+ import org.bukkit.Material;
+@@ -56,23 +57,16 @@ public class MarketInventory implements Listener {
     private static final LinkedHashMap<String, EnchantPreview> enchantHashmap = new LinkedHashMap<>();
     private static int taskId = 0;
     private static final List<UUID> pendingPlayersChats = new ArrayList<>();
 -
-+import net.advancedplugins.ae.impl.utils.FoliaScheduler;
-+import org.apache.commons.lang3.StringUtils;
-+...
     public static void init(JavaPlugin instance) {
        if (Values.m_aeMarket) {
 -         taskId = (new BukkitRunnable() {
@@ -43,7 +48,7 @@ index 1384946..7777cca 100644
        if (e.getCurrentItem() != null) {
 
 diff --git a/net/advancedplugins/ae/features/tinkerer/TinkererInventory.java b/net/advancedplugins/ae/features/tinkerer/TinkererInventory.java
-index 397f9f3..da22891 100644
+index a0de966..4531313 100644
 --- a/net/advancedplugins/ae/features/tinkerer/TinkererInventory.java
 +++ b/net/advancedplugins/ae/features/tinkerer/TinkererInventory.java
 @@ -347,7 +347,7 @@ public class TinkererInventory implements Listener {

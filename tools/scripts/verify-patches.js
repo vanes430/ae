@@ -13,8 +13,7 @@ const registry = JSON.parse(readFileSync(registryPath, "utf-8"));
 let failed = false;
 
 for (const patch of registry.patches) {
-  const { id, name, patchFile, classPath } = patch;
-  const patchedFile = join("src-patched", "main", "java", classPath);
+  const { id, name, patchFile, files } = patch;
   
   let status = "✅";
   let reason = "";
@@ -24,9 +23,12 @@ for (const patch of registry.patches) {
     reason += ` Patch file ${patchFile} missing.`;
   }
   
-  if (!existsSync(patchedFile)) {
-    status = "❌";
-    reason += ` Class file ${patchedFile} missing.`;
+  for (const f of files) {
+    const patchedFile = join("src-patched", "main", "java", f);
+    if (!existsSync(patchedFile)) {
+      status = "❌";
+      reason += ` Class file ${f} missing.`;
+    }
   }
   
   if (status === "❌") {

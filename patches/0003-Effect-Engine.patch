@@ -44,24 +44,25 @@ index d83497d..64b6b39 100644
        }
 
 diff --git a/net/advancedplugins/ae/features/weapons/AdvancedWeapon.java b/net/advancedplugins/ae/features/weapons/AdvancedWeapon.java
-index b00b2c1..9603d0e 100644
+index b00b2c1..9f77bd6 100644
 --- a/net/advancedplugins/ae/features/weapons/AdvancedWeapon.java
 +++ b/net/advancedplugins/ae/features/weapons/AdvancedWeapon.java
-@@ -15,6 +15,8 @@ import net.advancedplugins.ae.impl.utils.nbt.utils.MinecraftVersion;
+@@ -15,6 +15,9 @@ import net.advancedplugins.ae.impl.utils.nbt.utils.MinecraftVersion;
  import net.advancedplugins.ae.utils.AManager;
  import net.advancedplugins.ae.utils.YamlFile;
  import net.advancedplugins.ae.utils.nbt.NBTapi;
++import java.util.UUID;
 +import org.bukkit.attribute.Attribute;
 +import org.bukkit.attribute.AttributeModifier;
  import org.bukkit.enchantments.Enchantment;
  import org.bukkit.inventory.ItemFlag;
  import org.bukkit.inventory.ItemStack;
-@@ -93,6 +95,18 @@ public class AdvancedWeapon {
+@@ -93,6 +96,18 @@ public class AdvancedWeapon {
              this.itemFlags.forEach(s -> im.addItemFlags(new ItemFlag[]{ItemFlag.valueOf(s)}));
           }
  
 +         if (this.config.isConfigSection("attributes")) {
-+            for (String key : this.config.getConfigurationSection("attributes").getKeys(false)) {
++            for (String key : this.config.getKeys("attributes")) {
 +               try {
 +                  Attribute attribute = Attribute.valueOf(key.toUpperCase(Locale.ROOT));
 +                  double value = this.config.getDouble("attributes." + key);

@@ -8,12 +8,20 @@ AE PATCH EXCLUDES: net/advancedplugins/ae/impl/effects/effects/effects/internal/
 
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/BoostEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/BoostEffect.java
-index 4a4a83b..0cbdbac 100644
+index 62065e4..ce57b02 100644
 --- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/BoostEffect.java
 +++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/BoostEffect.java
-@@ -28,10 +28,7 @@ public class BoostEffect extends AdvancedEffect {
+@@ -7,6 +7,7 @@ import java.util.UUID;
+ import net.advancedplugins.ae.impl.effects.effects.EffectsHandler;
+ import net.advancedplugins.ae.impl.effects.effects.actions.execution.ExecutionTask;
+ import net.advancedplugins.ae.impl.effects.effects.effects.AdvancedEffect;
++import net.advancedplugins.ae.impl.utils.SchedulerUtils;
+ import net.advancedplugins.ae.impl.utils.ASManager;
+ import net.advancedplugins.ae.impl.utils.MathUtils;
+ import org.bukkit.Bukkit;
+@@ -27,10 +28,7 @@ public class BoostEffect extends AdvancedEffect {
+    }
  
-    @Override
     public boolean executeEffect(ExecutionTask task, LivingEntity target, String[] args) {
 -      Bukkit.getScheduler()
 -         .runTaskLater(
@@ -23,7 +31,7 @@ index 4a4a83b..0cbdbac 100644
                 try {
                    String dir = "UP";
                    double amount = 1.0;
-@@ -96,9 +93,7 @@ public class BoostEffect extends AdvancedEffect {
+@@ -95,9 +93,7 @@ public class BoostEffect extends AdvancedEffect {
                 } catch (Exception var23) {
                    var23.printStackTrace();
                 }
@@ -36,10 +44,27 @@ index 4a4a83b..0cbdbac 100644
  
 
 diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/GuardEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/GuardEffect.java
-index 735f1f1..384512b 100644
+index 0d6526c..187ecad 100644
 --- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/GuardEffect.java
 +++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/GuardEffect.java
-@@ -137,12 +137,12 @@ public class GuardEffect extends AdvancedEffect {
+@@ -9,6 +9,7 @@ import java.util.Map.Entry;
+ import net.advancedplugins.ae.impl.effects.effects.EffectsHandler;
+ import net.advancedplugins.ae.impl.effects.effects.actions.execution.ExecutionTask;
+ import net.advancedplugins.ae.impl.effects.effects.effects.AdvancedEffect;
++import net.advancedplugins.ae.impl.utils.SchedulerUtils;
+ import net.advancedplugins.ae.impl.utils.ASManager;
+ import net.advancedplugins.ae.impl.utils.ColorUtils;
+ import net.advancedplugins.ae.impl.utils.EntitySpawnUtils;
+@@ -124,7 +125,7 @@ public class GuardEffect extends AdvancedEffect {
+       if (entity instanceof LivingEntity le) {
+          le.setCanPickupItems(false);
+          le.setRemoveWhenFarAway(true);
+-         le.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, liveTicks, 1, false, true));
++         le.addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH, liveTicks, 1, false, true));
+       }
+ 
+       this.guards.put(entity.getUniqueId(), target.getUniqueId());
+@@ -136,12 +137,12 @@ public class GuardEffect extends AdvancedEffect {
           ((Ageable)entity).setBaby();
        }
  
@@ -56,10 +81,18 @@ index 735f1f1..384512b 100644
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 
 diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportBehindEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportBehindEffect.java
-index 6516850..d06cd30 100644
+index ac3444b..719fe81 100644
 --- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportBehindEffect.java
 +++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportBehindEffect.java
-@@ -28,7 +28,7 @@ public class TeleportBehindEffect extends AdvancedEffect {
+@@ -3,6 +3,7 @@ package net.advancedplugins.ae.impl.effects.effects.effects.internal;
+ import net.advancedplugins.ae.impl.effects.effects.actions.execution.ExecutionTask;
+ import net.advancedplugins.ae.impl.effects.effects.effects.AdvancedEffect;
+ import net.advancedplugins.ae.impl.utils.ASManager;
++import net.advancedplugins.ae.impl.utils.SchedulerUtils;
+ import org.bukkit.Location;
+ import org.bukkit.entity.LivingEntity;
+ import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
+@@ -27,7 +28,7 @@ public class TeleportBehindEffect extends AdvancedEffect {
        if (!ASManager.isAir(to.getBlock())) {
           return true;
        } else {

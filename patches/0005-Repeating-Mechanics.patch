@@ -8,7 +8,7 @@ AE PATCH EXCLUDES: net/advancedplugins/ae/impl/effects/effects/mechanics/trigger
 
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.java b/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.java
-index de0e8d0..45e3947 100644
+index 14509c2..744b21d 100644
 --- a/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.java
 +++ b/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.java
 @@ -16,6 +16,7 @@ import net.advancedplugins.ae.impl.effects.effects.actions.ActionExecution;
@@ -66,7 +66,7 @@ index de0e8d0..45e3947 100644
                                RepeatingTrigger.this.executionBuilder()
                                   .setAttacker(finalEntity)
 @@ -135,9 +138,7 @@ public class RepeatingTrigger extends AdvancedTrigger {
-                                  .only(ability)
+                                  .only(new AdvancedAbility[]{ability})
                                   .buildAndExecute();
                             }
 -                        }
@@ -76,16 +76,24 @@ index de0e8d0..45e3947 100644
                    runnables.add(runnable);
                 }
  
+@@ -145,7 +146,7 @@ public class RepeatingTrigger extends AdvancedTrigger {
+             }
+          }
+       } catch (Throwable var17) {
+-         throw var17;
++         throw new RuntimeException(var17);
+       }
+    }
+ 
 
 diff --git a/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/UserRepeaters.java b/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/UserRepeaters.java
-index 82df3ed..b503f66 100644
+index 82df3ed..58edab4 100644
 --- a/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/UserRepeaters.java
 +++ b/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/UserRepeaters.java
-@@ -1,10 +1,8 @@
- package net.advancedplugins.ae.impl.effects.effects.mechanics.triggers.internal;
+@@ -2,9 +2,9 @@ package net.advancedplugins.ae.impl.effects.effects.mechanics.triggers.internal;
  
--import java.util.HashMap;
--import java.util.List;
+ import java.util.HashMap;
+ import java.util.List;
 +import net.advancedplugins.ae.impl.utils.FoliaScheduler;
  import org.bukkit.inventory.EquipmentSlot;
 -import org.bukkit.scheduler.BukkitTask;

@@ -13,17 +13,16 @@ lore:
 enchants:
   - 'sharpness:25'
   - 'unbreaking:25'
-      # Vanilla enchants (max level, all tiers same)
-      - 'fire_aspect:2'
-      - 'looting:3'
-      - 'sweeping_edge:3'
-      - 'knockback:2'
-      - 'mending:1'
+  # Vanilla enchants (max level, all tiers same)
+  - 'fire_aspect:2'
+  - 'looting:3'
+  - 'sweeping_edge:3'
+  - 'knockback:2'
+  - 'mending:1'
   # ALL_SWORD (15 CEs)
   - 'berserk:5'
   - 'critical:5'
   - 'deathpunch:5'
-  - 'execute:5'
   - 'forcefield:5'
   - 'hunter:5'
   - 'judgement:5'
@@ -32,8 +31,6 @@ enchants:
   - 'spark:5'
   - 'strike:3'
   - 'strife:5'
-  - 'suspend:5'
-  - 'tantrum:5'
   # Weapons
   - 'distance:4'
   - 'famine:4'

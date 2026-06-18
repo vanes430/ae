@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readdirSync, cpSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, cpSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { spawn } from "bun";
 
@@ -10,7 +10,7 @@ if (!existsSync("src-decompiled")) {
 console.log("Cleaning and copying decompiled sources to src-patched/main/java...");
 const targetDir = join("src-patched", "main", "java");
 if (existsSync(targetDir)) {
-    await spawn(["powershell", "-Command", `Remove-Item -Recurse -Force ${targetDir}`]).exited;
+    rmSync(targetDir, { recursive: true, force: true });
 }
 mkdirSync(targetDir, { recursive: true });
 cpSync("src-decompiled", targetDir, { recursive: true });
@@ -32,7 +32,7 @@ for (const patch of patches) {
   console.log(`Applying ${patch}...`);
   
   // Use git apply instead of patch command
-  const patchProcess = spawn(["git", "apply", "--ignore-whitespace", patchPath], {
+  const patchProcess = spawn(["git", "apply", "--directory=src-patched/main/java", "--ignore-whitespace", patchPath], {
     stdout: "inherit",
     stderr: "inherit",
   });

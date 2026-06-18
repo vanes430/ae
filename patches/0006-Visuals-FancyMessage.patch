@@ -8,10 +8,10 @@ AE PATCH EXCLUDES: net/advancedplugins/ae/impl/utils/fanciful/FancyMessage.class
 
 ---
 diff --git a/net/advancedplugins/ae/impl/utils/fanciful/FancyMessage.java b/net/advancedplugins/ae/impl/utils/fanciful/FancyMessage.java
-index 63a0fa9..39f23eb 100644
+index ef1877d..44b65fe 100644
 --- a/net/advancedplugins/ae/impl/utils/fanciful/FancyMessage.java
 +++ b/net/advancedplugins/ae/impl/utils/fanciful/FancyMessage.java
-@@ -358,7 +358,7 @@ public class FancyMessage implements JsonRepresentedObject, Cloneable, Iterable<
+@@ -357,7 +357,7 @@ public class FancyMessage implements JsonRepresentedObject, Cloneable, Iterable<
        if (!(sender instanceof Player player)) {
           sender.sendMessage(this.toOldMessageFormat());
        } else {
@@ -22,10 +22,10 @@ index 63a0fa9..39f23eb 100644
  
 
 diff --git a/net/advancedplugins/ae/utils/fanciful/FancyMessage.java b/net/advancedplugins/ae/utils/fanciful/FancyMessage.java
-index 5e4fc3b..a852a14 100644
+index 2b15cd3..fdf083f 100644
 --- a/net/advancedplugins/ae/utils/fanciful/FancyMessage.java
 +++ b/net/advancedplugins/ae/utils/fanciful/FancyMessage.java
-@@ -364,7 +364,7 @@ public class FancyMessage implements JsonRepresentedObject, Cloneable, Iterable<
+@@ -363,7 +363,7 @@ public class FancyMessage implements JsonRepresentedObject, Cloneable, Iterable<
        if (!(sender instanceof Player player)) {
           sender.sendMessage(this.toOldMessageFormat());
        } else {

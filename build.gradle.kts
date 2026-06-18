@@ -58,9 +58,27 @@ java {
     }
 }
 
+// ─── Compile stubs first ───
+val stubsClassesDir = layout.buildDirectory.dir("classes/stubs")
+
+val compileStubs by tasks.registering(JavaCompile::class) {
+    onlyIf { file("stubs-patched").exists() }
+    source = fileTree("stubs-patched").matching { include("**/*.java") }
+    destinationDirectory.set(stubsClassesDir)
+    options.encoding = "UTF-8"
+    classpath = files(originalJar) + fileTree("libs")
+}
+
 // ─── Compile Java ───
 tasks.named<JavaCompile>("compileJava") {
+    dependsOn(compileStubs)
     options.encoding = "UTF-8"
+    doFirst {
+        val stubsOut = stubsClassesDir.get().asFile
+        if (stubsOut.exists()) {
+            classpath = classpath + files(stubsOut)
+        }
+    }
 }
 
 // ─── Extract original JAR ───
@@ -85,21 +103,21 @@ val copyCustomResources = tasks.register<Copy>("copyCustomResources") {
     }
 
     // Our edited enchantments.yml override
-    val editedEnchantments = file("resources/overrides/enchantments.yml")
+    val editedEnchantments = file("resources/enchantments.yml")
     if (editedEnchantments.exists()) {
         from(editedEnchantments)
         into(extractDir)
     }
 
     // ArmorSets override (overwrite original armorSets in JAR)
-    val armorSetsDir = file("resources/overrides/armorSets")
+    val armorSetsDir = file("resources/armorSets")
     if (armorSetsDir.exists()) {
         from(armorSetsDir)
         into(file("${extractDir.get()}/armorSets"))
     }
 
     // Custom Weapons override (overwrite original customWeapons in JAR)
-    val customWeaponsDir = file("resources/overrides/customWeapons")
+    val customWeaponsDir = file("resources/customWeapons")
     if (customWeaponsDir.exists()) {
         from(customWeaponsDir)
         into(file("${extractDir.get()}/customWeapons"))
@@ -139,10 +157,10 @@ tasks.named<Jar>("jar") {
     from(patchedClassesDir)
 
     // Layer 3: Our overrides
-    from("resources/overrides/armorSets") { into("armorSets") }
-    from("resources/overrides/customWeapons") { into("customWeapons") }
-    from("resources/overrides/enchantments.yml") { into("") }
-    from("resources/overrides/tools") { into("tools") }
+    from("resources/armorSets") { into("armorSets") }
+    from("resources/customWeapons") { into("customWeapons") }
+    from("resources/enchantments.yml") { into("") }
+    from("resources/tools") { into("tools") }
 
     // Exclude original META-INF
     exclude("META-INF/**")

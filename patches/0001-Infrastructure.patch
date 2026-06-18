@@ -4,14 +4,14 @@ Subject: [PATCH 0001] Infrastructure: Migrate to GlobalRegionScheduler and Async
 AE PATCH REASON: Bukkit scheduler incompatible with Folia plugin lifecycle
 AE PATCH FIX: Migrate to GlobalRegionScheduler and AsyncScheduler
 AE PATCH RISK: LOW
-AE PATCH EXCLUDES: net/advancedplugins/ae/Core.class, net/advancedplugins/ae/Core$*.class, net/advancedplugins/ae/globallisteners/listeners/ReloadEvent.class, net/advancedplugins/ae/impl/utils/plugin/UpdateChecker.class
+AE PATCH EXCLUDES: net/advancedplugins/ae/Core.class, net/advancedplugins/ae/Core$*.class, net/advancedplugins/ae/globallisteners/listeners/ReloadEvent.class, net/advancedplugins/ae/impl/utils/plugin/UpdateChecker.class, net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler.class, net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler$*.class, net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.class, net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion$*.class
 
 ---
 diff --git a/net/advancedplugins/ae/Core.java b/net/advancedplugins/ae/Core.java
-index 4c293a5..c4045b3 100644
+index 1d471ef..52abba9 100644
 --- a/net/advancedplugins/ae/Core.java
 +++ b/net/advancedplugins/ae/Core.java
-@@ -165,7 +165,7 @@ public class Core extends JavaPlugin {
+@@ -166,7 +166,7 @@ public class Core extends JavaPlugin {
              populationHandler = new PopulationHandler(getInstance());
           }
  
@@ -20,7 +20,7 @@ index 4c293a5..c4045b3 100644
           paymentHandler = new PaymentHandler();
           List<String> configItems = YamlFile.CONFIG
              .getStringList(
-@@ -180,7 +180,7 @@ public class Core extends JavaPlugin {
+@@ -181,7 +181,7 @@ public class Core extends JavaPlugin {
           new EmeraldsPayment(this);
           new GoldIngotsPayment(this);
           new ConfigUpdater().resetTinkerer();
@@ -29,6 +29,46 @@ index 4c293a5..c4045b3 100644
              TinkererInventory.init();
              new AlchemistInventory();
           }, 15L);
+@@ -266,25 +266,18 @@ public class Core extends JavaPlugin {
+             instance.getLogger().info("Successfully hooked into economy plugin (Vault)");
+          }
+ 
+-         (new BukkitRunnable() {
+-            public void run() {
+-               YamlFile.PDATA.save();
+-            }
+-         }).runTaskTimerAsynchronously(this, 6000L, 6000L);
++         Bukkit.getAsyncScheduler().runAtFixedRate(this, (task) -> {
++            YamlFile.PDATA.save();
++         }, 300000L, 300000L, java.util.concurrent.TimeUnit.MILLISECONDS);
+          setWhiteScroll(YamlFile.CONFIG.getString("white-scroll.item.name", "&fWhite Scroll"));
+          similarEnchantmentsHelper = new SimilarEnchantmentsHelper();
+ 
+          try {
+             this.lastId = Registry.get();
+-            (new BukkitRunnable() {
+-               int conCount = 0;
+-
+-               public void run() {
++            Bukkit.getGlobalRegionScheduler().execute(this, () -> {
+                   Core.this.again = true;
+                   MainCommand.name = "pluginLoaded";
+-                  Bukkit.getLogger().info("[AdvancedEnchantments] Thanks for using Black-Minecraft.com");
+-               }
+-            }).runTask(this);
++               });
+          } catch (Exception var6) {
+             var6.printStackTrace();
+             Bukkit.getPluginManager().disablePlugin(instance);
+@@ -383,7 +376,7 @@ public class Core extends JavaPlugin {
+    public void onDisable() {
+       MarketInventory.unload();
+       YamlFile.PDATA.save();
+-      Bukkit.getScheduler().cancelTasks(this);
++      net.advancedplugins.ae.impl.utils.FoliaScheduler.cancelAll(this);
+       effectsHandler.unload();
+    }
+ 
 
 diff --git a/net/advancedplugins/ae/globallisteners/listeners/ReloadEvent.java b/net/advancedplugins/ae/globallisteners/listeners/ReloadEvent.java
 index fc8c535..a2d69d7 100644
@@ -43,4 +83,107 @@ index fc8c535..a2d69d7 100644
        }
     }
  }
+
+diff --git a/net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler.java b/net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler.java
+index 1b3130e..765173c 100644
+--- a/net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler.java
++++ b/net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler.java
+@@ -50,9 +50,20 @@ public class ReallyFastBlockHandler {
+ 
+          blockPos = nmsBlockPosition.getConstructor(int.class, int.class, int.class);
+          getHandle = craftWorldClass.getMethod("getHandle");
+-         setType = MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_18_R1)
+-            ? nmsWorldClass.getMethod("a", nmsBlockPosition, iBlockData, int.class)
+-            : nmsWorldClass.getMethod("setTypeAndData", nmsBlockPosition, iBlockData, int.class);
++         
++         Method setTypeMethod = null;
++         for (String methodName : new String[]{"setBlock", "a", "setTypeAndData"}) {
++            try {
++               setTypeMethod = nmsWorldClass.getMethod(methodName, nmsBlockPosition, iBlockData, int.class);
++               break;
++            } catch (NoSuchMethodException ignored) {}
++         }
++         if (setTypeMethod != null) {
++            setType = setTypeMethod;
++         } else {
++            throw new NoSuchMethodException("Could not find setTypeAndData / setBlock / a method in Level/World");
++         }
++         
+          if (!MinecraftVersion.isNew()) {
+             craftMagicNumbersClass = ClassWrapper.CRAFT_MagicNumbers.getClazz();
+             getMagicBlock = craftMagicNumbersClass.getMethod("getBlock", Material.class);
+
+diff --git a/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java b/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java
+index f1ceb2d..9be2294 100644
+--- a/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java
++++ b/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java
+@@ -1,8 +1,8 @@
+ package net.advancedplugins.ae.impl.utils.nbt.utils;
+ 
+ import java.util.Map;
++import java.util.HashMap;
+ import net.advancedplugins.ae.impl.utils.nbt.backend.ClassWrapper;
+-import net.advancedplugins.ae.impl.utils.nbt.utils.MinecraftVersion.1;
+ import org.bukkit.Bukkit;
+ import org.bukkit.plugin.java.JavaPlugin;
+ 
+@@ -40,7 +40,28 @@ public enum MinecraftVersion {
+    MC1_21_R6(1216, true),
+    MC1_21_R7(1217, true);
+ 
+-   private static final Map<String, MinecraftVersion> VERSION_TO_REVISION = new 1();
++   private static final Map<String, MinecraftVersion> VERSION_TO_REVISION = new HashMap<>();
++   static {
++      VERSION_TO_REVISION.put("1.20", MinecraftVersion.MC1_20_R1);
++      VERSION_TO_REVISION.put("1.20.1", MinecraftVersion.MC1_20_R1);
++      VERSION_TO_REVISION.put("1.20.2", MinecraftVersion.MC1_20_R2);
++      VERSION_TO_REVISION.put("1.20.3", MinecraftVersion.MC1_20_R3);
++      VERSION_TO_REVISION.put("1.20.4", MinecraftVersion.MC1_20_R3);
++      VERSION_TO_REVISION.put("1.20.5", MinecraftVersion.MC1_20_R4);
++      VERSION_TO_REVISION.put("1.20.6", MinecraftVersion.MC1_20_R4);
++      VERSION_TO_REVISION.put("1.21", MinecraftVersion.MC1_21_R1);
++      VERSION_TO_REVISION.put("1.21.1", MinecraftVersion.MC1_21_R1);
++      VERSION_TO_REVISION.put("1.21.2", MinecraftVersion.MC1_21_R2);
++      VERSION_TO_REVISION.put("1.21.3", MinecraftVersion.MC1_21_R2);
++      VERSION_TO_REVISION.put("1.21.4", MinecraftVersion.MC1_21_R3);
++      VERSION_TO_REVISION.put("1.21.5", MinecraftVersion.MC1_21_R4);
++      VERSION_TO_REVISION.put("1.21.6", MinecraftVersion.MC1_21_R5);
++      VERSION_TO_REVISION.put("1.21.7", MinecraftVersion.MC1_21_R5);
++      VERSION_TO_REVISION.put("1.21.8", MinecraftVersion.MC1_21_R5);
++      VERSION_TO_REVISION.put("1.21.9", MinecraftVersion.MC1_21_R6);
++      VERSION_TO_REVISION.put("1.21.10", MinecraftVersion.MC1_21_R7);
++      VERSION_TO_REVISION.put("1.21.11", MinecraftVersion.MC1_21_R7);
++   }
+    private final int versionId;
+    public final boolean mojangMapping;
+    private static MinecraftVersion version;
+@@ -64,14 +85,23 @@ public enum MinecraftVersion {
+             String ver = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+             version = valueOf(ver.replace("v", "MC"));
+          } catch (Exception var1) {
+-            version = VERSION_TO_REVISION.getOrDefault(Bukkit.getServer().getBukkitVersion().split("-")[0], Unknown);
++            String bukkitVer = Bukkit.getVersion();
++            String mcVer = null;
++            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("MC:\\s*([0-9]+\\.[0-9]+(?:\\.[0-9]+)?)").matcher(bukkitVer);
++            if (matcher.find()) {
++               mcVer = matcher.group(1);
++            }
++            if (mcVer == null) {
++               mcVer = Bukkit.getServer().getBukkitVersion().split("-")[0];
++            }
++            version = VERSION_TO_REVISION.getOrDefault(mcVer, Unknown);
++            if (version == Unknown) {
++               version = MC1_21_R7;
++               Bukkit.getServer().getLogger().info("[AdvancedEnchantments] Unknown Minecraft version pattern (" + Bukkit.getServer().getBukkitVersion() + "), falling back to MC1_21_R7.");
++            }
+          }
+ 
+          isPaper = Package.getPackage("com.destroystokyo.paper") != null;
+-         if (version == Unknown) {
+-            Bukkit.getServer().getLogger().warning("You are using invalid version of Minecraft [" + Bukkit.getServer().getBukkitVersion() + "]! Disabling...");
+-         }
+-
+          ClassWrapper.NMS_WORLD.getMojangName();
+          return version;
+       }
 
