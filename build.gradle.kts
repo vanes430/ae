@@ -166,16 +166,16 @@ tasks.named<Jar>("jar") {
 }
 
 // ─── Deploy ───
-val pluginsDir = "/var/lib/pterodactyl/volumes/876535db-74d8-415c-bc52-21157613398a/plugins"
+val pluginsDir = "/var/lib/pterodactyl/volumes/d64a444d-cbe1-44eb-99f6-1aa116292bef/plugins"
 tasks.register<Copy>("deploy") {
     dependsOn(tasks.jar)
 
     from(layout.buildDirectory.file("libs/AdvancedEnchantments-9.22.7-folia-patched.jar"))
     into(pluginsDir)
-    rename { "AdvancedEnchantments-9.22.7.jar" }
+    rename { "AdvancedEnchantments-9.22.7-folia-patched.jar" }
 
     doLast {
-        val deployedFile = file("$pluginsDir/AdvancedEnchantments-9.22.7.jar")
+        val deployedFile = file("$pluginsDir/AdvancedEnchantments-9.22.7-folia-patched.jar")
         if (deployedFile.exists()) {
             println("✅ Deployed to ${deployedFile.absolutePath}")
             println("   Size: ${deployedFile.length()} bytes")
