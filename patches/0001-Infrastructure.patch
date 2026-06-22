@@ -4,7 +4,7 @@ Subject: [PATCH 0001] Infrastructure: Migrate to GlobalRegionScheduler and Async
 AE PATCH REASON: Bukkit scheduler incompatible with Folia plugin lifecycle
 AE PATCH FIX: Migrate to GlobalRegionScheduler and AsyncScheduler
 AE PATCH RISK: LOW
-AE PATCH EXCLUDES: net/advancedplugins/ae/Core.class, net/advancedplugins/ae/Core$*.class, net/advancedplugins/ae/globallisteners/listeners/ReloadEvent.class, net/advancedplugins/ae/impl/utils/plugin/UpdateChecker.class, net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler.class, net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler$*.class, net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.class, net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion$*.class
+AE PATCH EXCLUDES: net/advancedplugins/ae/Core.class, net/advancedplugins/ae/Core$*.class, net/advancedplugins/ae/globallisteners/listeners/ReloadEvent.class, net/advancedplugins/ae/impl/utils/plugin/UpdateChecker.class, net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler.class, net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler$*.class, net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.class, net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion$*.class, net/advancedplugins/ae/impl/utils/FoliaScheduler.class, net/advancedplugins/ae/impl/utils/FoliaScheduler$*.class
 
 ---
 diff --git a/net/advancedplugins/ae/Core.java b/net/advancedplugins/ae/Core.java
@@ -114,24 +114,45 @@ index 1b3130e..765173c 100644
              getMagicBlock = craftMagicNumbersClass.getMethod("getBlock", Material.class);
 
 diff --git a/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java b/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java
-index f1ceb2d..9be2294 100644
+index 21f4904..9be2294 100644
 --- a/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java
 +++ b/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java
-@@ -1,8 +1,8 @@
+@@ -1,7 +1,7 @@
  package net.advancedplugins.ae.impl.utils.nbt.utils;
  
+-import java.util.HashMap;
  import java.util.Map;
 +import java.util.HashMap;
  import net.advancedplugins.ae.impl.utils.nbt.backend.ClassWrapper;
--import net.advancedplugins.ae.impl.utils.nbt.utils.MinecraftVersion.1;
  import org.bukkit.Bukkit;
  import org.bukkit.plugin.java.JavaPlugin;
- 
-@@ -40,7 +40,28 @@ public enum MinecraftVersion {
+@@ -40,29 +40,28 @@ public enum MinecraftVersion {
     MC1_21_R6(1216, true),
     MC1_21_R7(1217, true);
  
--   private static final Map<String, MinecraftVersion> VERSION_TO_REVISION = new 1();
+-   private static final Map<String, MinecraftVersion> VERSION_TO_REVISION = new HashMap<String, MinecraftVersion>() {
+-      {
+-         this.put("1.20", MinecraftVersion.MC1_20_R1);
+-         this.put("1.20.1", MinecraftVersion.MC1_20_R1);
+-         this.put("1.20.2", MinecraftVersion.MC1_20_R2);
+-         this.put("1.20.3", MinecraftVersion.MC1_20_R3);
+-         this.put("1.20.4", MinecraftVersion.MC1_20_R3);
+-         this.put("1.20.5", MinecraftVersion.MC1_20_R4);
+-         this.put("1.20.6", MinecraftVersion.MC1_20_R4);
+-         this.put("1.21", MinecraftVersion.MC1_21_R1);
+-         this.put("1.21.1", MinecraftVersion.MC1_21_R1);
+-         this.put("1.21.2", MinecraftVersion.MC1_21_R2);
+-         this.put("1.21.3", MinecraftVersion.MC1_21_R2);
+-         this.put("1.21.4", MinecraftVersion.MC1_21_R3);
+-         this.put("1.21.5", MinecraftVersion.MC1_21_R4);
+-         this.put("1.21.6", MinecraftVersion.MC1_21_R5);
+-         this.put("1.21.7", MinecraftVersion.MC1_21_R5);
+-         this.put("1.21.8", MinecraftVersion.MC1_21_R5);
+-         this.put("1.21.9", MinecraftVersion.MC1_21_R6);
+-         this.put("1.21.10", MinecraftVersion.MC1_21_R7);
+-         this.put("1.21.11", MinecraftVersion.MC1_21_R7);
+-      }
+-   };
 +   private static final Map<String, MinecraftVersion> VERSION_TO_REVISION = new HashMap<>();
 +   static {
 +      VERSION_TO_REVISION.put("1.20", MinecraftVersion.MC1_20_R1);
@@ -157,7 +178,7 @@ index f1ceb2d..9be2294 100644
     private final int versionId;
     public final boolean mojangMapping;
     private static MinecraftVersion version;
-@@ -64,14 +85,23 @@ public enum MinecraftVersion {
+@@ -86,14 +85,23 @@ public enum MinecraftVersion {
              String ver = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
              version = valueOf(ver.replace("v", "MC"));
           } catch (Exception var1) {
@@ -185,5 +206,47 @@ index f1ceb2d..9be2294 100644
 -
           ClassWrapper.NMS_WORLD.getMojangName();
           return version;
+       }
+
+diff --git a/net/advancedplugins/ae/impl/utils/FoliaScheduler.java b/net/advancedplugins/ae/impl/utils/FoliaScheduler.java
+index 06b549d..9a401d0 100644
+--- a/net/advancedplugins/ae/impl/utils/FoliaScheduler.java
++++ b/net/advancedplugins/ae/impl/utils/FoliaScheduler.java
+@@ -43,8 +43,7 @@ public class FoliaScheduler {
+ 
+    public static FoliaScheduler.Task runTaskAsynchronously(Plugin plugin, Runnable runnable) {
+       if (isFolia) {
+-         Bukkit.getGlobalRegionScheduler().execute(plugin, runnable);
+-         return new FoliaScheduler.Task(null);
++         return new FoliaScheduler.Task(Bukkit.getAsyncScheduler().runNow(plugin, t -> runnable.run()));
+       } else {
+          return new FoliaScheduler.Task(Bukkit.getScheduler().runTaskAsynchronously(plugin, runnable));
+       }
+@@ -52,22 +51,22 @@ public class FoliaScheduler {
+ 
+    public static FoliaScheduler.Task runTaskLaterAsynchronously(Plugin plugin, Runnable runnable, long delayTicks) {
+       return isFolia
+-         ? new FoliaScheduler.Task(Bukkit.getGlobalRegionScheduler().runDelayed(plugin, t -> runnable.run(), delayTicks < 1L ? 1L : delayTicks))
++         ? new FoliaScheduler.Task(Bukkit.getAsyncScheduler().runDelayed(plugin, t -> runnable.run(), (delayTicks < 1L ? 1L : delayTicks) * 50L, java.util.concurrent.TimeUnit.MILLISECONDS))
+          : new FoliaScheduler.Task(Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, runnable, delayTicks));
+    }
+ 
+    public static FoliaScheduler.Task runTaskTimerAsynchronously(Plugin plugin, Runnable runnable, long delayTicks, long periodTicks) {
+       return isFolia
+          ? new FoliaScheduler.Task(
+-            Bukkit.getGlobalRegionScheduler().runAtFixedRate(plugin, t -> runnable.run(), delayTicks < 1L ? 1L : delayTicks, periodTicks)
++            Bukkit.getAsyncScheduler().runAtFixedRate(plugin, t -> runnable.run(), (delayTicks < 1L ? 1L : delayTicks) * 50L, periodTicks * 50L, java.util.concurrent.TimeUnit.MILLISECONDS)
+          )
+          : new FoliaScheduler.Task(Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, runnable, delayTicks, periodTicks));
+    }
+ 
+    public static void runTaskTimerAsynchronously(Plugin plugin, Consumer<FoliaScheduler.Task> runnable, long delayTicks, long periodTicks) {
+       if (isFolia) {
+-         Bukkit.getGlobalRegionScheduler()
+-            .runAtFixedRate(plugin, t -> runnable.accept(new FoliaScheduler.Task(t)), delayTicks < 1L ? 1L : delayTicks, periodTicks);
++         Bukkit.getAsyncScheduler()
++            .runAtFixedRate(plugin, t -> runnable.accept(new FoliaScheduler.Task(t)), (delayTicks < 1L ? 1L : delayTicks) * 50L, periodTicks * 50L, java.util.concurrent.TimeUnit.MILLISECONDS);
+       } else {
+          Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, t -> runnable.accept(new FoliaScheduler.Task(t)), delayTicks, periodTicks);
        }
 

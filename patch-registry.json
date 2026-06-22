@@ -11,7 +11,8 @@
         "net/advancedplugins/ae/globallisteners/listeners/ReloadEvent.java",
         "net/advancedplugins/ae/impl/utils/plugin/UpdateChecker.java",
         "net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler.java",
-        "net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java"
+        "net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java",
+        "net/advancedplugins/ae/impl/utils/FoliaScheduler.java"
       ],
       "issue": "Bukkit scheduler incompatible with Folia plugin lifecycle",
       "fix": "Migrate to GlobalRegionScheduler and AsyncScheduler",
@@ -24,7 +25,9 @@
         "net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler.class",
         "net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler$*.class",
         "net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.class",
-        "net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion$*.class"
+        "net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion$*.class",
+        "net/advancedplugins/ae/impl/utils/FoliaScheduler.class",
+        "net/advancedplugins/ae/impl/utils/FoliaScheduler$*.class"
       ]
     },
     {
