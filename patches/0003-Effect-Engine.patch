@@ -8,10 +8,18 @@ AE PATCH EXCLUDES: net/advancedplugins/ae/impl/effects/effects/actions/execution
 
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/actions/execution/ExecutionTask.java b/net/advancedplugins/ae/impl/effects/effects/actions/execution/ExecutionTask.java
-index d83497d..64b6b39 100644
+index d83497d..17568f7 100644
 --- a/net/advancedplugins/ae/impl/effects/effects/actions/execution/ExecutionTask.java
 +++ b/net/advancedplugins/ae/impl/effects/effects/actions/execution/ExecutionTask.java
-@@ -96,20 +96,18 @@ public class ExecutionTask {
+@@ -19,7 +19,6 @@ import net.advancedplugins.ae.impl.effects.effects.variables.DynamicVariable;
+ import net.advancedplugins.ae.impl.effects.effects.variables.Variables;
+ import net.advancedplugins.ae.impl.utils.ASManager;
+ import net.advancedplugins.ae.impl.utils.LocalLocation;
+-import net.advancedplugins.ae.impl.utils.SchedulerUtils;
+ import net.advancedplugins.ae.impl.utils.hooks.HookPlugin;
+ import net.advancedplugins.ae.impl.utils.hooks.HooksHandler;
+ import net.advancedplugins.ae.impl.utils.hooks.plugins.MythicMobsHook;
+@@ -96,20 +95,22 @@ public class ExecutionTask {
                 }
              } else {
                 final String finalEffect = effect;
@@ -26,22 +34,75 @@ index d83497d..64b6b39 100644
 -                        for (LivingEntity target : targetEntities) {
 -                           ExecutionTask.this.activate(finalEffect, target, null);
 -                        }
-+               SchedulerUtils.runTaskLater(() -> {
-+                  ExecutionTask.this.builder.setDamageEventNotGoingToRun(true);
-+                  if (!targetLocations.isEmpty()) {
-+                     for (Location loc : targetLocations) {
+-                     }
++               long delay = (long)this.currentWait < 1L ? 1L : (long)this.currentWait;
++               if (!targetLocations.isEmpty()) {
++                  for (Location loc : targetLocations) {
++                     org.bukkit.Bukkit.getRegionScheduler().runDelayed(ASManager.getInstance(), loc, task2 -> {
++                        ExecutionTask.this.builder.setDamageEventNotGoingToRun(true);
 +                        ExecutionTask.this.activate(finalEffect, ExecutionTask.this.builder.getMain(), loc);
-+                     }
-+                  } else {
-+                     for (LivingEntity target : targetEntities) {
++                     }, delay);
++                  }
++               } else {
++                  for (LivingEntity target : targetEntities) {
++                     target.getScheduler().runDelayed(ASManager.getInstance(), task2 -> {
++                        ExecutionTask.this.builder.setDamageEventNotGoingToRun(true);
 +                        ExecutionTask.this.activate(finalEffect, target, null);
-                      }
++                     }, () -> {}, delay);
                    }
 -               }).runTaskLater(EffectsHandler.getInstance(), this.currentWait);
-+               }, (long)this.currentWait);
++               }
              }
           }
        }
+@@ -162,12 +163,11 @@ public class ExecutionTask {
+                   + " activating "
+                   + (loc != null ? "location based " + new LocalLocation(loc).getEncode() : "entity based " + (ent != null ? ent.getType().name() : "null"))
+             );
+-
+             try {
+                if (loc != null) {
+                   if (advancedEffect.executeEffect(this, loc, arguments)) {
+                      if (!Bukkit.isPrimaryThread()) {
+-                        SchedulerUtils.runTask(() -> {
++                        Bukkit.getRegionScheduler().execute(ASManager.getInstance(), loc, () -> {
+                            EffectsActivatedEvent effectsActivatedEvent = new EffectsActivatedEvent(this.ability, this.builder.getMain(), ent, this);
+                            Bukkit.getPluginManager().callEvent(effectsActivatedEvent);
+                         });
+@@ -182,25 +182,25 @@ public class ExecutionTask {
+                   this.reportIssue(effect, "activating location-based effect without a valid target (e.g. @Block)", this.ability.getName());
+                } else {
+                   if (!Bukkit.isPrimaryThread()) {
+-                     SchedulerUtils.runTask(() -> {
++                     LivingEntity targetEnt = ent != null ? ent : this.builder.getMain();
++                     targetEnt.getScheduler().run(ASManager.getInstance(), task2 -> {
+                         EffectsActivatedEvent effectsActivatedEvent = new EffectsActivatedEvent(this.ability, this.builder.getMain(), ent, this);
+                         Bukkit.getPluginManager().callEvent(effectsActivatedEvent);
+-                     });
++                     }, null);
+                   } else {
+                      EffectsActivatedEvent effectsActivatedEvent = new EffectsActivatedEvent(this.ability, this.builder.getMain(), ent, this);
+                      Bukkit.getPluginManager().callEvent(effectsActivatedEvent);
+                   }
+ 
+                   if (this.getBuilder().isPermanent() && this.getBuilder().isRemoved()) {
+-                     SchedulerUtils.runTaskLater(
+-                        () -> {
+-                           if (ent != null && !ent.isDead() && ASManager.isOnline(ent)) {
++                     if (ent != null) {
++                        ent.getScheduler().runDelayed(ASManager.getInstance(), task2 -> {
++                           if (!ent.isDead() && ASManager.isOnline(ent)) {
+                               ArmorType.getArmorContents(ent)
+                                  .forEach((armorType, itemStack) -> ArmorWearTrigger.getArmorWearTrigger().runCheck(ent, itemStack, armorType, false, false));
+                            }
+-                        },
+-                        2L
+-                     );
++                        }, () -> {}, 2L);
++                     }
+                   }
+                }
+             } catch (Exception var9) {
 
 diff --git a/net/advancedplugins/ae/features/weapons/AdvancedWeapon.java b/net/advancedplugins/ae/features/weapons/AdvancedWeapon.java
 index b00b2c1..9f77bd6 100644

@@ -120,6 +120,21 @@
         "net/advancedplugins/ae/impl/utils/fanciful/FancyMessage.class",
         "net/advancedplugins/ae/utils/fanciful/FancyMessage.class"
       ]
+    },
+    {
+      "id": "0007",
+      "name": "Armor-Tracking",
+      "patchFile": "patches/0007-Armor-Tracking.patch",
+      "files": [
+        "net/advancedplugins/ae/impl/effects/armorutils/ArmorListener.java"
+      ],
+      "issue": "ArmorListener queue runs on global scheduler violating entity region access rules",
+      "fix": "Schedule armor updates directly on the player's entity scheduler",
+      "risk": "MEDIUM",
+      "excludes": [
+        "net/advancedplugins/ae/impl/effects/armorutils/ArmorListener.class",
+        "net/advancedplugins/ae/impl/effects/armorutils/ArmorListener$*.class"
+      ]
     }
   ]
 }

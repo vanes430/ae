@@ -1,0 +1,92 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0007] Armor-Tracking: Schedule armor updates directly on the player's entity scheduler
+
+AE PATCH REASON: ArmorListener queue runs on global scheduler violating entity region access rules
+AE PATCH FIX: Schedule armor updates directly on the player's entity scheduler
+AE PATCH RISK: MEDIUM
+AE PATCH EXCLUDES: net/advancedplugins/ae/impl/effects/armorutils/ArmorListener.class, net/advancedplugins/ae/impl/effects/armorutils/ArmorListener$*.class
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/armorutils/ArmorListener.java b/net/advancedplugins/ae/impl/effects/armorutils/ArmorListener.java
+index 4703dc1..1bfb991 100644
+--- a/net/advancedplugins/ae/impl/effects/armorutils/ArmorListener.java
++++ b/net/advancedplugins/ae/impl/effects/armorutils/ArmorListener.java
+@@ -6,7 +6,6 @@ import java.util.List;
+ import java.util.Objects;
+ import net.advancedplugins.ae.impl.effects.armorutils.ArmorEquipEvent.EquipMethod;
+ import net.advancedplugins.ae.impl.utils.ASManager;
+-import net.advancedplugins.ae.impl.utils.SchedulerUtils;
+ import net.advancedplugins.ae.impl.utils.hooks.HookPlugin;
+ import net.advancedplugins.ae.impl.utils.hooks.HooksHandler;
+ import net.advancedplugins.ae.impl.utils.hooks.plugins.ItemsAdderHook;
+@@ -59,7 +58,6 @@ public class ArmorListener implements Listener {
+    private final ArrayDeque<ArmorEquipEvent> eventQueue = new ArrayDeque<>();
+ 
+    public ArmorListener() {
+-      this.runEventQueue();
+    }
+ 
+    private void addToQueue(ArmorEquipEvent event) {
+@@ -67,38 +65,33 @@ public class ArmorListener implements Listener {
+       ItemStack newArmor = event.getNewArmorPiece();
+       event.setOldArmorPiece(oldArmor != null ? oldArmor.clone() : null);
+       event.setNewArmorPiece(newArmor != null ? newArmor.clone() : null);
+-      this.eventQueue.add(event);
+-   }
+-
+-   private void runEventQueue() {
+-      SchedulerUtils.runTaskTimer(
+-         () -> {
+-            while (!this.eventQueue.isEmpty()) {
+-               ArmorEquipEvent event = this.eventQueue.poll();
+-               ItemStack oldEventArmor = event.getOldArmorPiece();
+-               if (event.getType() != null && event.getType().getEquipmentSlot() != null) {
+-                  ItemStack newCurrentArmor = event.getPlayer().getEquipment().getItem(event.getType().getEquipmentSlot());
+-                  if (event.getMethod() != EquipMethod.HOTBAR
+-                     && HooksHandler.isEnabled(HookPlugin.ITEMSADDER)
+-                     && !ASManager.isAir(oldEventArmor)
+-                     && !ASManager.isAir(newCurrentArmor)) {
+-                     ItemsAdderHook itemsAdderHook = (ItemsAdderHook)HooksHandler.getHook(HookPlugin.ITEMSADDER);
+-                     if (itemsAdderHook.isCustomItem(oldEventArmor)) {
+-                        event.setOldArmorPiece(event.getNewArmorPiece());
+-                        event.setNewArmorPiece(oldEventArmor);
+-                        oldEventArmor = event.getOldArmorPiece();
+-                     }
++      Player player = event.getPlayer();
++      if (player != null) {
++         player.getScheduler().runDelayed(ASManager.getInstance(), task -> {
++            ItemStack oldEventArmor = event.getOldArmorPiece();
++            if (event.getType() != null && event.getType().getEquipmentSlot() != null) {
++               ItemStack newCurrentArmor = player.getEquipment().getItem(event.getType().getEquipmentSlot());
++               if (event.getMethod() != EquipMethod.HOTBAR
++                  && HooksHandler.isEnabled(HookPlugin.ITEMSADDER)
++                  && !ASManager.isAir(oldEventArmor)
++                  && !ASManager.isAir(newCurrentArmor)) {
++                  ItemsAdderHook itemsAdderHook = (ItemsAdderHook)HooksHandler.getHook(HookPlugin.ITEMSADDER);
++                  if (itemsAdderHook.isCustomItem(oldEventArmor)) {
++                     event.setOldArmorPiece(event.getNewArmorPiece());
++                     event.setNewArmorPiece(oldEventArmor);
++                     oldEventArmor = event.getOldArmorPiece();
+                   }
++               }
+ 
+-                  if (!Objects.equals(oldEventArmor, newCurrentArmor) && (!ASManager.isAir(oldEventArmor) || !ASManager.isAir(newCurrentArmor))) {
+-                     Bukkit.getPluginManager().callEvent(event);
+-                  }
++               if (!Objects.equals(oldEventArmor, newCurrentArmor) && (!ASManager.isAir(oldEventArmor) || !ASManager.isAir(newCurrentArmor))) {
++                  Bukkit.getPluginManager().callEvent(event);
+                }
+             }
+-         },
+-         0L,
+-         3L
+-      );
++         }, () -> {}, 3L);
++      }
++   }
++
++   private void runEventQueue() {
+    }
+ 
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+
