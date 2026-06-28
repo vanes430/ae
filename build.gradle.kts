@@ -151,6 +151,7 @@ tasks.named<Jar>("jar") {
         exclude("armorSets/**")
         exclude("customWeapons/**")
         exclude("enchantments.yml")
+        exclude("plugin.yml")
     }
 
     // Layer 2: Patched classes (from main sourceSet)
@@ -160,6 +161,7 @@ tasks.named<Jar>("jar") {
     from("resources/armorSets") { into("armorSets") }
     from("resources/customWeapons") { into("customWeapons") }
     from("resources/enchantments.yml") { into("") }
+    from("resources/plugin.yml") { into("") }
 
     // Exclude original META-INF
     exclude("META-INF/**")
