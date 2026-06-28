@@ -102,7 +102,7 @@ index fc8c535..a2d69d7 100644
  }
 
 diff --git a/net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler.java b/net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler.java
-index 1b3130e..765173c 100644
+index 1b3130e..4823dee 100644
 --- a/net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler.java
 +++ b/net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler.java
 @@ -50,9 +50,20 @@ public class ReallyFastBlockHandler {
@@ -129,6 +129,19 @@ index 1b3130e..765173c 100644
           if (!MinecraftVersion.isNew()) {
              craftMagicNumbersClass = ClassWrapper.CRAFT_MagicNumbers.getClazz();
              getMagicBlock = craftMagicNumbersClass.getMethod("getBlock", Material.class);
+@@ -76,7 +87,11 @@ public class ReallyFastBlockHandler {
+ 
+    public void setType(Material material, Block... blocks) {
+       if (!Bukkit.isPrimaryThread()) {
+-         FoliaScheduler.runTask(ASManager.getInstance(), () -> this.setType(material, blocks));
++         if (blocks.length > 0) {
++            Bukkit.getRegionScheduler().execute(ASManager.getInstance(), blocks[0].getLocation(), () -> this.setType(material, blocks));
++         } else {
++            Bukkit.getGlobalRegionScheduler().execute(ASManager.getInstance(), () -> this.setType(material, blocks));
++         }
+       } else {
+          try {
+             Object ibd = MinecraftVersion.isNew()
 
 diff --git a/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java b/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java
 index 21f4904..9be2294 100644
@@ -223,47 +236,5 @@ index 21f4904..9be2294 100644
 -
           ClassWrapper.NMS_WORLD.getMojangName();
           return version;
-       }
-
-diff --git a/net/advancedplugins/ae/impl/utils/FoliaScheduler.java b/net/advancedplugins/ae/impl/utils/FoliaScheduler.java
-index 06b549d..9a401d0 100644
---- a/net/advancedplugins/ae/impl/utils/FoliaScheduler.java
-+++ b/net/advancedplugins/ae/impl/utils/FoliaScheduler.java
-@@ -43,8 +43,7 @@ public class FoliaScheduler {
- 
-    public static FoliaScheduler.Task runTaskAsynchronously(Plugin plugin, Runnable runnable) {
-       if (isFolia) {
--         Bukkit.getGlobalRegionScheduler().execute(plugin, runnable);
--         return new FoliaScheduler.Task(null);
-+         return new FoliaScheduler.Task(Bukkit.getAsyncScheduler().runNow(plugin, t -> runnable.run()));
-       } else {
-          return new FoliaScheduler.Task(Bukkit.getScheduler().runTaskAsynchronously(plugin, runnable));
-       }
-@@ -52,22 +51,22 @@ public class FoliaScheduler {
- 
-    public static FoliaScheduler.Task runTaskLaterAsynchronously(Plugin plugin, Runnable runnable, long delayTicks) {
-       return isFolia
--         ? new FoliaScheduler.Task(Bukkit.getGlobalRegionScheduler().runDelayed(plugin, t -> runnable.run(), delayTicks < 1L ? 1L : delayTicks))
-+         ? new FoliaScheduler.Task(Bukkit.getAsyncScheduler().runDelayed(plugin, t -> runnable.run(), (delayTicks < 1L ? 1L : delayTicks) * 50L, java.util.concurrent.TimeUnit.MILLISECONDS))
-          : new FoliaScheduler.Task(Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, runnable, delayTicks));
-    }
- 
-    public static FoliaScheduler.Task runTaskTimerAsynchronously(Plugin plugin, Runnable runnable, long delayTicks, long periodTicks) {
-       return isFolia
-          ? new FoliaScheduler.Task(
--            Bukkit.getGlobalRegionScheduler().runAtFixedRate(plugin, t -> runnable.run(), delayTicks < 1L ? 1L : delayTicks, periodTicks)
-+            Bukkit.getAsyncScheduler().runAtFixedRate(plugin, t -> runnable.run(), (delayTicks < 1L ? 1L : delayTicks) * 50L, periodTicks * 50L, java.util.concurrent.TimeUnit.MILLISECONDS)
-          )
-          : new FoliaScheduler.Task(Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, runnable, delayTicks, periodTicks));
-    }
- 
-    public static void runTaskTimerAsynchronously(Plugin plugin, Consumer<FoliaScheduler.Task> runnable, long delayTicks, long periodTicks) {
-       if (isFolia) {
--         Bukkit.getGlobalRegionScheduler()
--            .runAtFixedRate(plugin, t -> runnable.accept(new FoliaScheduler.Task(t)), delayTicks < 1L ? 1L : delayTicks, periodTicks);
-+         Bukkit.getAsyncScheduler()
-+            .runAtFixedRate(plugin, t -> runnable.accept(new FoliaScheduler.Task(t)), (delayTicks < 1L ? 1L : delayTicks) * 50L, periodTicks * 50L, java.util.concurrent.TimeUnit.MILLISECONDS);
-       } else {
-          Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, t -> runnable.accept(new FoliaScheduler.Task(t)), delayTicks, periodTicks);
        }
 
