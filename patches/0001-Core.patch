@@ -8,7 +8,7 @@ AE PATCH EXCLUDES: net/advancedplugins/ae/Core.class, net/advancedplugins/ae/Cor
 
 ---
 diff --git a/net/advancedplugins/ae/Core.java b/net/advancedplugins/ae/Core.java
-index 1d471ef..7b48ce7 100644
+index 1d471ef..ae46721 100644
 --- a/net/advancedplugins/ae/Core.java
 +++ b/net/advancedplugins/ae/Core.java
 @@ -83,7 +83,6 @@ import net.advancedplugins.ae.impl.utils.ReallyFastBlockHandler;
@@ -19,7 +19,15 @@ index 1d471ef..7b48ce7 100644
  import net.advancedplugins.ae.impl.utils.hooks.HookPlugin;
  import net.advancedplugins.ae.impl.utils.hooks.HooksHandler;
  import net.advancedplugins.ae.impl.utils.nbt.utils.MinecraftVersion;
-@@ -166,7 +165,7 @@ public class Core extends JavaPlugin {
+@@ -109,7 +108,6 @@ import org.bukkit.plugin.PluginManager;
+ import org.bukkit.plugin.RegisteredServiceProvider;
+ import org.bukkit.plugin.java.JavaPlugin;
+ import org.bukkit.plugin.java.JavaPluginLoader;
+-import org.bukkit.scheduler.BukkitRunnable;
+ 
+ public class Core extends JavaPlugin {
+    private static Core instance;
+@@ -166,7 +164,7 @@ public class Core extends JavaPlugin {
              populationHandler = new PopulationHandler(getInstance());
           }
  
@@ -28,7 +36,7 @@ index 1d471ef..7b48ce7 100644
           paymentHandler = new PaymentHandler();
           List<String> configItems = YamlFile.CONFIG
              .getStringList(
-@@ -181,7 +180,7 @@ public class Core extends JavaPlugin {
+@@ -181,7 +179,7 @@ public class Core extends JavaPlugin {
           new EmeraldsPayment(this);
           new GoldIngotsPayment(this);
           new ConfigUpdater().resetTinkerer();
@@ -37,7 +45,7 @@ index 1d471ef..7b48ce7 100644
              TinkererInventory.init();
              new AlchemistInventory();
           }, 15L);
-@@ -199,7 +198,7 @@ public class Core extends JavaPlugin {
+@@ -199,7 +197,7 @@ public class Core extends JavaPlugin {
           }
  
           effectsHandler = new EffectsHandler("ae", this, new ItemEnchantsReader());
@@ -46,7 +54,7 @@ index 1d471ef..7b48ce7 100644
              AEnchantmentSorting.start();
              AEnchants.initializeEnchantsListBlacklist();
           }, 40L);
-@@ -266,25 +265,18 @@ public class Core extends JavaPlugin {
+@@ -266,25 +264,18 @@ public class Core extends JavaPlugin {
              instance.getLogger().info("Successfully hooked into economy plugin (Vault)");
           }
  
@@ -77,7 +85,7 @@ index 1d471ef..7b48ce7 100644
           } catch (Exception var6) {
              var6.printStackTrace();
              Bukkit.getPluginManager().disablePlugin(instance);
-@@ -383,7 +375,8 @@ public class Core extends JavaPlugin {
+@@ -383,7 +374,8 @@ public class Core extends JavaPlugin {
     public void onDisable() {
        MarketInventory.unload();
        YamlFile.PDATA.save();
