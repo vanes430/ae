@@ -8,10 +8,10 @@ AE PATCH EXCLUDES: net/advancedplugins/ae/impl/effects/effects/effects/internal/
 
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/ExtinguishEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/ExtinguishEffect.java
-index 38a20dd..d1f39fb 100644
+index b15bc86..d1f39fb 100644
 --- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/ExtinguishEffect.java
 +++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/ExtinguishEffect.java
-@@ -2,7 +2,7 @@ package net.advancedplugins.ae.impl.effects.effects.effects.internal;
+@@ -2,17 +2,17 @@ package net.advancedplugins.ae.impl.effects.effects.effects.internal;
  
  import net.advancedplugins.ae.impl.effects.effects.actions.execution.ExecutionTask;
  import net.advancedplugins.ae.impl.effects.effects.effects.AdvancedEffect;
@@ -20,11 +20,16 @@ index 38a20dd..d1f39fb 100644
  import org.bukkit.entity.LivingEntity;
  import org.bukkit.plugin.java.JavaPlugin;
  
-@@ -12,7 +12,7 @@ public class ExtinguishEffect extends AdvancedEffect {
+ public class ExtinguishEffect extends AdvancedEffect {
+-   public ExtinguishEffect(JavaPlugin var1) {
+-      super(var1, "EXTINGUISH", "Extinguish an entity", "%e");
++   public ExtinguishEffect(JavaPlugin plugin) {
++      super(plugin, "EXTINGUISH", "Extinguish an entity", "%e");
     }
  
-    public boolean executeEffect(ExecutionTask task, LivingEntity target, String[] args) {
--      SchedulerUtils.runTaskLater(() -> target.setFireTicks(0), 1L);
+-   public boolean executeEffect(ExecutionTask var1, LivingEntity var2, String[] var3) {
+-      SchedulerUtils.runTaskLater(() -> var2.setFireTicks(0), 1L);
++   public boolean executeEffect(ExecutionTask task, LivingEntity target, String[] args) {
 +      target.getScheduler().runDelayed(ASManager.getInstance(), t -> target.setFireTicks(0), null, 1L);
        return true;
     }

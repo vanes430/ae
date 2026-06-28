@@ -7,3 +7,148 @@ AE PATCH RISK: LOW
 AE PATCH EXCLUDES: net/advancedplugins/ae/impl/utils/FoliaScheduler.class, net/advancedplugins/ae/impl/utils/FoliaScheduler$*.class
 
 ---
+diff --git a/net/advancedplugins/ae/impl/utils/FoliaScheduler.java b/net/advancedplugins/ae/impl/utils/FoliaScheduler.java
+index ec4ef38..06b549d 100644
+--- a/net/advancedplugins/ae/impl/utils/FoliaScheduler.java
++++ b/net/advancedplugins/ae/impl/utils/FoliaScheduler.java
+@@ -1,9 +1,10 @@
+ package net.advancedplugins.ae.impl.utils;
+ 
++import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
+ import java.util.function.Consumer;
+-import net.advancedplugins.ae.impl.utils.FoliaScheduler.Task;
+ import org.bukkit.Bukkit;
+ import org.bukkit.plugin.Plugin;
++import org.bukkit.scheduler.BukkitTask;
+ 
+ public class FoliaScheduler {
+    public static final boolean isFolia = checkFolia();
+@@ -17,53 +18,58 @@ public class FoliaScheduler {
+       }
+    }
+ 
+-   public static Task runTask(Plugin var0, Runnable var1) {
++   public static FoliaScheduler.Task runTask(Plugin plugin, Runnable runnable) {
+       if (isFolia) {
+-         Bukkit.getGlobalRegionScheduler().execute(var0, var1);
+-         return new Task(null);
++         Bukkit.getGlobalRegionScheduler().execute(plugin, runnable);
++         return new FoliaScheduler.Task(null);
+       } else {
+-         return new Task(Bukkit.getScheduler().runTask(var0, var1));
++         return new FoliaScheduler.Task(Bukkit.getScheduler().runTask(plugin, runnable));
+       }
+    }
+ 
+-   public static Task runTaskLater(Plugin var0, Runnable var1, long var2) {
++   public static FoliaScheduler.Task runTaskLater(Plugin plugin, Runnable runnable, long delayTicks) {
+       return isFolia
+-         ? new Task(Bukkit.getGlobalRegionScheduler().runDelayed(var0, var1x -> var1.run(), var2 < 1L ? 1L : var2))
+-         : new Task(Bukkit.getScheduler().runTaskLater(var0, var1, var2));
++         ? new FoliaScheduler.Task(Bukkit.getGlobalRegionScheduler().runDelayed(plugin, t -> runnable.run(), delayTicks < 1L ? 1L : delayTicks))
++         : new FoliaScheduler.Task(Bukkit.getScheduler().runTaskLater(plugin, runnable, delayTicks));
+    }
+ 
+-   public static Task runTaskTimer(Plugin var0, Runnable var1, long var2, long var4) {
++   public static FoliaScheduler.Task runTaskTimer(Plugin plugin, Runnable runnable, long delayTicks, long periodTicks) {
+       return isFolia
+-         ? new Task(Bukkit.getGlobalRegionScheduler().runAtFixedRate(var0, var1x -> var1.run(), var2 < 1L ? 1L : var2, var4))
+-         : new Task(Bukkit.getScheduler().runTaskTimer(var0, var1, var2, var4));
++         ? new FoliaScheduler.Task(
++            Bukkit.getGlobalRegionScheduler().runAtFixedRate(plugin, t -> runnable.run(), delayTicks < 1L ? 1L : delayTicks, periodTicks)
++         )
++         : new FoliaScheduler.Task(Bukkit.getScheduler().runTaskTimer(plugin, runnable, delayTicks, periodTicks));
+    }
+ 
+-   public static Task runTaskAsynchronously(Plugin var0, Runnable var1) {
++   public static FoliaScheduler.Task runTaskAsynchronously(Plugin plugin, Runnable runnable) {
+       if (isFolia) {
+-         Bukkit.getGlobalRegionScheduler().execute(var0, var1);
+-         return new Task(null);
++         Bukkit.getGlobalRegionScheduler().execute(plugin, runnable);
++         return new FoliaScheduler.Task(null);
+       } else {
+-         return new Task(Bukkit.getScheduler().runTaskAsynchronously(var0, var1));
++         return new FoliaScheduler.Task(Bukkit.getScheduler().runTaskAsynchronously(plugin, runnable));
+       }
+    }
+ 
+-   public static Task runTaskLaterAsynchronously(Plugin var0, Runnable var1, long var2) {
++   public static FoliaScheduler.Task runTaskLaterAsynchronously(Plugin plugin, Runnable runnable, long delayTicks) {
+       return isFolia
+-         ? new Task(Bukkit.getGlobalRegionScheduler().runDelayed(var0, var1x -> var1.run(), var2 < 1L ? 1L : var2))
+-         : new Task(Bukkit.getScheduler().runTaskLaterAsynchronously(var0, var1, var2));
++         ? new FoliaScheduler.Task(Bukkit.getGlobalRegionScheduler().runDelayed(plugin, t -> runnable.run(), delayTicks < 1L ? 1L : delayTicks))
++         : new FoliaScheduler.Task(Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, runnable, delayTicks));
+    }
+ 
+-   public static Task runTaskTimerAsynchronously(Plugin var0, Runnable var1, long var2, long var4) {
++   public static FoliaScheduler.Task runTaskTimerAsynchronously(Plugin plugin, Runnable runnable, long delayTicks, long periodTicks) {
+       return isFolia
+-         ? new Task(Bukkit.getGlobalRegionScheduler().runAtFixedRate(var0, var1x -> var1.run(), var2 < 1L ? 1L : var2, var4))
+-         : new Task(Bukkit.getScheduler().runTaskTimerAsynchronously(var0, var1, var2, var4));
++         ? new FoliaScheduler.Task(
++            Bukkit.getGlobalRegionScheduler().runAtFixedRate(plugin, t -> runnable.run(), delayTicks < 1L ? 1L : delayTicks, periodTicks)
++         )
++         : new FoliaScheduler.Task(Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, runnable, delayTicks, periodTicks));
+    }
+ 
+-   public static void runTaskTimerAsynchronously(Plugin var0, Consumer<Task> var1, long var2, long var4) {
++   public static void runTaskTimerAsynchronously(Plugin plugin, Consumer<FoliaScheduler.Task> runnable, long delayTicks, long periodTicks) {
+       if (isFolia) {
+-         Bukkit.getGlobalRegionScheduler().runAtFixedRate(var0, var1x -> var1.accept(new Task(var1x)), var2 < 1L ? 1L : var2, var4);
++         Bukkit.getGlobalRegionScheduler()
++            .runAtFixedRate(plugin, t -> runnable.accept(new FoliaScheduler.Task(t)), delayTicks < 1L ? 1L : delayTicks, periodTicks);
+       } else {
+-         Bukkit.getScheduler().runTaskTimerAsynchronously(var0, var1x -> var1.accept(new Task(var1x)), var2, var4);
++         Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, t -> runnable.accept(new FoliaScheduler.Task(t)), delayTicks, periodTicks);
+       }
+    }
+ 
+@@ -71,11 +77,42 @@ public class FoliaScheduler {
+       return isFolia;
+    }
+ 
+-   public static void cancelAll(Plugin var0) {
++   public static void cancelAll(Plugin plugin) {
+       if (isFolia) {
+-         Bukkit.getGlobalRegionScheduler().cancelTasks(var0);
++         Bukkit.getGlobalRegionScheduler().cancelTasks(plugin);
+       } else {
+-         Bukkit.getScheduler().cancelTasks(var0);
++         Bukkit.getScheduler().cancelTasks(plugin);
++      }
++   }
++
++   public static class Task {
++      private Object foliaTask;
++      private BukkitTask bukkitTask;
++
++      public Task(Object foliaTask) {
++         this.foliaTask = foliaTask;
++      }
++
++      public Task(BukkitTask bukkitTask) {
++         this.bukkitTask = bukkitTask;
++      }
++
++      public void cancel() {
++         if (this.foliaTask != null || this.bukkitTask != null) {
++            if (this.foliaTask != null) {
++               ((ScheduledTask)this.foliaTask).cancel();
++            } else {
++               this.bukkitTask.cancel();
++            }
++         }
++      }
++
++      public int getTaskId() {
++         if (this.foliaTask == null && this.bukkitTask == null) {
++            return -1;
++         } else {
++            return this.foliaTask != null ? -1 : this.bukkitTask.getTaskId();
++         }
+       }
+    }
+ }
+

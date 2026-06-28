@@ -8,78 +8,87 @@ AE PATCH EXCLUDES: net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler.clas
 
 ---
 diff --git a/net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler.java b/net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler.java
-index 1b3130e..06323b0 100644
+index 5ca7bfb..213e186 100644
 --- a/net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler.java
 +++ b/net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler.java
-@@ -3,8 +3,8 @@ package net.advancedplugins.ae.impl.utils;
- import java.lang.reflect.Constructor;
- import java.lang.reflect.InvocationTargetException;
- import java.lang.reflect.Method;
+@@ -1,7 +1,7 @@
+ package net.advancedplugins.ae.impl.utils;
+ 
 -import java.util.HashMap;
  import java.util.Map;
 +import java.util.concurrent.ConcurrentHashMap;
- import net.advancedplugins.ae.impl.utils.nbt.backend.ClassWrapper;
  import net.advancedplugins.ae.impl.utils.nbt.utils.MinecraftVersion;
  import org.bukkit.Bukkit;
-@@ -15,7 +15,7 @@ import org.bukkit.block.data.Levelled;
+ import org.bukkit.Material;
+@@ -11,44 +11,48 @@ import org.bukkit.block.data.Levelled;
  import org.bukkit.block.data.Waterlogged;
  
  public class ReallyFastBlockHandler {
 -   private static final Map<World, ReallyFastBlockHandler> handlers = new HashMap<>();
 +   private static final Map<World, ReallyFastBlockHandler> handlers = new ConcurrentHashMap<>();
-    private static Class<?> craftWorldClass;
-    private static Class<?> craftBlockData;
-    private static Class<?> craftMagicNumbersClass;
-@@ -28,13 +28,7 @@ public class ReallyFastBlockHandler {
-    private Object nmsWorld;
+    private final World world;
  
-    public static ReallyFastBlockHandler getForWorld(World world) {
--      if (handlers.containsKey(world)) {
--         return handlers.get(world);
--      } else {
--         ReallyFastBlockHandler rfbh = new ReallyFastBlockHandler(world);
--         handlers.put(world, rfbh);
--         return rfbh;
--      }
+-   public static ReallyFastBlockHandler getForWorld(World var0) {
+-      return handlers.computeIfAbsent(var0, ReallyFastBlockHandler::new);
++   public static ReallyFastBlockHandler getForWorld(World world) {
 +      return handlers.computeIfAbsent(world, ReallyFastBlockHandler::new);
     }
  
-    public static void init() {
-@@ -50,9 +44,20 @@ public class ReallyFastBlockHandler {
+-   public ReallyFastBlockHandler(World var1) {
+-      this.world = var1;
++   public ReallyFastBlockHandler(World world) {
++      this.world = world;
+    }
  
-          blockPos = nmsBlockPosition.getConstructor(int.class, int.class, int.class);
-          getHandle = craftWorldClass.getMethod("getHandle");
--         setType = MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_18_R1)
--            ? nmsWorldClass.getMethod("a", nmsBlockPosition, iBlockData, int.class)
--            : nmsWorldClass.getMethod("setTypeAndData", nmsBlockPosition, iBlockData, int.class);
-+         
-+         Method setTypeMethod = null;
-+         for (String methodName : new String[]{"setBlock", "a", "setTypeAndData"}) {
-+            try {
-+               setTypeMethod = nmsWorldClass.getMethod(methodName, nmsBlockPosition, iBlockData, int.class);
-+               break;
-+            } catch (NoSuchMethodException ignored) {}
-+         }
-+         if (setTypeMethod != null) {
-+            setType = setTypeMethod;
-+         } else {
-+            throw new NoSuchMethodException("Could not find setTypeAndData / setBlock / a method in Level/World");
-+         }
-+         
-          if (!MinecraftVersion.isNew()) {
-             craftMagicNumbersClass = ClassWrapper.CRAFT_MagicNumbers.getClazz();
-             getMagicBlock = craftMagicNumbersClass.getMethod("getBlock", Material.class);
-@@ -76,7 +81,11 @@ public class ReallyFastBlockHandler {
- 
-    public void setType(Material material, Block... blocks) {
+-   public void setType(Material var1, Block... var2) {
++   public void setType(Material material, Block... blocks) {
        if (!Bukkit.isPrimaryThread()) {
--         FoliaScheduler.runTask(ASManager.getInstance(), () -> this.setType(material, blocks));
+-         FoliaScheduler.runTask(ASManager.getInstance(), () -> this.setType(var1, var2));
 +         if (blocks.length > 0) {
 +            Bukkit.getRegionScheduler().execute(ASManager.getInstance(), blocks[0].getLocation(), () -> this.setType(material, blocks));
 +         } else {
 +            Bukkit.getGlobalRegionScheduler().execute(ASManager.getInstance(), () -> this.setType(material, blocks));
 +         }
        } else {
-          try {
-             Object ibd = MinecraftVersion.isNew()
+-         for (Block var6 : var2) {
+-            if (var6.getType() != var1) {
+-               boolean var7 = false;
+-               int var8 = 0;
+-               if (var6.getBlockData() instanceof Waterlogged var9) {
+-                  var7 = var9.isWaterlogged();
++         for (Block block : blocks) {
++            if (block.getType() != material) {
++               boolean waterLogged = false;
++               int waterLevel = 0;
++               if (block.getBlockData() instanceof Waterlogged waterlogged) {
++                  waterLogged = waterlogged.isWaterlogged();
+                }
+ 
+                if (MinecraftVersion.isPaper()) {
+-                  String var11 = var6.getBlockData().getMaterial().name();
+-                  if (var11.equals("SEA_PICKLE") || var11.contains("CORAL") || var11.contains("KELP") || var11.contains("SEAGRASS")) {
+-                     var8 = var6.getWorld().getFluidData(var6.getLocation()).getLevel();
++                  String name = block.getBlockData().getMaterial().name();
++                  if (name.equals("SEA_PICKLE") || name.contains("CORAL") || name.contains("KELP") || name.contains("SEAGRASS")) {
++                     waterLevel = block.getWorld().getFluidData(block.getLocation()).getLevel();
+                   }
+                }
+ 
+-               var6.setType(var1);
+-               if (var7 || var8 > 0) {
+-                  var6.setType(Material.WATER);
++               block.setType(material);
++               if (waterLogged || waterLevel > 0) {
++                  block.setType(Material.WATER);
+                }
+ 
+-               if (var8 > 0 && var6.getBlockData() instanceof Levelled var12) {
+-                  var12.setLevel(var8);
+-                  var6.setBlockData(var12);
++               if (waterLevel > 0 && block.getBlockData() instanceof Levelled levelled) {
++                  levelled.setLevel(waterLevel);
++                  block.setBlockData(levelled);
+                }
+             }
+          }
 

@@ -8,35 +8,72 @@ AE PATCH EXCLUDES: net/advancedplugins/ae/Core.class, net/advancedplugins/ae/Cor
 
 ---
 diff --git a/net/advancedplugins/ae/Core.java b/net/advancedplugins/ae/Core.java
-index 1d471ef..ae46721 100644
+index 9188ee4..4339a08 100644
 --- a/net/advancedplugins/ae/Core.java
 +++ b/net/advancedplugins/ae/Core.java
-@@ -83,7 +83,6 @@ import net.advancedplugins.ae.impl.utils.ReallyFastBlockHandler;
- import net.advancedplugins.ae.impl.utils.Registry;
+@@ -6,7 +6,6 @@ import java.util.Arrays;
+ import java.util.List;
+ import java.util.Set;
+ import java.util.stream.Stream;
+-import net.advancedplugins.ae.Core.1;
+ import net.advancedplugins.ae.abilities.ItemEnchantsReader;
+ import net.advancedplugins.ae.enchanthandler.enchantments.AEnchantmentSorting;
+ import net.advancedplugins.ae.enchanthandler.enchantments.AEnchants;
+@@ -80,14 +79,14 @@ import net.advancedplugins.ae.impl.effects.handler.BowFullChangeHandler;
+ import net.advancedplugins.ae.impl.effects.handler.PlayerPlacedBlocksHandler;
+ import net.advancedplugins.ae.impl.utils.ASManager;
+ import net.advancedplugins.ae.impl.utils.EntitySpawnUtils;
++import net.advancedplugins.ae.impl.utils.ReallyFastBlockHandler;
++import net.advancedplugins.ae.impl.utils.Registry;
  import net.advancedplugins.ae.impl.utils.RemoveDeathItems;
  import net.advancedplugins.ae.impl.utils.RunnableMetrics;
 -import net.advancedplugins.ae.impl.utils.SchedulerUtils;
  import net.advancedplugins.ae.impl.utils.hooks.HookPlugin;
  import net.advancedplugins.ae.impl.utils.hooks.HooksHandler;
  import net.advancedplugins.ae.impl.utils.nbt.utils.MinecraftVersion;
-@@ -109,7 +108,6 @@ import org.bukkit.plugin.PluginManager;
- import org.bukkit.plugin.RegisteredServiceProvider;
- import org.bukkit.plugin.java.JavaPlugin;
- import org.bukkit.plugin.java.JavaPluginLoader;
--import org.bukkit.scheduler.BukkitRunnable;
+ import net.advancedplugins.ae.impl.utils.plugin.FirstInstall;
+-import net.advancedplugins.ae.impl.utils.protection.events.BlockModifyListener;
+ import net.advancedplugins.ae.items.HolyWhiteScroll;
+ import net.advancedplugins.ae.items.ItemLoader;
+ import net.advancedplugins.ae.items.StatTrak;
+@@ -130,15 +129,14 @@ public class Core extends JavaPlugin {
+    private boolean lastTime = false;
  
- public class Core extends JavaPlugin {
-    private static Core instance;
-@@ -166,7 +164,7 @@ public class Core extends JavaPlugin {
+    public void onEnable() {
+-      loadConfig0();
+       EntitySpawnUtils.metaDataPrefix = "ae";
+       instance = this;
+       ASManager.setInstance(this);
+       FirstInstall.checkFirstInstall(this, "config.yml", "https://ae.advancedplugins.net/advancedenchantments-ui");
+       pluginVersion = this.getDescription().getVersion();
+-      File var1 = getInstance().getDataFolder();
+-      if (!var1.exists() || !var1.isDirectory()) {
+-         var1.mkdirs();
++      File plFolder = getInstance().getDataFolder();
++      if (!plFolder.exists() || !plFolder.isDirectory()) {
++         plFolder.mkdirs();
+       }
+ 
+       YamlFile.ANVIL.getFile();
+@@ -166,22 +164,22 @@ public class Core extends JavaPlugin {
              populationHandler = new PopulationHandler(getInstance());
           }
  
 -         Bukkit.getScheduler().runTaskLater(getInstance(), this::onPostLoad, 2L);
 +         Bukkit.getGlobalRegionScheduler().runDelayed(getInstance(), (task) -> this.onPostLoad(), 2L);
           paymentHandler = new PaymentHandler();
-          List<String> configItems = YamlFile.CONFIG
+-         List var2 = YamlFile.CONFIG
++         List<String> configItems = YamlFile.CONFIG
              .getStringList(
-@@ -181,7 +179,7 @@ public class Core extends JavaPlugin {
+                "items.settings.can-apply-to",
+                Arrays.asList(
+                   "ALL_SWORD", "ALL_ARMOR", "ALL_PICKAXE", "ALL_AXE", "ALL_SHOVEL", "ALL_HOE", "ALL_EDIBLE", "ALL_BLOCK", "BOOK", "ENCHANTED_BOOK", "BOW"
+                )
+             );
+-         applicableItems = AManager.initMaterials(var2);
++         applicableItems = AManager.initMaterials(configItems);
+          new LevelsPayment(this);
+          new DiamondsPayment(this);
           new EmeraldsPayment(this);
           new GoldIngotsPayment(this);
           new ConfigUpdater().resetTinkerer();
@@ -54,38 +91,235 @@ index 1d471ef..ae46721 100644
              AEnchantmentSorting.start();
              AEnchants.initializeEnchantsListBlacklist();
           }, 40L);
-@@ -266,25 +264,18 @@ public class Core extends JavaPlugin {
+@@ -210,52 +208,52 @@ public class Core extends JavaPlugin {
+          GKits.setStatus(YamlFile.GKITS.getBoolean("gkits-enabled"));
+ 
+          try {
+-            Field var3 = Bukkit.getServer().getClass().getDeclaredField("commandMap");
+-            var3.setAccessible(true);
+-            CommandMap var4 = (CommandMap)var3.get(Bukkit.getServer());
+-            String var5 = "enchanter";
+-            if (this.isEnabled(var5)) {
+-               var4.register(var5, new EnchanterCommand(this.getCommandString(var5)));
++            Field bukkitCommandMap = Bukkit.getServer().getClass().getDeclaredField("commandMap");
++            bukkitCommandMap.setAccessible(true);
++            CommandMap commandMap = (CommandMap)bukkitCommandMap.get(Bukkit.getServer());
++            String command = "enchanter";
++            if (this.isEnabled(command)) {
++               commandMap.register(command, new EnchanterCommand(this.getCommandString(command)));
+             }
+ 
+-            var5 = "tinkerer";
+-            if (this.isEnabled(var5)) {
+-               var4.register(var5, new TinkererCommand(this.getCommandString(var5)));
++            command = "tinkerer";
++            if (this.isEnabled(command)) {
++               commandMap.register(command, new TinkererCommand(this.getCommandString(command)));
+             }
+ 
+-            var5 = "withdrawsouls";
+-            if (this.isEnabled(var5)) {
+-               var4.register(var5, new WithdrawSouls(this.getCommandString(var5)));
++            command = "withdrawsouls";
++            if (this.isEnabled(command)) {
++               commandMap.register(command, new WithdrawSouls(this.getCommandString(command)));
+             }
+ 
+-            var5 = "alchemist";
+-            if (this.isEnabled(var5)) {
+-               var4.register(var5, new AlchemistCommand(this.getCommandString(var5)));
++            command = "alchemist";
++            if (this.isEnabled(command)) {
++               commandMap.register(command, new AlchemistCommand(this.getCommandString(command)));
+             }
+ 
+-            var5 = "apply";
+-            if (this.isEnabled(var5)) {
+-               var4.register(var5, new ApplyCommand(this.getCommandString(var5)));
++            command = "apply";
++            if (this.isEnabled(command)) {
++               commandMap.register(command, new ApplyCommand(this.getCommandString(command)));
+             }
+ 
+-            var4.register("aegive", new AEGiveCommand("aegive"));
+-            var4.register("advancedsets", new SetsCommand());
+-            var5 = ((String)GKitsCommand.getGkitCommand().get(0)).replace("/", "");
++            commandMap.register("aegive", new AEGiveCommand("aegive"));
++            commandMap.register("advancedsets", new SetsCommand());
++            command = ((String)GKitsCommand.getGkitCommand().get(0)).replace("/", "");
+             if (GKits.isEnabled()) {
+-               var4.register(var5, new GKitsCommand(var5));
++               commandMap.register(command, new GKitsCommand(command));
+             }
+ 
+             if (this.isCustomCommandEnabled("enchantments")) {
+-               var5 = this.getCustomCommandString("enchantments", "/enchants");
+-               var4.register(var5, new UserEnchantmentsCommand(var5));
++               command = this.getCustomCommandString("enchantments", "/enchants");
++               commandMap.register(command, new UserEnchantmentsCommand(command));
+             }
+ 
+             if (this.isCustomCommandEnabled("enchantment-info")) {
+-               var5 = this.getCustomCommandString("enchantment-info", "/enchant");
+-               var4.register(var5, new EnchantmentInfoCommand(var5));
++               command = this.getCustomCommandString("enchantment-info", "/enchant");
++               commandMap.register(command, new EnchantmentInfoCommand(command));
+             }
+-         } catch (Exception var6) {
+-            var6.printStackTrace();
++         } catch (Exception var7) {
++            var7.printStackTrace();
+          }
+ 
+          this.getCommand("AdvancedEnchantments").setExecutor(new MainCommand());
+@@ -266,10 +264,27 @@ public class Core extends JavaPlugin {
              instance.getLogger().info("Successfully hooked into economy plugin (Vault)");
           }
  
--         (new BukkitRunnable() {
--            public void run() {
--               YamlFile.PDATA.save();
--            }
--         }).runTaskTimerAsynchronously(this, 6000L, 6000L);
+-         new 1(this).runTaskTimerAsynchronously(this, 6000L, 6000L);
 +         Bukkit.getAsyncScheduler().runAtFixedRate(this, (task) -> {
 +            YamlFile.PDATA.save();
 +         }, 300000L, 300000L, java.util.concurrent.TimeUnit.MILLISECONDS);
           setWhiteScroll(YamlFile.CONFIG.getString("white-scroll.item.name", "&fWhite Scroll"));
           similarEnchantmentsHelper = new SimilarEnchantmentsHelper();
- 
-          try {
-             this.lastId = Registry.get();
--            (new BukkitRunnable() {
--               int conCount = 0;
--
--               public void run() {
+-         MainCommand.name = "pluginLoaded";
++
++         try {
++            this.lastId = Registry.get();
 +            Bukkit.getGlobalRegionScheduler().execute(this, () -> {
-                   Core.this.again = true;
-                   MainCommand.name = "pluginLoaded";
--                  Bukkit.getLogger().info("[AdvancedEnchantments] Thanks for using Black-Minecraft.com");
--               }
--            }).runTask(this);
++                  Core.this.again = true;
++                  MainCommand.name = "pluginLoaded";
 +               });
-          } catch (Exception var6) {
-             var6.printStackTrace();
-             Bukkit.getPluginManager().disablePlugin(instance);
-@@ -383,7 +374,8 @@ public class Core extends JavaPlugin {
++         } catch (Exception var6) {
++            var6.printStackTrace();
++            Bukkit.getPluginManager().disablePlugin(instance);
++         }
++
++         if (!Registry.get().equalsIgnoreCase(this.lastId)) {
++            Bukkit.getPluginManager().disablePlugin(this);
++         }
++
+          this.registerListeners();
+          if (HooksHandler.getHook(HookPlugin.PLACEHOLDERAPI) != null) {
+             new PapiPlaceholders().register();
+@@ -280,9 +295,9 @@ public class Core extends JavaPlugin {
+    private void onPostLoad() {
+       if (MinecraftVersion.getVersionNumber() >= 1160) {
+          if (getPopulationHandler().getRandomLootMap().isEnabled()) {
+-            for (World var2 : Bukkit.getWorlds()) {
+-               Stream.of(var2.getPopulators()).filter(var0 -> var0 instanceof WorldLootPopulator).forEach(var1 -> var2.getPopulators().remove(var1));
+-               var2.getPopulators().add(new WorldLootPopulator());
++            for (World w : Bukkit.getWorlds()) {
++               Stream.of(w.getPopulators()).filter(p -> p instanceof WorldLootPopulator).forEach(p -> w.getPopulators().remove(p));
++               w.getPopulators().add(new WorldLootPopulator());
+             }
+          }
+ 
+@@ -293,53 +308,52 @@ public class Core extends JavaPlugin {
+    }
+ 
+    private void registerListeners() {
+-      PluginManager var1 = Bukkit.getPluginManager();
+-      var1.registerEvents(new ReloadEvent(), instance);
+-      var1.registerEvents(new AdminClickEvent(), instance);
+-      var1.registerEvents(new AdminChatListener(), instance);
+-      var1.registerEvents(new ClickListener(), instance);
+-      var1.registerEvents(new LeaveEvent(), instance);
+-      var1.registerEvents(new UsedActionbarListener(), instance);
+-      var1.registerEvents(new InventoryEvent(), instance);
+-      var1.registerEvents(new TinkererInventory(), instance);
+-      var1.registerEvents(new GClick(), instance);
+-      var1.registerEvents(new ConfirmInventory(), instance);
+-      var1.registerEvents(new SetMenuClick(), instance);
+-      var1.registerEvents(new SetsPreviewCommand(), instance);
+-      var1.registerEvents(new SetSpecificPreviewClick(), instance);
+-      var1.registerEvents(new ItemFrameInteractEvent(), instance);
+-      var1.registerEvents(new ItemInteraction(), instance);
+-      var1.registerEvents(new InventoryClicks(), instance);
+-      var1.registerEvents(new StatTrak(), instance);
+-      var1.registerEvents(new SoulsEvents(), instance);
+-      new AnvilEvent();
+-      var1.registerEvents(new GListeners(), instance);
+-      var1.registerEvents(new BookRightClick(), instance);
+-      var1.registerEvents(new InteractEvent(), instance);
+-      var1.registerEvents(new ItemUse(), instance);
+-      var1.registerEvents(new SkullPlace(), instance);
+-      var1.registerEvents(new SoulGemClick(), instance);
+-      var1.registerEvents(new SoulgemCraftEvent(), instance);
+-      var1.registerEvents(new MobDrops(), instance);
+-      var1.registerEvents(new MarketInventory(), instance);
+-      var1.registerEvents(new AlchemistInventoryClicks(), instance);
+-      var1.registerEvents(new HolyWhiteScroll(), instance);
+-      var1.registerEvents(new RemoveDeathItems(), instance);
+-      var1.registerEvents(new EntitySpawnUtils(this), this);
+-      var1.registerEvents(new SetEquipEvent(), instance);
+-      var1.registerEvents(new SetEquipEvent(), instance);
+-      var1.registerEvents(new OrbApply(), instance);
+-      var1.registerEvents(new PlayerPlacedBlocksHandler(this), this);
+-      var1.registerEvents(new BlockModifyListener(), this);
+-      var1.registerEvents(new BowFullChangeHandler(), this);
++      PluginManager p = Bukkit.getPluginManager();
++      p.registerEvents(new ReloadEvent(), instance);
++      p.registerEvents(new AdminClickEvent(), instance);
++      p.registerEvents(new AdminChatListener(), instance);
++      p.registerEvents(new ClickListener(), instance);
++      p.registerEvents(new LeaveEvent(), instance);
++      p.registerEvents(new UsedActionbarListener(), instance);
++      p.registerEvents(new InventoryEvent(), instance);
++      p.registerEvents(new TinkererInventory(), instance);
++      p.registerEvents(new GClick(), instance);
++      p.registerEvents(new ConfirmInventory(), instance);
++      p.registerEvents(new SetMenuClick(), instance);
++      p.registerEvents(new SetsPreviewCommand(), instance);
++      p.registerEvents(new SetSpecificPreviewClick(), instance);
++      p.registerEvents(new ItemFrameInteractEvent(), instance);
++      p.registerEvents(new ItemInteraction(), instance);
++      p.registerEvents(new InventoryClicks(), instance);
++      p.registerEvents(new StatTrak(), instance);
++      p.registerEvents(new SoulsEvents(), instance);
++      p.registerEvents(new AnvilEvent(), instance);
++      p.registerEvents(new GListeners(), instance);
++      p.registerEvents(new BookRightClick(), instance);
++      p.registerEvents(new InteractEvent(), instance);
++      p.registerEvents(new ItemUse(), instance);
++      p.registerEvents(new SkullPlace(), instance);
++      p.registerEvents(new SoulGemClick(), instance);
++      p.registerEvents(new SoulgemCraftEvent(), instance);
++      p.registerEvents(new MobDrops(), instance);
++      p.registerEvents(new MarketInventory(), instance);
++      p.registerEvents(new AlchemistInventoryClicks(), instance);
++      p.registerEvents(new HolyWhiteScroll(), instance);
++      p.registerEvents(new RemoveDeathItems(), instance);
++      p.registerEvents(new EntitySpawnUtils(this), this);
++      p.registerEvents(new SetEquipEvent(), instance);
++      p.registerEvents(new SetEquipEvent(), instance);
++      p.registerEvents(new OrbApply(), instance);
++      p.registerEvents(new PlayerPlacedBlocksHandler(this), this);
++      p.registerEvents(new BowFullChangeHandler(), this);
+       if (YamlFile.CONFIG.getBoolean("settings.open-enchanter-by-right-clicking-enchantment-table", false)) {
+-         var1.registerEvents(new EnchantmentTableRightClick(), this);
++         p.registerEvents(new EnchantmentTableRightClick(), this);
+       }
+ 
+       if (YamlFile.CONFIG.getBoolean("settings.grindstones-remove-custom-enchants", true) && MinecraftVersion.getVersionNumber() >= 1160) {
+-         var1.registerEvents(new SpigotListener(), instance);
++         p.registerEvents(new SpigotListener(), instance);
+          if (MinecraftVersion.getVersionNumber() >= 1180) {
+-            var1.registerEvents(new Grindstone1_18_Listener(), instance);
++            p.registerEvents(new Grindstone1_18_Listener(), instance);
+          }
+       }
+    }
+@@ -352,14 +366,15 @@ public class Core extends JavaPlugin {
+       return whiteScroll;
+    }
+ 
+-   public static void setWhiteScroll(String var0) {
+-      whiteScroll = var0;
++   public static void setWhiteScroll(String whiteScroll) {
++      Core.whiteScroll = whiteScroll;
+    }
+ 
     public void onDisable() {
        MarketInventory.unload();
        YamlFile.PDATA.save();
@@ -95,4 +329,69 @@ index 1d471ef..ae46721 100644
        effectsHandler.unload();
     }
  
+@@ -367,47 +382,47 @@ public class Core extends JavaPlugin {
+       return itemLoader;
+    }
+ 
+-   private boolean isEnabled(String var1) {
+-      return YamlFile.CONFIG.getBoolean("commands." + var1 + ".enabled", true);
++   private boolean isEnabled(String command) {
++      return YamlFile.CONFIG.getBoolean("commands." + command + ".enabled", true);
+    }
+ 
+-   private boolean isCustomCommandEnabled(String var1) {
+-      return YamlFile.COMMANDS.getBoolean(var1 + ".enabled", false);
++   private boolean isCustomCommandEnabled(String section) {
++      return YamlFile.COMMANDS.getBoolean(section + ".enabled", false);
+    }
+ 
+-   private String getCommandString(String var1) {
+-      String var2 = YamlFile.CONFIG.getString("commands." + var1 + ".command", var1);
+-      return var2.replaceAll("/", "");
++   private String getCommandString(String command) {
++      String rt = YamlFile.CONFIG.getString("commands." + command + ".command", command);
++      return rt.replaceAll("/", "");
+    }
+ 
+-   private String getCustomCommandString(String var1, String var2) {
+-      String var3 = YamlFile.COMMANDS.getString(var1 + ".command", var2);
+-      return var3.replaceAll("/", "");
++   private String getCustomCommandString(String section, String command) {
++      String rt = YamlFile.COMMANDS.getString(section + ".command", command);
++      return rt.replaceAll("/", "");
+    }
+ 
+    private boolean setupEconomy() {
+       if (this.getServer().getPluginManager().getPlugin("Vault") == null) {
+          return false;
+       } else {
+-         RegisteredServiceProvider var1 = this.getServer().getServicesManager().getRegistration(Economy.class);
+-         if (var1 == null) {
++         RegisteredServiceProvider<Economy> rsp = this.getServer().getServicesManager().getRegistration(Economy.class);
++         if (rsp == null) {
+             return false;
+          } else {
+-            economy = (Economy)var1.getProvider();
++            economy = (Economy)rsp.getProvider();
+             return true;
+          }
+       }
+    }
+ 
+-   public static boolean canApplyTo(Material var0, ItemStack var1) {
+-      return LocalAPI.isValidForEnchantments(var1) ? true : applicableItems.contains(var0);
++   public static boolean canApplyTo(Material m, ItemStack item) {
++      return LocalAPI.isValidForEnchantments(item) ? true : applicableItems.contains(m);
+    }
+ 
+    public Core() {
+    }
+ 
+-   protected Core(JavaPluginLoader var1, PluginDescriptionFile var2, File var3, File var4) {
+-      super(var1, var2, var3, var4);
++   protected Core(JavaPluginLoader loader, PluginDescriptionFile description, File dataFolder, File file) {
++      super(loader, description, dataFolder, file);
+    }
+ 
+    public static Core getInstance() {
 

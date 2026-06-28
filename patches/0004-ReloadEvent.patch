@@ -8,14 +8,18 @@ AE PATCH EXCLUDES: net/advancedplugins/ae/globallisteners/listeners/ReloadEvent.
 
 ---
 diff --git a/net/advancedplugins/ae/globallisteners/listeners/ReloadEvent.java b/net/advancedplugins/ae/globallisteners/listeners/ReloadEvent.java
-index fc8c535..a2d69d7 100644
+index ca30ede..a2d69d7 100644
 --- a/net/advancedplugins/ae/globallisteners/listeners/ReloadEvent.java
 +++ b/net/advancedplugins/ae/globallisteners/listeners/ReloadEvent.java
-@@ -11,7 +11,7 @@ public class ReloadEvent implements Listener {
+@@ -9,9 +9,9 @@ import org.bukkit.event.server.ServerLoadEvent.LoadType;
+ 
+ public class ReloadEvent implements Listener {
     @EventHandler
-    public void reloadEvent(ServerLoadEvent e) {
-       if (e.getType() == LoadType.RELOAD) {
--         Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> Bukkit.getOnlinePlayers().forEach(p -> {}), 2L);
+-   public void reloadEvent(ServerLoadEvent var1) {
+-      if (var1.getType() == LoadType.RELOAD) {
+-         Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> Bukkit.getOnlinePlayers().forEach(var0 -> {}), 2L);
++   public void reloadEvent(ServerLoadEvent e) {
++      if (e.getType() == LoadType.RELOAD) {
 +         Bukkit.getGlobalRegionScheduler().runDelayed(Core.getInstance(), (task) -> Bukkit.getOnlinePlayers().forEach(p -> {}), 2L);
        }
     }

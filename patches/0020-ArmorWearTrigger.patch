@@ -8,10 +8,18 @@ AE PATCH EXCLUDES: net/advancedplugins/ae/impl/effects/effects/mechanics/trigger
 
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/ArmorWearTrigger.java b/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/ArmorWearTrigger.java
-index c6165ca..fa05230 100644
+index 92e7008..fa05230 100644
 --- a/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/ArmorWearTrigger.java
 +++ b/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/ArmorWearTrigger.java
-@@ -13,7 +13,6 @@ import net.advancedplugins.ae.impl.effects.effects.EffectsHandler;
+@@ -6,7 +6,6 @@ import java.util.ArrayList;
+ import java.util.List;
+ import java.util.UUID;
+ import java.util.Map.Entry;
+-import lombok.Generated;
+ import net.advancedplugins.ae.impl.effects.armorutils.ArmorEquipEvent;
+ import net.advancedplugins.ae.impl.effects.armorutils.ArmorType;
+ import net.advancedplugins.ae.impl.effects.armorutils.ArmorEquipEvent.EquipMethod;
+@@ -14,7 +13,6 @@ import net.advancedplugins.ae.impl.effects.effects.EffectsHandler;
  import net.advancedplugins.ae.impl.effects.effects.actions.AdvancedTrigger;
  import net.advancedplugins.ae.impl.effects.effects.effects.internal.ApplyPotionEffect;
  import net.advancedplugins.ae.impl.utils.ASManager;
@@ -19,16 +27,34 @@ index c6165ca..fa05230 100644
  import org.bukkit.Bukkit;
  import org.bukkit.Material;
  import org.bukkit.entity.ArmorStand;
-@@ -45,15 +44,17 @@ public class ArmorWearTrigger extends AdvancedTrigger {
-       if (type != null) {
-          ItemStack[] oldArmor = new ItemStack[]{e.getOldArmorPiece()};
-          ItemStack[] newArmor = new ItemStack[]{e.getNewArmorPiece()};
+@@ -28,6 +26,7 @@ import org.bukkit.event.player.PlayerChangedWorldEvent;
+ import org.bukkit.event.player.PlayerJoinEvent;
+ import org.bukkit.event.player.PlayerQuitEvent;
+ import org.bukkit.inventory.ItemStack;
++import org.bukkit.potion.PotionEffect;
+ 
+ public class ArmorWearTrigger extends AdvancedTrigger {
+    private static final Multimap<UUID, ArmorType> processQueue = ArrayListMultimap.create();
+@@ -40,140 +39,152 @@ public class ArmorWearTrigger extends AdvancedTrigger {
+    }
+ 
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+-   public void onArmor(ArmorEquipEvent var1) {
+-      ArmorType var2 = var1.getType();
+-      if (var2 != null) {
+-         ItemStack[] var3 = new ItemStack[]{var1.getOldArmorPiece()};
+-         ItemStack[] var4 = new ItemStack[]{var1.getNewArmorPiece()};
 -         SchedulerUtils.runTaskLater(() -> {
--            if (e.getMethod().equals(EquipMethod.PICK_DROP)) {
--               boolean isSkull = oldArmor[0].getType().name().endsWith("HEAD") || e.getNewArmorPiece().getType().name().endsWith("HEAD");
--               if (isSkull) {
--                  oldArmor[0] = e.getPlayer().getItemOnCursor();
--                  newArmor[0] = e.getPlayer().getInventory().getHelmet();
+-            if (var1.getMethod().equals(EquipMethod.PICK_DROP)) {
+-               boolean var3x = var3[0].getType().name().endsWith("HEAD") || var1.getNewArmorPiece().getType().name().endsWith("HEAD");
+-               if (var3x) {
+-                  var3[0] = var1.getPlayer().getItemOnCursor();
+-                  var4[0] = var1.getPlayer().getInventory().getHelmet();
++   public void onArmor(ArmorEquipEvent e) {
++      ArmorType type = e.getType();
++      if (type != null) {
++         ItemStack[] oldArmor = new ItemStack[]{e.getOldArmorPiece()};
++         ItemStack[] newArmor = new ItemStack[]{e.getNewArmorPiece()};
 +         if (e.getPlayer() != null) {
 +            e.getPlayer().getScheduler().runDelayed(ASManager.getInstance(), task -> {
 +               if (e.getMethod().equals(EquipMethod.PICK_DROP)) {
@@ -40,21 +66,27 @@ index c6165ca..fa05230 100644
                 }
 -            }
 -         }, 1L);
+-         boolean var5 = this.updateWornArmor(var1.getPlayer(), var3[0], var4[0], var2, false, var1.isSendMessage());
+-         if (!var5) {
+-            var1.setCancelled(true);
 +            }, null, 1L);
 +         }
-          boolean res = this.updateWornArmor(e.getPlayer(), oldArmor[0], newArmor[0], type, false, e.isSendMessage());
-          if (!res) {
-             e.setCancelled(true);
-@@ -63,15 +64,18 @@ public class ArmorWearTrigger extends AdvancedTrigger {
++         boolean res = this.updateWornArmor(e.getPlayer(), oldArmor[0], newArmor[0], type, false, e.isSendMessage());
++         if (!res) {
++            e.setCancelled(true);
+          }
+       }
+    }
  
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onPlayerJoin(PlayerJoinEvent event) {
+-   public void onPlayerJoin(PlayerJoinEvent var1) {
 -      SchedulerUtils.runTaskLater(() -> {
--         Player player = event.getPlayer();
+-         Player var2 = var1.getPlayer();
 -
--         for (Entry<ArmorType, ItemStack> entry : ArmorType.getArmorContents(player).entrySet()) {
--            if (entry.getValue() != null && !entry.getValue().getType().name().equalsIgnoreCase("AIR")) {
--               this.updateWornArmor(player, null, entry.getValue(), entry.getKey(), false, false);
+-         for (Entry var4 : ArmorType.getArmorContents(var2).entrySet()) {
+-            if (var4.getValue() != null && !((ItemStack)var4.getValue()).getType().name().equalsIgnoreCase("AIR")) {
+-               this.updateWornArmor(var2, null, (ItemStack)var4.getValue(), (ArmorType)var4.getKey(), false, false);
++   public void onPlayerJoin(PlayerJoinEvent event) {
 +      Player player = event.getPlayer();
 +      if (player != null) {
 +         player.getScheduler().runDelayed(ASManager.getInstance(), task -> {
@@ -72,19 +104,28 @@ index c6165ca..fa05230 100644
     }
  
     @EventHandler
-@@ -83,24 +87,28 @@ public class ArmorWearTrigger extends AdvancedTrigger {
+-   public void onPlayerQuit(PlayerQuitEvent var1) {
+-      Player var2 = var1.getPlayer();
+-      ArmorType.getArmorContents(var2).forEach((var2x, var3) -> this.runCheck(var2, var3, var2x, true, false));
++   public void onPlayerQuit(PlayerQuitEvent event) {
++      Player player = event.getPlayer();
++      ArmorType.getArmorContents(player).forEach((armorType, itemStack) -> this.runCheck(player, itemStack, armorType, true, false));
+    }
+ 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onWorldChange(PlayerChangedWorldEvent event) {
-       Player player = event.getPlayer();
--      double health = player.getHealth();
+-   public void onWorldChange(PlayerChangedWorldEvent var1) {
+-      Player var2 = var1.getPlayer();
+-      double var3 = var2.getHealth();
 -      SchedulerUtils.runTaskLater(() -> {
--         List<PotionEffect> effects = ApplyPotionEffect.getActivatedPermanentPotions().getOrDefault(player.getUniqueId(), new ArrayList<>());
--         List.copyOf(effects).forEach(effect -> ApplyPotionEffect.handlePermanentRemoval(player, effects, effect.getType(), effect.getAmplifier()));
--         ArmorType.getArmorContents(player).forEach((armorType, itemStack) -> {
--            this.runCheck(player, itemStack, armorType, false, false);
--            Bukkit.getPluginManager().callEvent(new ArmorEquipEvent(player, EquipMethod.WORLD_CHANGE, armorType, null, itemStack, false));
+-         List var2x = ApplyPotionEffect.getActivatedPermanentPotions().getOrDefault(var2.getUniqueId(), new ArrayList<>());
+-         List.copyOf(var2x).forEach(var2xx -> ApplyPotionEffect.handlePermanentRemoval(var2, var2x, var2xx.getType(), var2xx.getAmplifier()));
+-         ArmorType.getArmorContents(var2).forEach((var2xx, var3x) -> {
+-            this.runCheck(var2, var3x, var2xx, false, false);
+-            Bukkit.getPluginManager().callEvent(new ArmorEquipEvent(var2, EquipMethod.WORLD_CHANGE, var2xx, null, var3x, false));
 -         });
 -      });
++   public void onWorldChange(PlayerChangedWorldEvent event) {
++      Player player = event.getPlayer();
 +      if (player != null) {
 +         player.getScheduler().runDelayed(ASManager.getInstance(), task -> {
 +            if (player.isOnline()) {
@@ -100,12 +141,13 @@ index c6165ca..fa05230 100644
     }
  
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onResurrect(EntityResurrectEvent event) {
-       if (event.getEntity() instanceof Player player) {
+-   public void onResurrect(EntityResurrectEvent var1) {
+-      if (var1.getEntity() instanceof Player var2) {
 -         SchedulerUtils.runTaskLater(
--            () -> ArmorType.getArmorContents(player).forEach((armorType, itemStack) -> this.updateWornArmor(player, null, itemStack, armorType, false, false)),
--            3L
+-            () -> ArmorType.getArmorContents(var2).forEach((var2x, var3) -> this.updateWornArmor(var2, null, var3, var2x, false, false)), 3L
 -         );
++   public void onResurrect(EntityResurrectEvent event) {
++      if (event.getEntity() instanceof Player player) {
 +         player.getScheduler().runDelayed(ASManager.getInstance(), task -> {
 +            if (player.isOnline()) {
 +               ArmorType.getArmorContents(player).forEach((armorType, itemStack) -> this.updateWornArmor(player, null, itemStack, armorType, false, false));
@@ -114,33 +156,169 @@ index c6165ca..fa05230 100644
        }
     }
  
-@@ -115,7 +123,9 @@ public class ArmorWearTrigger extends AdvancedTrigger {
+    @EventHandler
+-   public void onDeath(PlayerDeathEvent var1) {
+-      if (!var1.getKeepInventory()) {
+-         ArrayList var2 = new ArrayList();
++   public void onDeath(PlayerDeathEvent e) {
++      if (!e.getKeepInventory()) {
++         List<ItemStack> toUpdate = new ArrayList<>();
+ 
+-         for (ItemStack var6 : var1.getEntity().getInventory().getArmorContents()) {
+-            if (var1.getDrops().contains(var6)) {
+-               var2.add(var6);
++         for (ItemStack item : e.getEntity().getInventory().getArmorContents()) {
++            if (e.getDrops().contains(item)) {
++               toUpdate.add(item);
              }
           }
  
--         SchedulerUtils.runTaskLater(() -> toUpdate.forEach(itemx -> this.updateWornArmor(e.getEntity(), itemx, null, ArmorType.matchType(itemx), true)), 10L);
+-         SchedulerUtils.runTaskLater(() -> var2.forEach(var2xx -> this.updateWornArmor(var1.getEntity(), var2xx, null, ArmorType.matchType(var2xx), true)), 10L);
 +         e.getEntity().getScheduler().runDelayed(ASManager.getInstance(), task -> {
 +            toUpdate.forEach(itemx -> this.updateWornArmor(e.getEntity(), itemx, null, ArmorType.matchType(itemx), true));
 +         }, null, 10L);
        }
     }
  
-@@ -149,7 +159,7 @@ public class ArmorWearTrigger extends AdvancedTrigger {
+-   public boolean updateWornArmor(LivingEntity var1, ItemStack var2, ItemStack var3, ArmorType var4) {
+-      return !this.isEnabled() ? false : this.updateWornArmor(var1, var2, var3, var4, false);
++   public boolean updateWornArmor(LivingEntity livingEntity, ItemStack oldPiece, ItemStack newPiece, ArmorType slot) {
++      return !this.isEnabled() ? false : this.updateWornArmor(livingEntity, oldPiece, newPiece, slot, false);
+    }
+ 
+-   public boolean updateWornArmor(LivingEntity var1, ItemStack var2, ItemStack var3, ArmorType var4, boolean var5) {
+-      return this.updateWornArmor(var1, var2, var3, var4, var5, true);
++   public boolean updateWornArmor(LivingEntity livingEntity, ItemStack oldPiece, ItemStack newPiece, ArmorType slot, boolean bypassAliveCheck) {
++      return this.updateWornArmor(livingEntity, oldPiece, newPiece, slot, bypassAliveCheck, true);
+    }
+ 
+-   public boolean updateWornArmor(LivingEntity var1, ItemStack var2, ItemStack var3, ArmorType var4, boolean var5, boolean var6) {
+-      if (var5 || !var1.isDead() && var1.isValid()) {
+-         if (var1 instanceof ArmorStand) {
++   public boolean updateWornArmor(LivingEntity livingEntity, ItemStack oldPiece, ItemStack newPiece, ArmorType slot, boolean bypassAliveCheck, boolean sendMsg) {
++      if (bypassAliveCheck || !livingEntity.isDead() && livingEntity.isValid()) {
++         if (livingEntity instanceof ArmorStand) {
+             return false;
+-         } else if (processQueue.containsEntry(var1.getUniqueId(), var4)) {
+-            EffectsHandler.debug(var1.getName() + " is already in armor wear queue.");
++         } else if (processQueue.containsEntry(livingEntity.getUniqueId(), slot)) {
++            EffectsHandler.debug(livingEntity.getName() + " is already in armor wear queue.");
+             return false;
+          } else {
+-            processQueue.put(var1.getUniqueId(), var4);
+-            double var7 = var1.getHealth();
++            processQueue.put(livingEntity.getUniqueId(), slot);
++            double health = livingEntity.getHealth();
+ 
+             try {
+-               boolean var9 = var4 != null
+-                  && ArmorType.HELMET.equals(var4)
+-                  && var2 != null
+-                  && var3 != null
++               boolean nonArmorHelmet = slot != null
++                  && ArmorType.HELMET.equals(slot)
++                  && oldPiece != null
++                  && newPiece != null
+                   && (
+-                     !var3.getType().name().endsWith("_HELMET") & !var3.getType().name().equalsIgnoreCase("AIR")
+-                        || !var2.getType().name().endsWith("_HELMET") && !var2.getType().name().equalsIgnoreCase("AIR")
++                     !newPiece.getType().name().endsWith("_HELMET") & !newPiece.getType().name().equalsIgnoreCase("AIR")
++                        || !oldPiece.getType().name().endsWith("_HELMET") && !oldPiece.getType().name().equalsIgnoreCase("AIR")
                    );
-                if (nonArmorHelmet && livingEntity instanceof Player) {
-                   ItemStack oldPieceClone = oldPiece.clone();
+-               if (var9 && var1 instanceof Player) {
+-                  ItemStack var10 = var2.clone();
 -                  Bukkit.getScheduler().runTaskLater(EffectsHandler.getInstance(), () -> {
+-                     ItemStack var7x = ((Player)var1).getInventory().getHelmet();
+-                     ItemStack var8 = var3.isSimilar(var7x) ? var2 : var3;
+-                     if ((var7x == null || var7x.getType() == Material.AIR) && var8.getType() == Material.AIR) {
+-                        this.runCheck(var1, var10, var4, true, var6);
+-                        processQueue.remove(var1.getUniqueId(), var4);
++               if (nonArmorHelmet && livingEntity instanceof Player) {
++                  ItemStack oldPieceClone = oldPiece.clone();
 +                  livingEntity.getScheduler().runDelayed(EffectsHandler.getInstance(), task -> {
-                      ItemStack _newPiece = ((Player)livingEntity).getInventory().getHelmet();
-                      ItemStack _oldPiece = newPiece.isSimilar(_newPiece) ? oldPiece : newPiece;
-                      if ((_newPiece == null || _newPiece.getType() == Material.AIR) && _oldPiece.getType() == Material.AIR) {
-@@ -160,7 +170,7 @@ public class ArmorWearTrigger extends AdvancedTrigger {
-                         this.runCheck(livingEntity, _newPiece, slot, false, sendMsg);
-                         processQueue.remove(livingEntity.getUniqueId(), slot);
++                     ItemStack _newPiece = ((Player)livingEntity).getInventory().getHelmet();
++                     ItemStack _oldPiece = newPiece.isSimilar(_newPiece) ? oldPiece : newPiece;
++                     if ((_newPiece == null || _newPiece.getType() == Material.AIR) && _oldPiece.getType() == Material.AIR) {
++                        this.runCheck(livingEntity, oldPieceClone, slot, true, sendMsg);
++                        processQueue.remove(livingEntity.getUniqueId(), slot);
+                      } else {
+-                        this.runCheck(var1, var8, var4, true, var6);
+-                        this.runCheck(var1, var7x, var4, false, var6);
+-                        processQueue.remove(var1.getUniqueId(), var4);
++                        this.runCheck(livingEntity, _oldPiece, slot, true, sendMsg);
++                        this.runCheck(livingEntity, _newPiece, slot, false, sendMsg);
++                        processQueue.remove(livingEntity.getUniqueId(), slot);
                       }
 -                  }, 1L);
 +                  }, null, 1L);
                    return true;
                 } else {
-                   this.runCheck(livingEntity, oldPiece, slot, true, sendMsg);
+-                  this.runCheck(var1, var2, var4, true, var6);
+-                  this.runCheck(var1, var3, var4, false, var6);
+-                  if (var1 instanceof Player && !var5) {
+-                     ASManager.resetPlayerHealth((Player)var1, var7);
++                  this.runCheck(livingEntity, oldPiece, slot, true, sendMsg);
++                  this.runCheck(livingEntity, newPiece, slot, false, sendMsg);
++                  if (livingEntity instanceof Player && !bypassAliveCheck) {
++                     ASManager.resetPlayerHealth((Player)livingEntity, health);
+                   }
+ 
+-                  processQueue.remove(var1.getUniqueId(), var4);
++                  processQueue.remove(livingEntity.getUniqueId(), slot);
+                   return true;
+                }
+             } catch (Exception var11) {
+                var11.printStackTrace();
+-               processQueue.remove(var1.getUniqueId(), var4);
++               processQueue.remove(livingEntity.getUniqueId(), slot);
+                return true;
+             }
+          }
+@@ -182,29 +193,33 @@ public class ArmorWearTrigger extends AdvancedTrigger {
+       }
+    }
+ 
+-   public void runCheck(LivingEntity var1, ItemStack var2, ArmorType var3, boolean var4, boolean var5) {
+-      if (var3 != null) {
+-         ArmorEquipEvent var6 = new ArmorEquipEvent(
+-            var1 instanceof Player ? (Player)var1 : null, EquipMethod.HOTBAR, var3, var4 ? var2 : null, var4 ? null : var2, var5
++   public void runCheck(LivingEntity livingEntity, ItemStack armorItem, ArmorType slot, boolean removed, boolean sendMsg) {
++      if (slot != null) {
++         ArmorEquipEvent armorEquipEvent = new ArmorEquipEvent(
++            livingEntity instanceof Player ? (Player)livingEntity : null,
++            EquipMethod.HOTBAR,
++            slot,
++            removed ? armorItem : null,
++            removed ? null : armorItem,
++            sendMsg
+          );
+-         if (!var4) {
+-            RepeatingTrigger.getTrigger().activate(var1, var3.getRollItemType(), var2, var6);
++         if (!removed) {
++            RepeatingTrigger.getTrigger().activate(livingEntity, slot.getRollItemType(), armorItem, armorEquipEvent);
+          } else {
+-            RepeatingTrigger.getTrigger().stop(var1, var3.getRollItemType(), var6);
++            RepeatingTrigger.getTrigger().stop(livingEntity, slot.getRollItemType(), armorEquipEvent);
+          }
+ 
+          this.executionBuilder()
+-            .setAttacker(var1)
++            .setAttacker(livingEntity)
+             .setAttackerMain(true)
+-            .setEvent(var6)
+-            .setRemoval(var4)
+-            .setItemType(var3.getRollItemType())
+-            .setItem(var2)
++            .setEvent(armorEquipEvent)
++            .setRemoval(removed)
++            .setItemType(slot.getRollItemType())
++            .setItem(armorItem)
+             .buildAndExecute();
+       }
+    }
+ 
+-   @Generated
+    public static ArmorWearTrigger getArmorWearTrigger() {
+       return armorWearTrigger;
+    }
 

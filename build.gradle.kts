@@ -3,9 +3,9 @@ plugins {
 }
 
 group = "net.advancedplugins"
-version = "9.22.7-folia"
+version = "9.23.6-folia"
 
-val originalJar = file("libs/AdvancedEnchantments-9.22.7.jar")
+val originalJar = file("libs/AdvancedEnchantments-9.23.6.jar")
 val extractDir = layout.buildDirectory.dir("extracted")
 val patchedClassesDir = layout.buildDirectory.dir("classes/java/main")
 
@@ -129,7 +129,7 @@ tasks.named<Jar>("jar") {
     dependsOn(extractOriginalJar, copyCustomResources)
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
-    archiveFileName.set("AdvancedEnchantments-9.22.7-folia-patched.jar")
+    archiveFileName.set("AdvancedEnchantments-9.23.6-folia-patched.jar")
 
     // Layer 1: Original extracted JAR (exclude classes + resources we're overriding)
     from(extractDir) {
@@ -170,12 +170,12 @@ val pluginsDir = "/var/lib/pterodactyl/volumes/d64a444d-cbe1-44eb-99f6-1aa116292
 tasks.register<Copy>("deploy") {
     dependsOn(tasks.jar)
 
-    from(layout.buildDirectory.file("libs/AdvancedEnchantments-9.22.7-folia-patched.jar"))
+    from(layout.buildDirectory.file("libs/AdvancedEnchantments-9.23.6-folia-patched.jar"))
     into(pluginsDir)
-    rename { "AdvancedEnchantments-9.22.7-folia-patched.jar" }
+    rename { "AdvancedEnchantments-9.23.6-folia-patched.jar" }
 
     doLast {
-        val deployedFile = file("$pluginsDir/AdvancedEnchantments-9.22.7-folia-patched.jar")
+        val deployedFile = file("$pluginsDir/AdvancedEnchantments-9.23.6-folia-patched.jar")
         if (deployedFile.exists()) {
             println("✅ Deployed to ${deployedFile.absolutePath}")
             println("   Size: ${deployedFile.length()} bytes")
