@@ -1,0 +1,23 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0023] TeleportEffect: Migrate to teleportAsync
+
+AE PATCH REASON: Uses synchronous teleport on players/entities
+AE PATCH FIX: Migrate to teleportAsync
+AE PATCH RISK: MEDIUM
+AE PATCH EXCLUDES: net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportEffect.class, net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportEffect$*.class
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportEffect.java
+index f89090c..1b5efdf 100644
+--- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportEffect.java
++++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportEffect.java
+@@ -15,7 +15,7 @@ public class TeleportEffect extends AdvancedEffect {
+       Location var5 = var1.getBuilder().getMain().getLocation();
+       var4.setYaw(var5.getYaw());
+       var4.setPitch(var5.getPitch());
+-      var1.getBuilder().getMain().teleport(var4);
++      var1.getBuilder().getMain().teleportAsync(var4);
+       return true;
+    }
+ }
+

@@ -316,6 +316,51 @@
         "net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.class",
         "net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger$*.class"
       ]
+    },
+    {
+      "id": "0022",
+      "name": "DamageHandler",
+      "patchFile": "patches/0022-DamageHandler.patch",
+      "files": [
+        "net/advancedplugins/ae/impl/effects/effects/actions/handlers/DamageHandler.java"
+      ],
+      "issue": "Uses legacy BukkitRunnable for post-respawn delayed teleport",
+      "fix": "Migrate to player entity scheduler and teleportAsync",
+      "risk": "MEDIUM",
+      "excludes": [
+        "net/advancedplugins/ae/impl/effects/effects/actions/handlers/DamageHandler.class",
+        "net/advancedplugins/ae/impl/effects/effects/actions/handlers/DamageHandler$*.class"
+      ]
+    },
+    {
+      "id": "0023",
+      "name": "TeleportEffect",
+      "patchFile": "patches/0023-TeleportEffect.patch",
+      "files": [
+        "net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportEffect.java"
+      ],
+      "issue": "Uses synchronous teleport on players/entities",
+      "fix": "Migrate to teleportAsync",
+      "risk": "MEDIUM",
+      "excludes": [
+        "net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportEffect.class",
+        "net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportEffect$*.class"
+      ]
+    },
+    {
+      "id": "0024",
+      "name": "FireballEffect",
+      "patchFile": "patches/0024-FireballEffect.patch",
+      "files": [
+        "net/advancedplugins/ae/impl/effects/effects/effects/internal/FireballEffect.java"
+      ],
+      "issue": "Uses synchronous teleport on fireball entity",
+      "fix": "Migrate to teleportAsync",
+      "risk": "MEDIUM",
+      "excludes": [
+        "net/advancedplugins/ae/impl/effects/effects/effects/internal/FireballEffect.class",
+        "net/advancedplugins/ae/impl/effects/effects/effects/internal/FireballEffect$*.class"
+      ]
     }
   ]
 }

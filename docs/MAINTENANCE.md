@@ -137,6 +137,9 @@ Patches are structured as **one patch file per Java class**. The mappings are re
 | `0019` | `UserRepeaters` | `net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal` | Replaced legacy tasks container with `ScheduledTask` lists. |
 | `0020` | `ArmorWearTrigger` | `net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal` | Scheduled player armor changes and health updates on entity scheduler. |
 | `0021` | `RepeatingTrigger` | `net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal` | Thread-safe tasks tracker and repeating tasks scheduled on entity's ticker. |
+| `0022` | `DamageHandler` | `net/advancedplugins/ae/impl/effects/effects/actions/handlers` | Migrated post-respawn delayed teleport to player entity scheduler and `teleportAsync`. |
+| `0023` | `TeleportEffect` | `net/advancedplugins/ae/impl/effects/effects/effects/internal` | Replaced legacy synchronous player/entity teleportation with `teleportAsync`. |
+| `0024` | `FireballEffect` | `net/advancedplugins/ae/impl/effects/effects/effects/internal` | Replaced legacy synchronous fireball projectile teleportation with `teleportAsync`. |
 
 ---
 

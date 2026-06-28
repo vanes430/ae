@@ -1,0 +1,46 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0022] DamageHandler: Migrate to player entity scheduler and teleportAsync
+
+AE PATCH REASON: Uses legacy BukkitRunnable for post-respawn delayed teleport
+AE PATCH FIX: Migrate to player entity scheduler and teleportAsync
+AE PATCH RISK: MEDIUM
+AE PATCH EXCLUDES: net/advancedplugins/ae/impl/effects/effects/actions/handlers/DamageHandler.class, net/advancedplugins/ae/impl/effects/effects/actions/handlers/DamageHandler$*.class
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/effects/actions/handlers/DamageHandler.java b/net/advancedplugins/ae/impl/effects/effects/actions/handlers/DamageHandler.java
+index a8ba38e..1a2a7e5 100644
+--- a/net/advancedplugins/ae/impl/effects/effects/actions/handlers/DamageHandler.java
++++ b/net/advancedplugins/ae/impl/effects/effects/actions/handlers/DamageHandler.java
+@@ -11,7 +11,6 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
+ import org.bukkit.event.entity.EntityDamageEvent;
+ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+ import org.bukkit.metadata.FixedMetadataValue;
+-import org.bukkit.scheduler.BukkitRunnable;
+ 
+ public class DamageHandler {
+    public void damage(EntityDamageEvent var1, double var2, boolean var4) {
+@@ -75,17 +74,15 @@ public class DamageHandler {
+       }
+    }
+ 
+-   public void revive(Entity var1, final Location var2) {
++   public void revive(Entity var1, Location var2) {
+       Damageable var3 = (Damageable)var1;
+       if (var1 instanceof Player) {
+          if (var3.isDead() || var3.getHealth() <= 0.0) {
+-            final Player var4 = (Player)var1;
+-            var4.spigot().respawn();
+-            (new BukkitRunnable() {
+-               public void run() {
+-                  var4.teleport(var2);
+-               }
+-            }).runTaskLater(EffectsHandler.getInstance(), 1L);
++            Player player = (Player)var1;
++            player.spigot().respawn();
++            player.getScheduler().runDelayed(EffectsHandler.getInstance(), task -> {
++               player.teleportAsync(var2);
++            }, null, 1L);
+          }
+       }
+    }
+
