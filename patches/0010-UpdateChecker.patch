@@ -7,3 +7,38 @@ AE PATCH RISK: LOW
 AE PATCH EXCLUDES: net/advancedplugins/ae/impl/utils/plugin/UpdateChecker.class, net/advancedplugins/ae/impl/utils/plugin/UpdateChecker$*.class
 
 ---
+diff --git a/net/advancedplugins/ae/impl/utils/plugin/UpdateChecker.java b/net/advancedplugins/ae/impl/utils/plugin/UpdateChecker.java
+index b53aa9e..fb1e6ad 100644
+--- a/net/advancedplugins/ae/impl/utils/plugin/UpdateChecker.java
++++ b/net/advancedplugins/ae/impl/utils/plugin/UpdateChecker.java
+@@ -1,7 +1,6 @@
+ package net.advancedplugins.ae.impl.utils.plugin;
+ 
+ import net.advancedplugins.ae.impl.utils.ASManager;
+-import net.advancedplugins.ae.impl.utils.FoliaScheduler;
+ import org.bukkit.Bukkit;
+ import org.bukkit.ChatColor;
+ import org.bukkit.plugin.java.JavaPlugin;
+@@ -10,9 +9,9 @@ public class UpdateChecker {
+    private static final String UPDATE_URL = "https://advancedplugins.net/api/v1/getVersion.php?plugin=";
+ 
+    public static void checkUpdate(JavaPlugin plugin) {
+-      FoliaScheduler.runTaskLaterAsynchronously(
++      Bukkit.getAsyncScheduler().runDelayed(
+          plugin,
+-         () -> {
++         task -> {
+             String currentVersion = plugin.getDescription().getVersion();
+             String pluginName = plugin.getDescription().getName();
+ 
+@@ -42,7 +41,8 @@ public class UpdateChecker {
+                   );
+             }
+          },
+-         20L
++         1000L,
++         java.util.concurrent.TimeUnit.MILLISECONDS
+       );
+    }
+ 
+
