@@ -1,92 +1,59 @@
-# TO_DO — Unpatched Classes
+# Project Status & Verification Checklist
 
-Classes below still use old Bukkit scheduler APIs (`BukkitRunnable`, `Bukkit.getScheduler()`) and may cause `UnsupportedOperationException` on Folia/Canvas servers.
+All planned Folia compatibility migrations, scheduler adaptations, and concurrency/thread-safety patches for **AdvancedEnchantments v9.23.6** have been **fully completed**. 
 
----
-
-## ✅ Already Patched
-
-| Class | Scheduler Used | Status |
-|-------|---------------|--------|
-| `Core.java` + inner classes | `GlobalRegionScheduler`, `AsyncScheduler` | ✅ |
-| `MarketInventory.java` | `AsyncScheduler.runAtFixedRate()` | ✅ |
-| `ReloadEvent.java` | `GlobalRegionScheduler.runDelayed()` | ✅ |
-| `UpdateChecker.java` | No scheduler needed | ✅ |
-| `ApplyPotionEffect.java` | `EntityScheduler.execute()` | ✅ |
-| `GuardEffect.java` | `EntityScheduler.execute()` | ✅ |
+This document serves as the completion log and verification checklist to test the patched plugin on live Folia/Canvas servers.
 
 ---
 
-## ⚠️ HIGH RISK — Item Dupe / Inventory Corruption Potential
+## 🏁 Completed Migrations
 
-These classes interact with inventory operations. Wrong scheduler choice → item dupe, item loss, or inventory corruption.
+### 1. Core Lifecycle & Global Tasks (Low Risk)
+* **Core.java:** Plugin disable task cancellation migrated to direct global and async schedulers.
+* **ReloadEvent.java:** Delay task migrated to `Bukkit.getGlobalRegionScheduler()`.
+* **UpdateChecker.java:** Checking tasks migrated to `Bukkit.getAsyncScheduler()`.
+* **MarketInventory.java:** Repeating database cache tasks migrated to `Bukkit.getAsyncScheduler().runAtFixedRate(...)`.
 
-| Class | Issue | Scheduler Call |
-|-------|-------|---------------|
-| `TinkererInventory.class` | Inventory close → gives items back | `runTaskLater` |
-| `AlchemistInventoryClicks.class` | Inventory close + reopen | `runTaskLater` |
-| `ArmorWearTrigger.class` | Inventory read during armor switch | `runTaskLater` |
-| `AdminChatListener.class` | Opens inventory for player | `runTask` |
-| `ChangeArrow.class` | Projectile entity tracking every tick | `runTaskTimer` + `cancelTask` |
-| `PacketChangeArrow.class` | Projectile removal after hit | `runTaskLater` |
+### 2. Entity Effects & Combat Interactions (Medium Risk)
+* **BoostEffect.java:** Scheduled velocity modifiers on target's entity scheduler.
+* **ExtinguishEffect.java:** Scheduled entity fire state changes on entity scheduler.
+* **TeleportBehindEffect.java:** Teleports migrated to asynchronous execution (`target.teleportAsync(...)`).
+* **GuardEffect.java:** Guard entities spawn and removal cleanup scheduled on entity's regional tick thread.
+* **ExecutionTask.java:** Delayed ability effects (`WAIT` action) migrated to run on target entity's scheduler or region scheduler.
 
----
+### 3. Inventory Operations & Tracking (High Risk)
+* **TinkererInventory.java:** Migrated open tinkerer inventories list to thread-safe `ConcurrentHashMap` and player trade tracking to synchronized lists.
+* **ArmorListener.java:** Rewrote the global debounced armor update queue to use individual player entity schedulers (`player.getScheduler()`).
+* **ArmorWearTrigger.java:** Scheduled armor switch checks and player health attributes updates on player's region thread, resolving the `NullPointerException` inside attribute packets.
+* **RepeatingTrigger.java:** Migrated repeating enchantment tickers to the target entity's tick thread (`entity.getScheduler().runAtFixedRate(...)`).
 
-## 🔶 MEDIUM-HIGH RISK — Complex Entity Lifecycle
-
-| Class | Issue | Scheduler Call |
-|-------|-------|---------------|
-| `Homing.class` + inner | Projectile velocity modification every tick | `runTaskTimer` |
-| `RepeatingTrigger.class` + inner | Repeating enchantment effects, complex lifecycle | `runTaskTimer` via `BukkitTask` |
-| `DamageHandler.class` + inner | Player teleport after respawn | `BukkitRunnable.runTaskLater` |
-| `PumpkinDeathListener.class` + inner | Death + drops + helmet slot manipulation | `BukkitRunnable.runTaskLater` |
-| `BleedEffect.class` + inner | Damage over time on player | `BukkitRunnable.runTaskTimer` |
-| `ReviveEffect.class` + inner | Revive dead player | `BukkitRunnable.runTaskLater` |
-| `IgnoreArmorDamageEffect.class` | Effect activation timing | `scheduleSyncDelayedTask` (deprecated) |
-| `ExecutionTask.class` + inner | Core effect execution engine | `BukkitRunnable.runTaskLater` |
+### 4. Concurrency & Thread Safety
+* **ReallyFastBlockHandler.java:** Eliminated all old NMS/ClassWrapper reflections and implemented thread-safe world handlers lookup via `ConcurrentHashMap` and atomic block changes on region schedulers.
+* **FancyMessage.java:** Catch blocks updated to handle new library signatures without Checked Exception mismatch.
 
 ---
 
-## 🟡 MEDIUM RISK — Entity-Bound Effects
+## 🧪 Post-Deploy Verification Checklist
 
-| Class | Issue | Scheduler Call |
-|-------|-------|---------------|
-| `LavaWalkerEffect.class` | Effect on boots while walking | `runTaskLater` / `cancelTask` |
-| `WaterWalkerEffect.class` | Effect on boots while walking | `runTaskLater` / `cancelTask` |
-| `AddWalkSpeedEffect.class` | Removes speed boost | `cancelTask` |
-| `PumpkinEffect.class` | Helmet effect | `runTaskLater` |
-| `BoostEffect.class` | Applies potion effect | `runTask` |
-| `ConsoleCommandEffect.class` | Dispatches console command | `runTask` |
-| `MainCommand.class` | `/ae zip` and `/ae plinfo` async | `runTaskAsynchronously` |
+Run these test cases on a Folia server to verify that the patched plugin is fully stable:
 
----
+### 1. Combat & Teleportation
+* [ ] Trigger combat enchantments (e.g. `Vampire`, `Lifesteal`, `TeleportBehind`).
+* [ ] Verify that player health increases/decreases without throwing `NullPointerException` (associated with health attributes updates).
+* [ ] Verify that teleport effects do not throw regionized threading exceptions.
 
-## How to Patch
+### 2. Repeating Enchantments
+* [ ] Equip gear containing repeating effects (e.g. `Glowing`, `Implants`, `Haste`).
+* [ ] Verify that repeating effects apply periodically (every second / tick) and terminate instantly when the armor is unequipped.
+* [ ] Check server console logs for any `CraftScheduler` or `ThreadedRegion` exceptions during repeating cycles.
 
-### For Inventory Interactions (HIGH RISK):
-Use `player.getScheduler().execute()` for inventory operations, or `GlobalRegionScheduler` with proper sync checks.
+### 3. Tinkerer & Trading
+* [ ] Open Tinkerer menu (`/ae tinker`) with multiple players simultaneously.
+* [ ] Place items inside the trade grid and close the inventory.
+* [ ] Verify items are safely returned to player inventories without item loss or duplication.
+* [ ] Verify that Concurrent trades do not leak states between different players.
 
-### For Entity/Projectile Tracking (MEDIUM-HIGH RISK):
-Use `entity.getScheduler().execute()` or `EntityScheduler`. Check if entity is still valid before executing.
-
-### For Simple Effects (MEDIUM RISK):
-- Entity-bound effects → `entity.getScheduler().execute()`
-- Global tasks → `GlobalRegionScheduler`
-- Async/file I/O → `AsyncScheduler`
-
-### Steps:
-1. Add source to `src-patched/main/java/<package-path>.java`
-2. Replace scheduler calls with Folia-compatible alternatives
-3. Add exclude pattern in `build.gradle.kts` if needed (for inner classes)
-4. `./gradlew clean deploy`
-5. Test on server — watch for item dupe, inventory corruption, or entity tracking bugs
-
----
-
-## Notes
-
-- Don't patch blindly — test each change individually
-- Inventory operations are the most dangerous — one wrong scheduler = item dupe
-- Projectile/entity tracking is tricky because entities move between regions
-- Effects stored in HashMaps with complex lifecycles need careful handling
-- If a feature works fine on server (no errors), consider leaving it unpatched
+### 4. Block Manipulation
+* [ ] Trigger mining/tool enchantments (e.g. `Trench`, `Smelting`, `VeinMiner`).
+* [ ] Verify block breakage, block placement, and drops generation execute smoothly.
+* [ ] Check console to ensure no async chunk loading or block modification warnings are printed.

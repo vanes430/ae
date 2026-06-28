@@ -1,6 +1,6 @@
 # Enchantment Mapping by Applies-To + Max Level
 
-> Source: `decompiled/enchantments.yml`
+> Source: `decompiled/enchantments.yml` (AdvancedEnchantments v9.23.6)
 
 ---
 

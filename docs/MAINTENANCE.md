@@ -1,365 +1,149 @@
-# AdvancedEnchantments — Maintenance Guide
+# AdvancedEnchantments — Maintenance & Porting Guide
 
-## Overview
-
-This project maintains a **Folia/Canvas-compatible patched jar** of **AdvancedEnchantments v9.22.7**.
-The original plugin uses Bukkit scheduler APIs incompatible with Folia's regionized threading model.
+This project maintains a **Folia-compatible patched build** of **AdvancedEnchantments v9.23.6**. 
+Because the original plugin was designed for legacy Bukkit (which relies on single-threaded execution and a global synchronous tick), it is incompatible with Folia's multi-threaded, regionized ticker model. This project patches those compatibility issues.
 
 ---
 
-## Build System
+## 🛠️ Build & Deploy System
 
-### Gradle (Primary)
+The build system extracts the original JAR, compiles the patched source code, overlays it, and packages the final Folia-ready JAR.
+
 ```bash
-./gradlew clean build        # Build patched JAR
-./gradlew deploy             # Build + deploy to server
-./gradlew clean build deploy # One-command rebuild + deploy
+./gradlew clean build        # Compile and package the patched JAR
+./gradlew deploy             # Compile, package, and deploy to testing server
+./gradlew clean build deploy # Complete rebuild and deploy sequence
 ```
-Output: `build/libs/AdvancedEnchantments-9.22.7-folia-patched.jar`
+**Output Location:** `build/libs/AdvancedEnchantments-9.23.6-folia-patched.jar`
 
-### How It Works
-1. Compile stubs → `build/classes/stubs/`
-2. Compile patched sources → `build/classes/java/main/`
-3. Extract original JAR → `build/extracted/`
-4. Override resources (armorSets, customWeapons)
-5. Overlay patched classes on extracted contents
-6. Repack → patched JAR
+### How the Build Process Works
+1. **Compile Stubs:** Compiles dummy stub classes in `stubs-patched/` for compile-only dependencies.
+2. **Compile Patched Classes:** Compiles our custom source code located in `src-patched/main/java`.
+3. **Extract Original Jar:** Unpacks the raw class files and assets from `libs/AdvancedEnchantments-9.23.6.jar` to `build/extracted`.
+4. **Exclude Classes:** The Gradle build reads `patch-registry.json` and excludes the original counterparts of the patched classes from packaging.
+5. **Overlay:** Injects our newly compiled classes and resource overrides (like custom armor sets in `resources/`) into the final JAR.
 
 ---
 
-## Patched Classes (Folia Compatibility)
+## 🚀 Folia Architecture & Scheduling Rules
 
-### Scheduler-Related Patches
+In Folia, game ticks are split across thread regions. Doing synchronous modifications on players, inventories, or entities from other threads causes state exceptions (e.g. `NullPointerException: Cannot read field "world"`) or server crashes.
 
-| File | Original | Fix |
-|------|----------|-----|
-| **Core.java** | `Bukkit.getScheduler().runTaskLater/cancelTasks` | `Bukkit.getGlobalRegionScheduler()`, `Bukkit.getAsyncScheduler()` |
-| **ExecutionTask.java** | `new BukkitRunnable().runTaskLater()` | `SchedulerUtils.runTaskLater()` |
-| **RepeatingTrigger.java** | `BukkitTask`, `BukkitRunnable.runTaskTimer()` | `FoliaScheduler.Task`, `FoliaScheduler.runTaskTimer()` |
-| **RepeatingRunnable.java** | extends `BukkitRunnable` | implements `Runnable` |
-| **UserRepeaters.java** | `HashMap<EquipmentSlot, List<BukkitTask>>` | `HashMap<EquipmentSlot, List<FoliaScheduler.Task>>` |
-| **TeleportBehindEffect.java** | `target.teleport()` on wrong thread | `SchedulerUtils.runTask(() -> teleport)` |
-| **BoostEffect.java** | `Bukkit.getScheduler().runTaskLater()` | `FoliaScheduler.runTaskLater()` |
-| **TinkererInventory.java** | `Bukkit.getScheduler().runTaskLater()` | `FoliaScheduler.runTaskLater()` |
+We avoid global task wrappers (like `SchedulerUtils` or `FoliaScheduler`) and instead schedule tasks **directly** on the appropriate regionized thread scheduler:
 
-### Resource Override
-| File | Purpose |
-|------|---------|
-| **ApplyPotionEffect.java** | Folia-compatible scheduler for potion effects |
-| **GuardEffect.java** | Folia-compatible scheduling for guard entity |
-| **MarketInventory.java** | `Bukkit.getAsyncScheduler().runAtFixedRate()` |
-| **ReloadEvent.java** | `Bukkit.getGlobalRegionScheduler().runDelayed()` |
-| **UpdateChecker.java** | No scheduler needed (removed) |
-| **FancyMessage.java** | `ComponentSerializer.parse()` instead of `Bukkit.dispatchCommand` |
-
-### Armor Sets (10 Tiers)
-Custom armor set configs with full enchant coverage:
-
-| Tier | Armor Set | Prot/Unbrk | Enchant Count |
-|------|-----------|------------|---------------|
-| 1 | Darkness | 50 | Full max level |
-| 2 | Supreme | 45 | All enchants high |
-| 3 | DimensionalTraveller | 40 | All enchants mod-high |
-| 4 | KOTH | 35 | Moderate enchants |
-| 5 | Yijki | 30 | Low-moderate |
-| 6 | Phantom | 25 | Basic enchants |
-| 7 | Ranger | 20 | Few enchants |
-| 8 | Yeti | 15 | Minimal |
-| 9 | Mystic | 10 | Bare minimum |
-| 10 | Novice | 5 | Tank + Spirits only |
-
----
-
-## How to Add a New Patched Class
-
-### Step 1: Identify the broken class
-```
-java.lang.UnsupportedOperationException
-    at org.bukkit.craftbukkit.scheduler.CraftScheduler.handle
-    at AdvancedEnchantments.jar//net.advancedplugins.ae.path.To.BrokenClass.method(BrokenClass.java:42)
-```
-
-### Step 2: Decompile the class
-```bash
-mkdir -p /tmp/decompile
-cd /tmp/decompile
-jar xf /root/github/ae/libs/AdvancedEnchantments-9.22.7.jar net/advancedplugins/ae/path/to/BrokenClass.class
-java -jar /root/github/ae/vineflower-1.11.2.jar . decompiled 2>&1 | tail -2
-cat decompiled/net/advancedplugins/ae/path/to/BrokenClass.java
-```
-
-### Step 3: Create patched source
-```bash
-# Create directory structure matching package path
-mkdir -p /root/github/ae/src-patched/main/java/net/advancedplugins/ae/path/to/
-# Copy decompiled source, edit with Folia-compatible code
-```
-
-### Step 4: Update build.gradle.kts
-Add exclude for the original class:
-```kotlin
-exclude("net/advancedplugins/ae/path/to/BrokenClass.class")
-exclude("net/advancedplugins/ae/path/to/BrokenClass\$*.class")  // inner classes
-```
-
-### Step 5: Build and deploy
-```bash
-./gradlew clean build deploy
-```
-
----
-
-## Common Folia Fixes
-
-### Bukkit.getScheduler() → FoliaScheduler
+### 1. Entity & Player Tasks
+If a task modifies a player's health, inventory, position, or attributes, it **must** run on the entity's scheduler.
 ```java
-// Before (BROKEN)
-Bukkit.getScheduler().runTaskLater(plugin, runnable, delay);
-Bukkit.getScheduler().runTaskTimer(plugin, runnable, delay, period);
-
-// After (Folia-compatible)
-FoliaScheduler.runTaskLater(plugin, runnable, delay);
-FoliaScheduler.runTaskTimer(plugin, runnable, delay, period);
+// Thread-safe Entity/Player Delayed Task
+entity.getScheduler().runDelayed(
+    pluginInstance, 
+    task -> {
+        // Runs on the region thread of the entity
+        if (entity.isValid()) {
+            entity.setHealth(newHealth);
+        }
+    }, 
+    null, 
+    delayTicks
+);
 ```
 
-### BukkitRunnable → SchedulerUtils
+### 2. Repeating Tasks
+Repeating triggers (like repeating enchantments) must run on the entity's thread context:
 ```java
-// Before (BROKEN)
-new BukkitRunnable() {
-    public void run() { ... }
-}.runTaskLater(plugin, delay);
-
-// After (Folia-compatible)
-SchedulerUtils.runTaskLater(() -> { ... }, delay);
+// Thread-safe Entity Repeating Task
+ScheduledTask task = entity.getScheduler().runAtFixedRate(
+    pluginInstance,
+    taskInstance -> {
+        // Repeatedly executed on the entity's region thread
+    },
+    null,
+    initialDelayTicks,
+    periodTicks
+);
 ```
 
-### teleport() → teleportAsync (inside scheduler task)
+### 3. Block & Location-Bound Tasks
+Modifying blocks (setting block types, updating states) must be executed on the region owning the location:
 ```java
-// Before (BROKEN on Folia)
-target.teleport(location);
-
-// After (Folia-compatible)
-SchedulerUtils.runTask(() -> {
-    if (FoliaScheduler.isFolia()) {
-        target.teleportAsync(location).join();
-    } else {
-        target.teleport(location);
+// Thread-safe Region-specific Task
+Bukkit.getRegionScheduler().execute(
+    pluginInstance,
+    location,
+    () -> {
+        location.getBlock().setType(material);
     }
-});
+);
 ```
 
-### BukkitTask → FoliaScheduler.Task
+### 4. Async & Global Tasks
+Network requests, database I/O, or global caching must run on Folia's async or global region schedulers:
 ```java
-// Before (BROKEN)
-BukkitTask task = new MyRunnable().runTaskTimer(plugin, 0, 20);
-task.cancel();
-
-// After (Folia-compatible)
-FoliaScheduler.Task task = FoliaScheduler.runTaskTimer(plugin, runnable, 0, 20);
-task.cancel();
+// Thread-safe Async Repeating Task
+Bukkit.getAsyncScheduler().runAtFixedRate(
+    pluginInstance,
+    task -> {
+        // Database check, HTTP fetch, etc.
+    },
+    initialDelay,
+    period,
+    TimeUnit.MILLISECONDS
+);
 ```
 
 ---
 
-## Directory Structure
+## 🔒 Concurrency & Thread-Safety Rules
 
-```
-ae/
-├── build.gradle.kts                          # Build configuration
-├── gradlew / gradlew.bat                     # Gradle wrapper
-│
-├── src-patched/                              # Patched Java sources
-│   └── main/
-│       ├── java/net/advancedplugins/ae/
-│       │   ├── Core.java                     # Scheduler calls in onEnable/onDisable
-│       │   ├── handlers/netsharing/MarketInventory.java
-│       │   ├── globallisteners/listeners/ReloadEvent.java
-│       │   ├── impl/utils/plugin/UpdateChecker.java
-│       │   ├── impl/effects/effects/effects/internal/
-│       │   │   ├── ApplyPotionEffect.java
-│       │   │   ├── BoostEffect.java
-│       │   │   ├── GuardEffect.java
-│       │   │   └── TeleportBehindEffect.java
-│       │   ├── impl/effects/effects/actions/execution/
-│       │   │   └── ExecutionTask.java
-│       │   ├── impl/effects/effects/mechanics/triggers/internal/
-│       │   │   ├── RepeatingTrigger.java
-│       │   │   ├── RepeatingRunnable.java
-│       │   │   └── UserRepeaters.java
-│       │   └── features/tinkerer/
-│       │       └── TinkererInventory.java
-│       └── resources/
-│           ├── _extracted/                   # Extracted resources from original JAR
-│           └── armorSets/                    # Override armor set configs
-│
-├── stubs-patched/                            # Stub classes for missing dependencies
-│   └── net/kyori/adventure/text/object/
-│       └── PlayerHeadObjectContents.java
-│
-├── resources/
-│   └── armorSets/                            # Custom armor set configs (10 tiers)
-│       ├── Darkness.yml
-│       ├── Supreme.yml
-│       ├── DimensionalTraveller.yml
-│       ├── Koth.yml
-│       ├── Yijki.yml
-│       ├── Phantom.yml
-│       ├── Ranger.yml
-│       ├── Yeti.yml
-│       ├── Mystic.yml
-│       └── Novice.yml
-│
-├── libs/                                     # ALL dependency JARs
-│   ├── AdvancedEnchantments-9.22.7.jar       # Original plugin (source)
-│   ├── canvas-api.jar
-│   ├── canvas-server.jar
-│   ├── bungeecord-chat.jar
-│   ├── adventure-*.jar
-│   ├── Vault.jar
-│   └── placeholderapi.jar
-│
-├── build/                                    # Build output
-│   ├── libs/
-│   │   └── AdvancedEnchantments-9.22.7-folia-patched.jar
-│   └── extracted/                            # Extracted original JAR
-│
-├── vineflower-1.11.2.jar                     # Decompiler
-├── deploy.sh                                 # Simple copy deploy script
-├── HOW_TO_COMPILE.md                         # Build commands reference
-└── HOW_TO_MAINTENANCE.md                     # This file
-```
+Because different player events (like armor equipping or clicks) run concurrently on different region threads, sharing regular `HashMap` or `ArrayList` instances across players will lead to `ConcurrentModificationException` or memory corruption.
 
----
-
-## Scheduler Utilities
-
-### FoliaScheduler (from original JAR)
-```java
-public class FoliaScheduler {
-    public static final boolean isFolia = true;  // auto-detected
-
-    // Run immediately
-    public static Task runTask(Plugin plugin, Runnable runnable);
-
-    // Run after delay (in ticks)
-    public static Task runTaskLater(Plugin plugin, Runnable runnable, long delayTicks);
-
-    // Run repeatedly (in ticks)
-    public static Task runTaskTimer(Plugin plugin, Runnable runnable, long delayTicks, long periodTicks);
-
-    // Async variants
-    public static Task runTaskAsynchronously(Plugin plugin, Runnable runnable);
-    public static Task runTaskLaterAsynchronously(Plugin plugin, Runnable runnable, long delayTicks);
-    public static Task runTaskTimerAsynchronously(Plugin plugin, Runnable runnable, long delayTicks, long periodTicks);
-
-    // Cancel all tasks
-    public static void cancelAll(Plugin plugin);
-}
-```
-
-### SchedulerUtils (from original JAR)
-Wrapper around FoliaScheduler for simpler usage:
-```java
-public class SchedulerUtils {
-    public static int runTaskLater(Runnable task, long delay);  // default plugin: ASManager.getInstance()
-    public static int runTaskLater(Runnable task);              // default delay: 1 tick
-    public static int runTaskTimer(Runnable task, long initialDelay, long period);
-    public static int runTaskTimerAsync(Runnable task, long initialDelay, long period);
-    public static int runTask(Runnable task);
-    public static int runTaskAsync(Runnable task);
-}
-```
-
----
-
-## Verify Patched JAR
-
-```bash
-cd /tmp && rm -rf verify && mkdir verify && cd verify
-unzip -qo /root/github/ae/build/libs/AdvancedEnchantments-9.22.7-folia-patched.jar
-
-# Check Core — should show getGlobalRegionScheduler, NOT getScheduler
-javap -c net/advancedplugins/ae/Core.class | grep "getScheduler"
-# Expected: EMPTY (no results for getScheduler)
-
-# Check ExecutionTask — should show SchedulerUtils, NOT BukkitRunnable
-javap -c net/advancedplugins/ae/impl/effects/effects/actions/execution/ExecutionTask.class | grep "BukkitRunnable\|runTaskLater"
-# Expected: SchedulerUtils.runTaskLater
-
-# Check armor sets — should only have 8-10 yml files
-ls armorSets/*.yml | wc -l
-```
-
----
-
-## Troubleshooting
-
-### `UnsupportedOperationException` from CraftScheduler
-A class still uses `Bukkit.getScheduler()` or `BukkitRunnable`. Find the class in logs:
-```bash
-# Search for the broken class in logs
-grep "at AdvancedEnchantments" logs/latest.log | grep -v "SchedulerUtils\|FoliaScheduler"
-```
-Then patch it following the "How to Add a New Patched Class" steps above.
-
-### `Must use teleportAsync while in region threading`
-Entity.teleport() called outside main thread. Fix:
-```java
-SchedulerUtils.runTask(() -> target.teleportAsync(location).join());
-```
-
-### `cannot find symbol: class FoliaScheduler.Task`
-Make sure `FoliaScheduler` import is present:
-```java
-import net.advancedplugins.ae.impl.utils.FoliaScheduler;
-```
-
-### Build fails with duplicate class error
-Add exclude for the original class in `build.gradle.kts`:
-```kotlin
-exclude("net/advancedplugins/ae/path/to/Class.class")
-exclude("net/advancedplugins/ae/path/to/Class\$*.class")
-```
-
-### Armor sets not loading
-Check `resources/armorSets/` folder and `build.gradle.kts` `copyCustomResources` task. Only `.yml` files in this folder are included in the JAR.
-
-### New enchant fails on Folia
-Check which effect class is involved. Most effects use `ExecutionTask.activate()` which already uses `SchedulerUtils`. If a specific effect class uses `Bukkit.getScheduler()` directly, patch it to use `FoliaScheduler` or `SchedulerUtils`.
-
----
-
-## Updating to a New Plugin Version
-
-1. **Download the new original jar** → place as `libs/AdvancedEnchantments-NEW.jar`
-2. **Update version in `build.gradle.kts`**:
-   ```kotlin
-   val originalJar = file("libs/AdvancedEnchantments-NEW.jar")
-   version = "NEW-folia"
+### Rules for Shared State:
+1. **Never use static raw HashMaps** for tracking player data. Use `ConcurrentHashMap` instead.
+2. **Atomic Writes:** Use `map.computeIfAbsent(...)` or `map.putIfAbsent(...)` to prevent race conditions during initialization.
+3. **Synchronized Iteration:** If you must copy or iterate a synchronized map's keySet/values, wrap it in a `synchronized` block:
+   ```java
+   synchronized (sharedMap) {
+       keysCopy = new ArrayList<>(sharedMap.keySet());
+   }
    ```
-3. **Decompile the new jar** and compare patched classes
-4. **Update patched sources** if the original code changed
-5. **Run** `./gradlew clean build deploy`
-6. **Test on server** and check logs for new errors
+4. **Thread-Safe Lists:** Use `Collections.synchronizedList(new ArrayList<>())` for list operations accessed from multiple player threads.
 
 ---
 
-## Quick Reference: All Patched Classes
+## 📂 Patched Files Registry
 
-| # | Class | Issue | Fix |
-|---|-------|-------|-----|
-| 1 | Core.java | Bukkit scheduler | GlobalRegionScheduler + AsyncScheduler |
-| 2 | MarketInventory.java | Bukkit scheduler | AsyncScheduler |
-| 3 | ReloadEvent.java | Bukkit scheduler | GlobalRegionScheduler |
-| 4 | UpdateChecker.java | Bukkit scheduler | Removed scheduler |
-| 5 | ApplyPotionEffect.java | Bukkit scheduler | SchedulerUtils |
-| 6 | GuardEffect.java | Bukkit scheduler | FoliaScheduler |
-| 7 | ExecutionTask.java | BukkitRunnable | SchedulerUtils |
-| 8 | TeleportBehindEffect.java | teleport() sync | SchedulerUtils.runTask |
-| 9 | BoostEffect.java | Bukkit.getScheduler() | FoliaScheduler |
-| 10 | RepeatingTrigger.java | BukkitTask | FoliaScheduler.Task |
-| 11 | RepeatingRunnable.java | BukkitRunnable | Runnable |
-| 12 | UserRepeaters.java | BukkitTask | FoliaScheduler.Task |
-| 13 | TinkererInventory.java | Bukkit.getScheduler() | FoliaScheduler |
-| 14 | FancyMessage.java | dispatchCommand async | ComponentSerializer |
-| 15 | Armor Sets (10) | Config only | resources/armorSets/ |
+Patches are structured as **one patch file per Java class**. The mappings are registered in [patch-registry.json](file:///root/ae/patch-registry.json):
+
+| Patch ID | Class Name | Folder / Package | Migration Details |
+|---|---|---|---|
+| `0001` | `Core` | `net/advancedplugins/ae` | Fixed plugin disable task cancellation via global/async schedulers. |
+| `0002` | `TinkererInventory` | `net/advancedplugins/ae/features/tinkerer` | Thread-safe `ConcurrentHashMap` for open inventories and synchronized trade lists. |
+| `0003` | `AdvancedWeapon` | `net/advancedplugins/ae/features/weapons` | Read-only enchant ability cache validation. |
+| `0004` | `ReloadEvent` | `net/advancedplugins/ae/globallisteners/listeners` | Migrated reload ticks to `Bukkit.getGlobalRegionScheduler()`. |
+| `0005` | `FancyMessage` | `net/advancedplugins/ae/utils/fanciful` | Fixed chat package serialization. |
+| `0006` | `MarketInventory` | `net/advancedplugins/ae/handlers/netsharing` | Thread-safe async cache mapping and synchronized key pagination. |
+| `0007` | `ReallyFastBlockHandler` | `net/advancedplugins/ae/impl/utils` | Removed legacy NMS reflections. Implemented region thread placement. |
+| `0008` | `FoliaScheduler` | `net/advancedplugins/ae/impl/utils` | Left intact as a compatibility stub for unpatched classes. |
+| `0009` | `ArmorListener` | `net/advancedplugins/ae/impl/effects/armorutils` | Removed legacy debounce task queue; scheduled changes on entity scheduler. |
+| `0010` | `UpdateChecker` | `net/advancedplugins/ae/impl/utils/plugin` | Migrated update requests to Folia `AsyncScheduler`. |
+| `0011` | `FancyMessage` | `net/advancedplugins/ae/impl/utils/fanciful` | Cleaned duplicate serialization logic. |
+| `0012` | `MinecraftVersion` | `net/advancedplugins/ae/impl/utils/nbt/utils` | Removed obsolete `ClassWrapper` dependency. |
+| `0013` | `BoostEffect` | `net/advancedplugins/ae/impl/effects/effects/effects/internal` | Migrated velocity changes to target entity scheduler. |
+| `0014` | `ApplyPotionEffect` | `net/advancedplugins/ae/impl/effects/effects/effects/internal` | Thread-safe permanent potion cache (`ConcurrentHashMap`). |
+| `0015` | `GuardEffect` | `net/advancedplugins/ae/impl/effects/effects/effects/internal` | Thread-safe guard mapping (`ConcurrentHashMap`). |
+| `0016` | `ExtinguishEffect` | `net/advancedplugins/ae/impl/effects/effects/effects/internal` | Scheduled entity fire ticks update on target entity scheduler. |
+| `0017` | `TeleportBehindEffect` | `net/advancedplugins/ae/impl/effects/effects/effects/internal` | Replaced synchronous teleports with `entity.teleportAsync()`. |
+| `0018` | `ExecutionTask` | `net/advancedplugins/ae/impl/effects/effects/actions/execution` | Scheduled execution delays on entity scheduler (or region scheduler for locations). |
+| `0019` | `UserRepeaters` | `net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal` | Replaced legacy tasks container with `ScheduledTask` lists. |
+| `0020` | `ArmorWearTrigger` | `net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal` | Scheduled player armor changes and health updates on entity scheduler. |
+| `0021` | `RepeatingTrigger` | `net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal` | Thread-safe tasks tracker and repeating tasks scheduled on entity's ticker. |
+
+---
+
+## 🔍 Upgrading to a Newer Plugin Version
+
+When a new version of `AdvancedEnchantments` is released:
+1. **Replace original JAR:** Place the new JAR in `libs/AdvancedEnchantments-NEW.jar`.
+2. **Update Gradle build config:** In `build.gradle.kts`, update `originalJar` and target versions to match the new file name.
+3. **Decompile raw sources:** Decompile classes in the new JAR to update `src-decompiled` files.
+4. **Regenerate differences:** Run `bun tools/scripts/generate-patches.js` to ensure the patch definitions match the new version's base code, resolving any compile-time or patch conflicts.
