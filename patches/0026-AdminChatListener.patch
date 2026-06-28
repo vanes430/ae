@@ -1,0 +1,46 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0026] AdminChatListener: Migrate to player entity scheduler and thread-safe collections
+
+AE PATCH REASON: Uses legacy Bukkit scheduler to open Admin inventory asynchronously
+AE PATCH FIX: Migrate to player entity scheduler and thread-safe collections
+AE PATCH RISK: MEDIUM
+AE PATCH EXCLUDES: net/advancedplugins/ae/globallisteners/listeners/AdminChatListener.class, net/advancedplugins/ae/globallisteners/listeners/AdminChatListener$*.class
+
+---
+diff --git a/net/advancedplugins/ae/globallisteners/listeners/AdminChatListener.java b/net/advancedplugins/ae/globallisteners/listeners/AdminChatListener.java
+index 4ca45ae..7d3cbf3 100644
+--- a/net/advancedplugins/ae/globallisteners/listeners/AdminChatListener.java
++++ b/net/advancedplugins/ae/globallisteners/listeners/AdminChatListener.java
+@@ -1,18 +1,18 @@
+ package net.advancedplugins.ae.globallisteners.listeners;
+ 
+ import java.util.ArrayList;
++import java.util.Collections;
+ import java.util.List;
+ import java.util.UUID;
+ import net.advancedplugins.ae.Core;
+ import net.advancedplugins.ae.features.adminInventory.AdminInventory;
+ import net.advancedplugins.ae.impl.utils.ColorUtils;
+-import org.bukkit.Bukkit;
+ import org.bukkit.event.EventHandler;
+ import org.bukkit.event.Listener;
+ import org.bukkit.event.player.AsyncPlayerChatEvent;
+ 
+ public class AdminChatListener implements Listener {
+-   public static List<UUID> listening = new ArrayList<>();
++   public static List<UUID> listening = Collections.synchronizedList(new ArrayList<>());
+ 
+    @EventHandler
+    public void onChat(AsyncPlayerChatEvent var1) {
+@@ -22,7 +22,9 @@ public class AdminChatListener implements Listener {
+          if (var2.equalsIgnoreCase("cancel")) {
+             var1.getPlayer().sendMessage(ColorUtils.format("&cSearch canceled!"));
+          } else {
+-            Bukkit.getScheduler().runTask(Core.getInstance(), () -> AdminInventory.openFor(var1.getPlayer(), 1, var2));
++            var1.getPlayer().getScheduler().run(Core.getInstance(), task -> {
++               AdminInventory.openFor(var1.getPlayer(), 1, var2);
++            }, null);
+             listening.remove(var1.getPlayer().getUniqueId());
+          }
+       }
+

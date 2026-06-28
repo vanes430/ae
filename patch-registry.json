@@ -361,6 +361,36 @@
         "net/advancedplugins/ae/impl/effects/effects/effects/internal/FireballEffect.class",
         "net/advancedplugins/ae/impl/effects/effects/effects/internal/FireballEffect$*.class"
       ]
+    },
+    {
+      "id": "0025",
+      "name": "AlchemistInventoryClicks",
+      "patchFile": "patches/0025-AlchemistInventoryClicks.patch",
+      "files": [
+        "net/advancedplugins/ae/features/alchemist/AlchemistInventoryClicks.java"
+      ],
+      "issue": "Uses legacy Bukkit scheduler inside Alchemist inventory close returning logic",
+      "fix": "Migrate to player entity scheduler and thread-safe collections",
+      "risk": "HIGH",
+      "excludes": [
+        "net/advancedplugins/ae/features/alchemist/AlchemistInventoryClicks.class",
+        "net/advancedplugins/ae/features/alchemist/AlchemistInventoryClicks$*.class"
+      ]
+    },
+    {
+      "id": "0026",
+      "name": "AdminChatListener",
+      "patchFile": "patches/0026-AdminChatListener.patch",
+      "files": [
+        "net/advancedplugins/ae/globallisteners/listeners/AdminChatListener.java"
+      ],
+      "issue": "Uses legacy Bukkit scheduler to open Admin inventory asynchronously",
+      "fix": "Migrate to player entity scheduler and thread-safe collections",
+      "risk": "MEDIUM",
+      "excludes": [
+        "net/advancedplugins/ae/globallisteners/listeners/AdminChatListener.class",
+        "net/advancedplugins/ae/globallisteners/listeners/AdminChatListener$*.class"
+      ]
     }
   ]
 }

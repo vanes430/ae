@@ -1,0 +1,95 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0025] AlchemistInventoryClicks: Migrate to player entity scheduler and thread-safe collections
+
+AE PATCH REASON: Uses legacy Bukkit scheduler inside Alchemist inventory close returning logic
+AE PATCH FIX: Migrate to player entity scheduler and thread-safe collections
+AE PATCH RISK: HIGH
+AE PATCH EXCLUDES: net/advancedplugins/ae/features/alchemist/AlchemistInventoryClicks.class, net/advancedplugins/ae/features/alchemist/AlchemistInventoryClicks$*.class
+
+---
+diff --git a/net/advancedplugins/ae/features/alchemist/AlchemistInventoryClicks.java b/net/advancedplugins/ae/features/alchemist/AlchemistInventoryClicks.java
+index 08cb866..a5cee4a 100644
+--- a/net/advancedplugins/ae/features/alchemist/AlchemistInventoryClicks.java
++++ b/net/advancedplugins/ae/features/alchemist/AlchemistInventoryClicks.java
+@@ -11,7 +11,6 @@ import net.advancedplugins.ae.enchanthandler.enchantments.AEnchants;
+ import net.advancedplugins.ae.enchanthandler.enchantments.APloppableEnchantment;
+ import net.advancedplugins.ae.enchanthandler.enchantments.AdvancedGroup;
+ import net.advancedplugins.ae.enchanthandler.enchantments.books.BookMaker;
+-import net.advancedplugins.ae.features.alchemist.AlchemistInventoryClicks.1;
+ import net.advancedplugins.ae.features.tinkerer.TinkererItems;
+ import net.advancedplugins.ae.impl.effects.effects.EffectsHandler;
+ import net.advancedplugins.ae.impl.utils.economy.AdvancedEconomy;
+@@ -33,7 +32,7 @@ import org.bukkit.inventory.meta.ItemMeta;
+ import org.jetbrains.annotations.NotNull;
+ 
+ public class AlchemistInventoryClicks implements Listener {
+-   private static final List<UUID> pendingCloses = new ArrayList<>();
++   private static final List<UUID> pendingCloses = java.util.Collections.synchronizedList(new ArrayList<>());
+    private final String _takeCurrency = "&c- %price%";
+ 
+    // $VF: Unable to simplify switch on enum
+@@ -196,8 +195,8 @@ public class AlchemistInventoryClicks implements Listener {
+                            Lang.sendMessage(var3, "alchemist.doesnt-accept", new String[0]);
+                         } else {
+                            int var9 = 0;
+-                           switch (1.$SwitchMap$net$advancedplugins$ae$features$alchemist$ItemType[var15.ordinal()]) {
+-                              case 1:
++                           switch (var15) {
++                              case BOOK:
+                                  BookMaker var24 = new BookMaker(var4);
+                                  BookMaker var26 = new BookMaker(var1.getInventory().getItem(var5));
+                                  int var12 = AEnchants.matchEnchant(var24.getEnchant()).getHighestLevel();
+@@ -215,12 +214,12 @@ public class AlchemistInventoryClicks implements Listener {
+ 
+                                  var9 = 10 * (var24.getLevel() + var26.getLevel()) * ((var24.getSuccess() + var26.getSuccess()) / 2);
+                                  break;
+-                              case 2:
++                              case DUST:
+                                  int var10 = this.getSuccess(var4);
+                                  int var11 = this.getSuccess(var1.getInventory().getItem(var5));
+                                  var9 = 10 * (var10 + var11);
+                                  break;
+-                              case 3:
++                              case OTHER:
+                                  var1.setCancelled(true);
+                                  return;
+                            }
+@@ -230,8 +229,8 @@ public class AlchemistInventoryClicks implements Listener {
+                               : YamlFile.ALCHEMIST.getInt("general.settings.price.custom-price");
+                            var1.getInventory().setItem(AlchemistInventory.getConfirmItemSlot(), this.cloneConfirmItem(var3, var9));
+                            ItemStack var25 = null;
+-                           switch (1.$SwitchMap$net$advancedplugins$ae$features$alchemist$ItemType[var15.ordinal()]) {
+-                              case 1:
++                           switch (var15) {
++                              case BOOK:
+                                  BookMaker var28 = new BookMaker(var4);
+                                  BookMaker var31 = new BookMaker(var1.getInventory().getItem(var5));
+                                  int var32 = var28.getSuccess() + var31.getSuccess();
+@@ -248,7 +247,7 @@ public class AlchemistInventoryClicks implements Listener {
+                                     new APloppableEnchantment(var32, var33, AEnchants.matchEnchant(var28.getEnchant()), var28.getLevel() + 1, var3)
+                                  );
+                                  break;
+-                              case 2:
++                              case DUST:
+                                  int var27 = this.getSuccess(var4);
+                                  int var30 = this.getSuccess(var1.getInventory().getItem(var5));
+                                  int var13 = var30 + var27;
+@@ -291,7 +290,7 @@ public class AlchemistInventoryClicks implements Listener {
+    }
+ 
+    private void returnItems(Player var1, Inventory var2, boolean var3) {
+-      Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
++      var1.getScheduler().runDelayed(Core.getInstance(), task -> {
+          if (var1.isOnline()) {
+             if (AlchemistInventory.isAlchemistInventory(var1.getOpenInventory())) {
+                ItemStack var3x = var2.getItem(AlchemistInventory.getPlayerFirstItemSlot());
+@@ -320,7 +319,7 @@ public class AlchemistInventoryClicks implements Listener {
+                }
+             }
+          }
+-      }, 1L);
++      }, null, 1L);
+    }
+ 
+    @EventHandler
+
