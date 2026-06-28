@@ -8,7 +8,7 @@ AE PATCH EXCLUDES: net/advancedplugins/ae/Core.class, net/advancedplugins/ae/Cor
 
 ---
 diff --git a/net/advancedplugins/ae/Core.java b/net/advancedplugins/ae/Core.java
-index 1d471ef..8fe1425 100644
+index 1d471ef..7b48ce7 100644
 --- a/net/advancedplugins/ae/Core.java
 +++ b/net/advancedplugins/ae/Core.java
 @@ -83,7 +83,6 @@ import net.advancedplugins.ae.impl.utils.ReallyFastBlockHandler;
@@ -77,12 +77,13 @@ index 1d471ef..8fe1425 100644
           } catch (Exception var6) {
              var6.printStackTrace();
              Bukkit.getPluginManager().disablePlugin(instance);
-@@ -383,7 +375,7 @@ public class Core extends JavaPlugin {
+@@ -383,7 +375,8 @@ public class Core extends JavaPlugin {
     public void onDisable() {
        MarketInventory.unload();
        YamlFile.PDATA.save();
 -      Bukkit.getScheduler().cancelTasks(this);
-+      net.advancedplugins.ae.impl.utils.FoliaScheduler.cancelAll(this);
++      Bukkit.getGlobalRegionScheduler().cancelTasks(this);
++      Bukkit.getAsyncScheduler().cancelTasks(this);
        effectsHandler.unload();
     }
  

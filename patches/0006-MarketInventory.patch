@@ -8,18 +8,10 @@ AE PATCH EXCLUDES: net/advancedplugins/ae/handlers/netsharing/MarketInventory.cl
 
 ---
 diff --git a/net/advancedplugins/ae/handlers/netsharing/MarketInventory.java b/net/advancedplugins/ae/handlers/netsharing/MarketInventory.java
-index f8d5ea7..96564f3 100644
+index f8d5ea7..d4047f9 100644
 --- a/net/advancedplugins/ae/handlers/netsharing/MarketInventory.java
 +++ b/net/advancedplugins/ae/handlers/netsharing/MarketInventory.java
-@@ -32,6 +32,7 @@ import net.advancedplugins.ae.utils.AManager;
- import net.advancedplugins.ae.utils.YamlFile;
- import net.advancedplugins.ae.utils.fanciful.FancyMessage;
- import net.advancedplugins.ae.utils.nbt.NBTapi;
-+import net.advancedplugins.ae.impl.utils.FoliaScheduler;
- import org.apache.commons.lang3.StringUtils;
- import org.bukkit.Bukkit;
- import org.bukkit.Material;
-@@ -56,23 +57,16 @@ public class MarketInventory implements Listener {
+@@ -56,23 +56,22 @@ public class MarketInventory implements Listener {
     private static final LinkedHashMap<String, EnchantPreview> enchantHashmap = new LinkedHashMap<>();
     private static int taskId = 0;
     private static final List<UUID> pendingPlayersChats = new ArrayList<>();
@@ -31,7 +23,13 @@ index f8d5ea7..96564f3 100644
 -               MarketInventory.cache();
 -            }
 -         }).runTaskTimerAsynchronously(instance, 0L, 12000L).getTaskId();
-+         FoliaScheduler.runTaskTimerAsynchronously(instance, MarketInventory::cache, 0L, 12000L);
++         Bukkit.getAsyncScheduler().runAtFixedRate(
++            instance,
++            task -> cache(),
++            0L,
++            12000L * 50L,
++            java.util.concurrent.TimeUnit.MILLISECONDS
++         );
        }
     }
  
