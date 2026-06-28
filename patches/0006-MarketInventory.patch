@@ -8,10 +8,18 @@ AE PATCH EXCLUDES: net/advancedplugins/ae/handlers/netsharing/MarketInventory.cl
 
 ---
 diff --git a/net/advancedplugins/ae/handlers/netsharing/MarketInventory.java b/net/advancedplugins/ae/handlers/netsharing/MarketInventory.java
-index f8d5ea7..4e96f55 100644
+index f8d5ea7..e11a816 100644
 --- a/net/advancedplugins/ae/handlers/netsharing/MarketInventory.java
 +++ b/net/advancedplugins/ae/handlers/netsharing/MarketInventory.java
-@@ -49,30 +49,28 @@ import org.bukkit.inventory.Inventory;
+@@ -20,6 +20,7 @@ import java.util.List;
+ import java.util.Locale;
+ import java.util.Optional;
+ import java.util.UUID;
++import java.util.Map;
+ import java.util.Map.Entry;
+ import java.util.regex.Pattern;
+ import net.advancedplugins.ae.Core;
+@@ -49,30 +50,28 @@ import org.bukkit.inventory.Inventory;
  import org.bukkit.inventory.InventoryHolder;
  import org.bukkit.inventory.ItemStack;
  import org.bukkit.plugin.java.JavaPlugin;
@@ -19,7 +27,8 @@ index f8d5ea7..4e96f55 100644
  import org.jetbrains.annotations.NotNull;
  
  public class MarketInventory implements Listener {
-    private static final LinkedHashMap<String, EnchantPreview> enchantHashmap = new LinkedHashMap<>();
+-   private static final LinkedHashMap<String, EnchantPreview> enchantHashmap = new LinkedHashMap<>();
++   private static final Map<String, EnchantPreview> enchantHashmap = Collections.synchronizedMap(new LinkedHashMap<>());
     private static int taskId = 0;
     private static final List<UUID> pendingPlayersChats = new ArrayList<>();
 -
@@ -51,4 +60,17 @@ index f8d5ea7..4e96f55 100644
     @EventHandler
     public void onClick(InventoryClickEvent e) {
        if (e.getCurrentItem() != null) {
+@@ -375,7 +374,11 @@ public class MarketInventory implements Listener {
+                endWith = enchantHashmap.size();
+             }
+ 
+-            for (String ench : enchantHashmap.isEmpty() ? new ArrayList() : new ArrayList<>(enchantHashmap.keySet()).subList(startWith, endWith)) {
++            List<String> keys;
++            synchronized (enchantHashmap) {
++               keys = enchantHashmap.isEmpty() ? new ArrayList<>() : new ArrayList<>(enchantHashmap.keySet());
++            }
++            for (String ench : keys.subList(startWith, endWith)) {
+                EnchantPreview enchantPreview = enchantHashmap.get(ench);
+                ItemBuilder itemBuilder = new ItemBuilder(getItemStackDependingOnEnchantType(enchantPreview.getEnchantmentType()))
+                   .setAmount(enchantPreview.getLevelCount())
 

@@ -8,10 +8,35 @@ AE PATCH EXCLUDES: net/advancedplugins/ae/features/tinkerer/TinkererInventory.cl
 
 ---
 diff --git a/net/advancedplugins/ae/features/tinkerer/TinkererInventory.java b/net/advancedplugins/ae/features/tinkerer/TinkererInventory.java
-index a0de966..4531313 100644
+index a0de966..d73b42e 100644
 --- a/net/advancedplugins/ae/features/tinkerer/TinkererInventory.java
 +++ b/net/advancedplugins/ae/features/tinkerer/TinkererInventory.java
-@@ -347,7 +347,7 @@ public class TinkererInventory implements Listener {
+@@ -2,10 +2,12 @@ package net.advancedplugins.ae.features.tinkerer;
+ 
+ import java.util.ArrayList;
+ import java.util.Arrays;
++import java.util.Collections;
+ import java.util.HashMap;
+ import java.util.List;
+ import java.util.Map;
+ import java.util.UUID;
++import java.util.concurrent.ConcurrentHashMap;
+ import java.util.stream.IntStream;
+ import net.advancedplugins.ae.Core;
+ import net.advancedplugins.ae.api.AEAPI;
+@@ -47,9 +49,9 @@ public class TinkererInventory implements Listener {
+    private static int[] splitterSlots;
+    private static int[] playerSlots;
+    private static int[] tinkererSlots;
+-   private static final List<UUID> successfulTrades = new ArrayList<>();
++   private static final List<UUID> successfulTrades = Collections.synchronizedList(new ArrayList<>());
+    private static final Map<Integer, Integer> slots = new HashMap<>();
+-   private static final Map<UUID, Inventory> inventoryMap = new HashMap<>();
++   private static final Map<UUID, Inventory> inventoryMap = new ConcurrentHashMap<>();
+ 
+    private static Map<Integer, Integer> getSlot() {
+       return slots;
+@@ -347,7 +349,7 @@ public class TinkererInventory implements Listener {
              successfulTrades.remove(player.getUniqueId());
              player.updateInventory();
           } else {

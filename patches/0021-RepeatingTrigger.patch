@@ -8,10 +8,17 @@ AE PATCH EXCLUDES: net/advancedplugins/ae/impl/effects/effects/mechanics/trigger
 
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.java b/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.java
-index 14509c2..9f1bbd5 100644
+index 14509c2..f0a1071 100644
 --- a/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.java
 +++ b/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.java
-@@ -15,6 +15,7 @@ import net.advancedplugins.ae.impl.effects.effects.abilities.AdvancedAbility;
+@@ -9,12 +9,14 @@ import java.util.LinkedList;
+ import java.util.List;
+ import java.util.Map;
+ import java.util.UUID;
++import java.util.concurrent.ConcurrentHashMap;
+ import java.util.concurrent.TimeUnit;
+ import net.advancedplugins.ae.impl.effects.effects.EffectsHandler;
+ import net.advancedplugins.ae.impl.effects.effects.abilities.AdvancedAbility;
  import net.advancedplugins.ae.impl.effects.effects.actions.ActionExecution;
  import net.advancedplugins.ae.impl.effects.effects.actions.AdvancedTrigger;
  import net.advancedplugins.ae.impl.effects.effects.actions.utils.RollItemType;
@@ -19,7 +26,7 @@ index 14509c2..9f1bbd5 100644
  import net.advancedplugins.ae.impl.utils.ASManager;
  import org.bukkit.Bukkit;
  import org.bukkit.entity.Entity;
-@@ -29,8 +30,6 @@ import org.bukkit.event.player.PlayerItemHeldEvent;
+@@ -29,11 +31,9 @@ import org.bukkit.event.player.PlayerItemHeldEvent;
  import org.bukkit.event.player.PlayerPickupItemEvent;
  import org.bukkit.event.player.PlayerQuitEvent;
  import org.bukkit.inventory.ItemStack;
@@ -27,8 +34,12 @@ index 14509c2..9f1bbd5 100644
 -import org.bukkit.scheduler.BukkitTask;
  
  public class RepeatingTrigger extends AdvancedTrigger {
-    private static final HashMap<UUID, UserRepeaters> repeaters = new HashMap<>();
-@@ -74,7 +73,7 @@ public class RepeatingTrigger extends AdvancedTrigger {
+-   private static final HashMap<UUID, UserRepeaters> repeaters = new HashMap<>();
++   private static final Map<UUID, UserRepeaters> repeaters = new ConcurrentHashMap<>();
+    public static final Cache<UUID, Map<String, Long>> COOLDOWN_QUEUE = CacheBuilder.newBuilder().expireAfterWrite(10L, TimeUnit.MINUTES).build();
+    private static RepeatingTrigger trigger;
+ 
+@@ -74,7 +74,7 @@ public class RepeatingTrigger extends AdvancedTrigger {
     public void stopAll(LivingEntity ent) {
        UserRepeaters r = getRepeaters().get(ent.getUniqueId());
        if (r != null) {
@@ -37,7 +48,7 @@ index 14509c2..9f1bbd5 100644
           r.itemRunnables.clear();
        }
     }
-@@ -82,9 +81,9 @@ public class RepeatingTrigger extends AdvancedTrigger {
+@@ -82,9 +82,9 @@ public class RepeatingTrigger extends AdvancedTrigger {
     public void stop(LivingEntity ent, RollItemType type, Event e) {
        UserRepeaters r = getRepeaters().get(ent.getUniqueId());
        if (r != null) {
@@ -49,7 +60,7 @@ index 14509c2..9f1bbd5 100644
              tasks.clear();
              r.itemRunnables.remove(type.getSlot());
           }
-@@ -102,7 +101,7 @@ public class RepeatingTrigger extends AdvancedTrigger {
+@@ -102,7 +102,7 @@ public class RepeatingTrigger extends AdvancedTrigger {
           if (entity instanceof LivingEntity finalEntity) {
              if (finalEntity.getEquipment() != null) {
                 Map<String, Long> cooldowns = (Map<String, Long>)COOLDOWN_QUEUE.getIfPresent(user);
@@ -58,7 +69,7 @@ index 14509c2..9f1bbd5 100644
  
                 for (final AdvancedAbility ability : effects) {
                    Long remainingCooldown = null;
-@@ -120,24 +119,30 @@ public class RepeatingTrigger extends AdvancedTrigger {
+@@ -120,24 +120,30 @@ public class RepeatingTrigger extends AdvancedTrigger {
                    }
  
                    long delay = remainingCooldown != null ? remainingCooldown : (ability.isRepeatingInstantApply() ? 0L : ability.getRepeatingDelay() * 20L);
@@ -105,13 +116,22 @@ index 14509c2..9f1bbd5 100644
                    runnables.add(runnable);
                 }
  
-@@ -145,7 +150,7 @@ public class RepeatingTrigger extends AdvancedTrigger {
+@@ -145,7 +151,7 @@ public class RepeatingTrigger extends AdvancedTrigger {
              }
           }
        } catch (Throwable var17) {
 -         throw var17;
 +         throw new RuntimeException(var17);
        }
+    }
+ 
+@@ -193,7 +199,7 @@ public class RepeatingTrigger extends AdvancedTrigger {
+       }
+    }
+ 
+-   public static HashMap<UUID, UserRepeaters> getRepeaters() {
++   public static Map<UUID, UserRepeaters> getRepeaters() {
+       return repeaters;
     }
  
 

@@ -8,10 +8,44 @@ AE PATCH EXCLUDES: net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler.clas
 
 ---
 diff --git a/net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler.java b/net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler.java
-index 1b3130e..4823dee 100644
+index 1b3130e..06323b0 100644
 --- a/net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler.java
 +++ b/net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler.java
-@@ -50,9 +50,20 @@ public class ReallyFastBlockHandler {
+@@ -3,8 +3,8 @@ package net.advancedplugins.ae.impl.utils;
+ import java.lang.reflect.Constructor;
+ import java.lang.reflect.InvocationTargetException;
+ import java.lang.reflect.Method;
+-import java.util.HashMap;
+ import java.util.Map;
++import java.util.concurrent.ConcurrentHashMap;
+ import net.advancedplugins.ae.impl.utils.nbt.backend.ClassWrapper;
+ import net.advancedplugins.ae.impl.utils.nbt.utils.MinecraftVersion;
+ import org.bukkit.Bukkit;
+@@ -15,7 +15,7 @@ import org.bukkit.block.data.Levelled;
+ import org.bukkit.block.data.Waterlogged;
+ 
+ public class ReallyFastBlockHandler {
+-   private static final Map<World, ReallyFastBlockHandler> handlers = new HashMap<>();
++   private static final Map<World, ReallyFastBlockHandler> handlers = new ConcurrentHashMap<>();
+    private static Class<?> craftWorldClass;
+    private static Class<?> craftBlockData;
+    private static Class<?> craftMagicNumbersClass;
+@@ -28,13 +28,7 @@ public class ReallyFastBlockHandler {
+    private Object nmsWorld;
+ 
+    public static ReallyFastBlockHandler getForWorld(World world) {
+-      if (handlers.containsKey(world)) {
+-         return handlers.get(world);
+-      } else {
+-         ReallyFastBlockHandler rfbh = new ReallyFastBlockHandler(world);
+-         handlers.put(world, rfbh);
+-         return rfbh;
+-      }
++      return handlers.computeIfAbsent(world, ReallyFastBlockHandler::new);
+    }
+ 
+    public static void init() {
+@@ -50,9 +44,20 @@ public class ReallyFastBlockHandler {
  
           blockPos = nmsBlockPosition.getConstructor(int.class, int.class, int.class);
           getHandle = craftWorldClass.getMethod("getHandle");
@@ -35,7 +69,7 @@ index 1b3130e..4823dee 100644
           if (!MinecraftVersion.isNew()) {
              craftMagicNumbersClass = ClassWrapper.CRAFT_MagicNumbers.getClazz();
              getMagicBlock = craftMagicNumbersClass.getMethod("getBlock", Material.class);
-@@ -76,7 +87,11 @@ public class ReallyFastBlockHandler {
+@@ -76,7 +81,11 @@ public class ReallyFastBlockHandler {
  
     public void setType(Material material, Block... blocks) {
        if (!Bukkit.isPrimaryThread()) {

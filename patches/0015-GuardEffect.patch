@@ -8,10 +8,27 @@ AE PATCH EXCLUDES: net/advancedplugins/ae/impl/effects/effects/effects/internal/
 
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/GuardEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/GuardEffect.java
-index 0d6526c..9dfd6b8 100644
+index 0d6526c..ef08f59 100644
 --- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/GuardEffect.java
 +++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/GuardEffect.java
-@@ -124,7 +124,7 @@ public class GuardEffect extends AdvancedEffect {
+@@ -5,6 +5,7 @@ import java.util.Locale;
+ import java.util.Map;
+ import java.util.Objects;
+ import java.util.UUID;
++import java.util.concurrent.ConcurrentHashMap;
+ import java.util.Map.Entry;
+ import net.advancedplugins.ae.impl.effects.effects.EffectsHandler;
+ import net.advancedplugins.ae.impl.effects.effects.actions.execution.ExecutionTask;
+@@ -30,7 +31,7 @@ import org.bukkit.potion.PotionEffect;
+ import org.bukkit.potion.PotionEffectType;
+ 
+ public class GuardEffect extends AdvancedEffect {
+-   private final Map<UUID, UUID> guards = new HashMap<>();
++   private final Map<UUID, UUID> guards = new ConcurrentHashMap<>();
+    private static GuardEffect guardEffect;
+ 
+    public GuardEffect(JavaPlugin plugin) {
+@@ -124,7 +125,7 @@ public class GuardEffect extends AdvancedEffect {
        if (entity instanceof LivingEntity le) {
           le.setCanPickupItems(false);
           le.setRemoveWhenFarAway(true);
@@ -20,7 +37,7 @@ index 0d6526c..9dfd6b8 100644
        }
  
        this.guards.put(entity.getUniqueId(), target.getUniqueId());
-@@ -136,12 +136,12 @@ public class GuardEffect extends AdvancedEffect {
+@@ -136,12 +137,12 @@ public class GuardEffect extends AdvancedEffect {
           ((Ageable)entity).setBaby();
        }
  

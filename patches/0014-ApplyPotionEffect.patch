@@ -8,10 +8,18 @@ AE PATCH EXCLUDES: net/advancedplugins/ae/impl/effects/effects/effects/internal/
 
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/ApplyPotionEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/ApplyPotionEffect.java
-index e1c6894..095e2e8 100644
+index e1c6894..53f78f1 100644
 --- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/ApplyPotionEffect.java
 +++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/ApplyPotionEffect.java
-@@ -12,9 +12,9 @@ import net.advancedplugins.ae.impl.effects.effects.actions.execution.ExecutionTa
+@@ -4,6 +4,7 @@ import java.util.ArrayDeque;
+ import java.util.ArrayList;
+ import java.util.HashMap;
+ import java.util.Iterator;
++import java.util.concurrent.ConcurrentHashMap;
+ import java.util.List;
+ import java.util.Map;
+ import java.util.Queue;
+@@ -12,9 +13,9 @@ import net.advancedplugins.ae.impl.effects.effects.actions.execution.ExecutionTa
  import net.advancedplugins.ae.impl.effects.effects.effects.AdvancedEffect;
  import net.advancedplugins.ae.impl.utils.ASManager;
  import net.advancedplugins.ae.impl.utils.PotionEffectMatcher;
@@ -22,7 +30,16 @@ index e1c6894..095e2e8 100644
  import org.bukkit.entity.LivingEntity;
  import org.bukkit.plugin.java.JavaPlugin;
  import org.bukkit.potion.PotionEffect;
-@@ -105,7 +105,7 @@ public class ApplyPotionEffect extends AdvancedEffect {
+@@ -22,7 +23,7 @@ import org.bukkit.potion.PotionEffectType;
+ 
+ public class ApplyPotionEffect extends AdvancedEffect {
+    private static int permanentLength = -1;
+-   private static final Map<UUID, List<PotionEffect>> activatedPermanentPotions = new HashMap<>();
++   private static final Map<UUID, List<PotionEffect>> activatedPermanentPotions = new ConcurrentHashMap<>();
+    private static final Queue<Triple<Long, LivingEntity, Double>> healthQueue = new ArrayDeque<>();
+ 
+    public ApplyPotionEffect(JavaPlugin plugin) {
+@@ -105,7 +106,7 @@ public class ApplyPotionEffect extends AdvancedEffect {
     }
  
     static {
@@ -31,7 +48,7 @@ index e1c6894..095e2e8 100644
           long currentTime = System.currentTimeMillis();
  
           while (!healthQueue.isEmpty() && healthQueue.peek().getLeft() + 500L < currentTime) {
-@@ -113,9 +113,11 @@ public class ApplyPotionEffect extends AdvancedEffect {
+@@ -113,9 +114,11 @@ public class ApplyPotionEffect extends AdvancedEffect {
              if (triple != null) {
                 LivingEntity target = (LivingEntity)triple.getMiddle();
                 double hpBefore = (Double)triple.getRight();
