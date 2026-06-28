@@ -1,0 +1,23 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0017] TeleportBehindEffect: Migrate potion, boost, extinguish, guard, and teleport effects to SchedulerUtils/FoliaScheduler
+
+AE PATCH REASON: Standard enchantment effects use legacy scheduler
+AE PATCH FIX: Migrate potion, boost, extinguish, guard, and teleport effects to SchedulerUtils/FoliaScheduler
+AE PATCH RISK: MEDIUM
+AE PATCH EXCLUDES: net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportBehindEffect.class, net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportBehindEffect$*.class
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportBehindEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportBehindEffect.java
+index ac3444b..d65a523 100644
+--- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportBehindEffect.java
++++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportBehindEffect.java
+@@ -27,7 +27,7 @@ public class TeleportBehindEffect extends AdvancedEffect {
+       if (!ASManager.isAir(to.getBlock())) {
+          return true;
+       } else {
+-         target.teleport(to, TeleportCause.UNKNOWN);
++         target.teleportAsync(to, TeleportCause.UNKNOWN);
+          return true;
+       }
+    }
+

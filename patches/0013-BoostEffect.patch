@@ -1,0 +1,37 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0013] BoostEffect: Migrate potion, boost, extinguish, guard, and teleport effects to SchedulerUtils/FoliaScheduler
+
+AE PATCH REASON: Standard enchantment effects use legacy scheduler
+AE PATCH FIX: Migrate potion, boost, extinguish, guard, and teleport effects to SchedulerUtils/FoliaScheduler
+AE PATCH RISK: MEDIUM
+AE PATCH EXCLUDES: net/advancedplugins/ae/impl/effects/effects/effects/internal/BoostEffect.class, net/advancedplugins/ae/impl/effects/effects/effects/internal/BoostEffect$*.class
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/BoostEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/BoostEffect.java
+index 62065e4..d0c13a1 100644
+--- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/BoostEffect.java
++++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/BoostEffect.java
+@@ -27,10 +27,7 @@ public class BoostEffect extends AdvancedEffect {
+    }
+ 
+    public boolean executeEffect(ExecutionTask task, LivingEntity target, String[] args) {
+-      Bukkit.getScheduler()
+-         .runTaskLater(
+-            EffectsHandler.getInstance(),
+-            () -> {
++      target.getScheduler().runDelayed(ASManager.getInstance(), t -> {
+                try {
+                   String dir = "UP";
+                   double amount = 1.0;
+@@ -95,9 +92,7 @@ public class BoostEffect extends AdvancedEffect {
+                } catch (Exception var23) {
+                   var23.printStackTrace();
+                }
+-            },
+-            1L
+-         );
++            }, null, 1L);
+       return true;
+    }
+ 
+

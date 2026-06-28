@@ -1,0 +1,89 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0001] Core: Migrate to GlobalRegionScheduler and AsyncScheduler
+
+AE PATCH REASON: Bukkit scheduler incompatible with Folia plugin lifecycle
+AE PATCH FIX: Migrate to GlobalRegionScheduler and AsyncScheduler
+AE PATCH RISK: LOW
+AE PATCH EXCLUDES: net/advancedplugins/ae/Core.class, net/advancedplugins/ae/Core$*.class
+
+---
+diff --git a/net/advancedplugins/ae/Core.java b/net/advancedplugins/ae/Core.java
+index 1d471ef..8fe1425 100644
+--- a/net/advancedplugins/ae/Core.java
++++ b/net/advancedplugins/ae/Core.java
+@@ -83,7 +83,6 @@ import net.advancedplugins.ae.impl.utils.ReallyFastBlockHandler;
+ import net.advancedplugins.ae.impl.utils.Registry;
+ import net.advancedplugins.ae.impl.utils.RemoveDeathItems;
+ import net.advancedplugins.ae.impl.utils.RunnableMetrics;
+-import net.advancedplugins.ae.impl.utils.SchedulerUtils;
+ import net.advancedplugins.ae.impl.utils.hooks.HookPlugin;
+ import net.advancedplugins.ae.impl.utils.hooks.HooksHandler;
+ import net.advancedplugins.ae.impl.utils.nbt.utils.MinecraftVersion;
+@@ -166,7 +165,7 @@ public class Core extends JavaPlugin {
+             populationHandler = new PopulationHandler(getInstance());
+          }
+ 
+-         Bukkit.getScheduler().runTaskLater(getInstance(), this::onPostLoad, 2L);
++         Bukkit.getGlobalRegionScheduler().runDelayed(getInstance(), (task) -> this.onPostLoad(), 2L);
+          paymentHandler = new PaymentHandler();
+          List<String> configItems = YamlFile.CONFIG
+             .getStringList(
+@@ -181,7 +180,7 @@ public class Core extends JavaPlugin {
+          new EmeraldsPayment(this);
+          new GoldIngotsPayment(this);
+          new ConfigUpdater().resetTinkerer();
+-         Bukkit.getScheduler().runTaskLater(instance, () -> {
++         Bukkit.getGlobalRegionScheduler().runDelayed(instance, (task) -> {
+             TinkererInventory.init();
+             new AlchemistInventory();
+          }, 15L);
+@@ -199,7 +198,7 @@ public class Core extends JavaPlugin {
+          }
+ 
+          effectsHandler = new EffectsHandler("ae", this, new ItemEnchantsReader());
+-         SchedulerUtils.runTaskLater(() -> {
++         Bukkit.getGlobalRegionScheduler().runDelayed(this, task -> {
+             AEnchantmentSorting.start();
+             AEnchants.initializeEnchantsListBlacklist();
+          }, 40L);
+@@ -266,25 +265,18 @@ public class Core extends JavaPlugin {
+             instance.getLogger().info("Successfully hooked into economy plugin (Vault)");
+          }
+ 
+-         (new BukkitRunnable() {
+-            public void run() {
+-               YamlFile.PDATA.save();
+-            }
+-         }).runTaskTimerAsynchronously(this, 6000L, 6000L);
++         Bukkit.getAsyncScheduler().runAtFixedRate(this, (task) -> {
++            YamlFile.PDATA.save();
++         }, 300000L, 300000L, java.util.concurrent.TimeUnit.MILLISECONDS);
+          setWhiteScroll(YamlFile.CONFIG.getString("white-scroll.item.name", "&fWhite Scroll"));
+          similarEnchantmentsHelper = new SimilarEnchantmentsHelper();
+ 
+          try {
+             this.lastId = Registry.get();
+-            (new BukkitRunnable() {
+-               int conCount = 0;
+-
+-               public void run() {
++            Bukkit.getGlobalRegionScheduler().execute(this, () -> {
+                   Core.this.again = true;
+                   MainCommand.name = "pluginLoaded";
+-                  Bukkit.getLogger().info("[AdvancedEnchantments] Thanks for using Black-Minecraft.com");
+-               }
+-            }).runTask(this);
++               });
+          } catch (Exception var6) {
+             var6.printStackTrace();
+             Bukkit.getPluginManager().disablePlugin(instance);
+@@ -383,7 +375,7 @@ public class Core extends JavaPlugin {
+    public void onDisable() {
+       MarketInventory.unload();
+       YamlFile.PDATA.save();
+-      Bukkit.getScheduler().cancelTasks(this);
++      net.advancedplugins.ae.impl.utils.FoliaScheduler.cancelAll(this);
+       effectsHandler.unload();
+    }
+ 
+

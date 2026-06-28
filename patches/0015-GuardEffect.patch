@@ -1,0 +1,38 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0015] GuardEffect: Migrate potion, boost, extinguish, guard, and teleport effects to SchedulerUtils/FoliaScheduler
+
+AE PATCH REASON: Standard enchantment effects use legacy scheduler
+AE PATCH FIX: Migrate potion, boost, extinguish, guard, and teleport effects to SchedulerUtils/FoliaScheduler
+AE PATCH RISK: MEDIUM
+AE PATCH EXCLUDES: net/advancedplugins/ae/impl/effects/effects/effects/internal/GuardEffect.class, net/advancedplugins/ae/impl/effects/effects/effects/internal/GuardEffect$*.class
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/GuardEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/GuardEffect.java
+index 0d6526c..9dfd6b8 100644
+--- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/GuardEffect.java
++++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/GuardEffect.java
+@@ -124,7 +124,7 @@ public class GuardEffect extends AdvancedEffect {
+       if (entity instanceof LivingEntity le) {
+          le.setCanPickupItems(false);
+          le.setRemoveWhenFarAway(true);
+-         le.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, liveTicks, 1, false, true));
++         le.addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH, liveTicks, 1, false, true));
+       }
+ 
+       this.guards.put(entity.getUniqueId(), target.getUniqueId());
+@@ -136,12 +136,12 @@ public class GuardEffect extends AdvancedEffect {
+          ((Ageable)entity).setBaby();
+       }
+ 
+-      Bukkit.getScheduler().runTaskLater(EffectsHandler.getInstance(), () -> {
++      entity.getScheduler().runDelayed(this.getPlugin(), t -> {
+          entity.remove();
+          if (!entity.isDead() && entity instanceof LivingEntity) {
+             ((LivingEntity)entity).damage(2.147483647E9);
+          }
+-      }, liveTicks);
++      }, null, (long)liveTicks);
+    }
+ 
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+

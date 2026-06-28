@@ -1,10 +1,10 @@
 From: Folia Compatibility Patch
-Subject: [PATCH 0003] Effect-Engine: Migrate ExecutionTask to SchedulerUtils and update AdvancedWeapon attributes
+Subject: [PATCH 0018] ExecutionTask: Migrate ExecutionTask to SchedulerUtils and update AdvancedWeapon attributes
 
 AE PATCH REASON: Core effect engine uses synchronous waits and incompatible attributes
 AE PATCH FIX: Migrate ExecutionTask to SchedulerUtils and update AdvancedWeapon attributes
 AE PATCH RISK: HIGH
-AE PATCH EXCLUDES: net/advancedplugins/ae/impl/effects/effects/actions/execution/ExecutionTask.class, net/advancedplugins/ae/impl/effects/effects/actions/execution/ExecutionTask$*.class, net/advancedplugins/ae/features/weapons/AdvancedWeapon.class, net/advancedplugins/ae/features/weapons/AdvancedWeapon$*.class
+AE PATCH EXCLUDES: net/advancedplugins/ae/impl/effects/effects/actions/execution/ExecutionTask.class, net/advancedplugins/ae/impl/effects/effects/actions/execution/ExecutionTask$*.class
 
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/actions/execution/ExecutionTask.java b/net/advancedplugins/ae/impl/effects/effects/actions/execution/ExecutionTask.java
@@ -103,38 +103,4 @@ index d83497d..17568f7 100644
                    }
                 }
              } catch (Exception var9) {
-
-diff --git a/net/advancedplugins/ae/features/weapons/AdvancedWeapon.java b/net/advancedplugins/ae/features/weapons/AdvancedWeapon.java
-index b00b2c1..9f77bd6 100644
---- a/net/advancedplugins/ae/features/weapons/AdvancedWeapon.java
-+++ b/net/advancedplugins/ae/features/weapons/AdvancedWeapon.java
-@@ -15,6 +15,9 @@ import net.advancedplugins.ae.impl.utils.nbt.utils.MinecraftVersion;
- import net.advancedplugins.ae.utils.AManager;
- import net.advancedplugins.ae.utils.YamlFile;
- import net.advancedplugins.ae.utils.nbt.NBTapi;
-+import java.util.UUID;
-+import org.bukkit.attribute.Attribute;
-+import org.bukkit.attribute.AttributeModifier;
- import org.bukkit.enchantments.Enchantment;
- import org.bukkit.inventory.ItemFlag;
- import org.bukkit.inventory.ItemStack;
-@@ -93,6 +96,18 @@ public class AdvancedWeapon {
-             this.itemFlags.forEach(s -> im.addItemFlags(new ItemFlag[]{ItemFlag.valueOf(s)}));
-          }
- 
-+         if (this.config.isConfigSection("attributes")) {
-+            for (String key : this.config.getKeys("attributes")) {
-+               try {
-+                  Attribute attribute = Attribute.valueOf(key.toUpperCase(Locale.ROOT));
-+                  double value = this.config.getDouble("attributes." + key);
-+                  im.addAttributeModifier(attribute, new AttributeModifier(UUID.randomUUID(), "ae_attribute", value, AttributeModifier.Operation.ADD_NUMBER));
-+               } catch (Exception var15) {
-+                  Core.getInstance().getLogger().warning("Invalid attribute: " + key);
-+               }
-+            }
-+         }
-+
-          item.setItemMeta(im);
-          if (this.enchants != null) {
-             for (String enchant : this.enchants) {
 

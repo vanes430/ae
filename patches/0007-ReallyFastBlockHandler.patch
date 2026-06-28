@@ -1,0 +1,51 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0007] ReallyFastBlockHandler: Migrate to GlobalRegionScheduler and AsyncScheduler
+
+AE PATCH REASON: Bukkit scheduler incompatible with Folia plugin lifecycle
+AE PATCH FIX: Migrate to GlobalRegionScheduler and AsyncScheduler
+AE PATCH RISK: LOW
+AE PATCH EXCLUDES: net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler.class, net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler$*.class
+
+---
+diff --git a/net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler.java b/net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler.java
+index 1b3130e..4823dee 100644
+--- a/net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler.java
++++ b/net/advancedplugins/ae/impl/utils/ReallyFastBlockHandler.java
+@@ -50,9 +50,20 @@ public class ReallyFastBlockHandler {
+ 
+          blockPos = nmsBlockPosition.getConstructor(int.class, int.class, int.class);
+          getHandle = craftWorldClass.getMethod("getHandle");
+-         setType = MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_18_R1)
+-            ? nmsWorldClass.getMethod("a", nmsBlockPosition, iBlockData, int.class)
+-            : nmsWorldClass.getMethod("setTypeAndData", nmsBlockPosition, iBlockData, int.class);
++         
++         Method setTypeMethod = null;
++         for (String methodName : new String[]{"setBlock", "a", "setTypeAndData"}) {
++            try {
++               setTypeMethod = nmsWorldClass.getMethod(methodName, nmsBlockPosition, iBlockData, int.class);
++               break;
++            } catch (NoSuchMethodException ignored) {}
++         }
++         if (setTypeMethod != null) {
++            setType = setTypeMethod;
++         } else {
++            throw new NoSuchMethodException("Could not find setTypeAndData / setBlock / a method in Level/World");
++         }
++         
+          if (!MinecraftVersion.isNew()) {
+             craftMagicNumbersClass = ClassWrapper.CRAFT_MagicNumbers.getClazz();
+             getMagicBlock = craftMagicNumbersClass.getMethod("getBlock", Material.class);
+@@ -76,7 +87,11 @@ public class ReallyFastBlockHandler {
+ 
+    public void setType(Material material, Block... blocks) {
+       if (!Bukkit.isPrimaryThread()) {
+-         FoliaScheduler.runTask(ASManager.getInstance(), () -> this.setType(material, blocks));
++         if (blocks.length > 0) {
++            Bukkit.getRegionScheduler().execute(ASManager.getInstance(), blocks[0].getLocation(), () -> this.setType(material, blocks));
++         } else {
++            Bukkit.getGlobalRegionScheduler().execute(ASManager.getInstance(), () -> this.setType(material, blocks));
++         }
+       } else {
+          try {
+             Object ibd = MinecraftVersion.isNew()
+

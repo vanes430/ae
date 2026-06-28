@@ -1,0 +1,9 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0010] UpdateChecker: Migrate to GlobalRegionScheduler and AsyncScheduler
+
+AE PATCH REASON: Bukkit scheduler incompatible with Folia plugin lifecycle
+AE PATCH FIX: Migrate to GlobalRegionScheduler and AsyncScheduler
+AE PATCH RISK: LOW
+AE PATCH EXCLUDES: net/advancedplugins/ae/impl/utils/plugin/UpdateChecker.class, net/advancedplugins/ae/impl/utils/plugin/UpdateChecker$*.class
+
+---

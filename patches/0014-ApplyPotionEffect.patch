@@ -1,0 +1,49 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0014] ApplyPotionEffect: Migrate potion, boost, extinguish, guard, and teleport effects to SchedulerUtils/FoliaScheduler
+
+AE PATCH REASON: Standard enchantment effects use legacy scheduler
+AE PATCH FIX: Migrate potion, boost, extinguish, guard, and teleport effects to SchedulerUtils/FoliaScheduler
+AE PATCH RISK: MEDIUM
+AE PATCH EXCLUDES: net/advancedplugins/ae/impl/effects/effects/effects/internal/ApplyPotionEffect.class, net/advancedplugins/ae/impl/effects/effects/effects/internal/ApplyPotionEffect$*.class
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/ApplyPotionEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/ApplyPotionEffect.java
+index e1c6894..095e2e8 100644
+--- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/ApplyPotionEffect.java
++++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/ApplyPotionEffect.java
+@@ -12,9 +12,9 @@ import net.advancedplugins.ae.impl.effects.effects.actions.execution.ExecutionTa
+ import net.advancedplugins.ae.impl.effects.effects.effects.AdvancedEffect;
+ import net.advancedplugins.ae.impl.utils.ASManager;
+ import net.advancedplugins.ae.impl.utils.PotionEffectMatcher;
+-import net.advancedplugins.ae.impl.utils.SchedulerUtils;
+ import net.advancedplugins.ae.impl.utils.nbt.utils.MinecraftVersion;
+ import org.apache.commons.lang3.tuple.Triple;
++import org.bukkit.Bukkit;
+ import org.bukkit.entity.LivingEntity;
+ import org.bukkit.plugin.java.JavaPlugin;
+ import org.bukkit.potion.PotionEffect;
+@@ -105,7 +105,7 @@ public class ApplyPotionEffect extends AdvancedEffect {
+    }
+ 
+    static {
+-      SchedulerUtils.runTaskTimer(() -> {
++      Bukkit.getGlobalRegionScheduler().runAtFixedRate(ASManager.getInstance(), task -> {
+          long currentTime = System.currentTimeMillis();
+ 
+          while (!healthQueue.isEmpty() && healthQueue.peek().getLeft() + 500L < currentTime) {
+@@ -113,9 +113,11 @@ public class ApplyPotionEffect extends AdvancedEffect {
+             if (triple != null) {
+                LivingEntity target = (LivingEntity)triple.getMiddle();
+                double hpBefore = (Double)triple.getRight();
+-               if (!(hpBefore <= target.getHealth())) {
+-                  target.setHealth(Math.min(hpBefore, target.getMaxHealth()));
+-               }
++               target.getScheduler().run(ASManager.getInstance(), t -> {
++                  if (!target.isDead() && hpBefore > target.getHealth()) {
++                     target.setHealth(Math.min(hpBefore, target.getMaxHealth()));
++                  }
++               }, null);
+             }
+          }
+       }, 1L, 1L);
+

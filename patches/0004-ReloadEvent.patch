@@ -1,0 +1,23 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0004] ReloadEvent: Migrate to GlobalRegionScheduler and AsyncScheduler
+
+AE PATCH REASON: Bukkit scheduler incompatible with Folia plugin lifecycle
+AE PATCH FIX: Migrate to GlobalRegionScheduler and AsyncScheduler
+AE PATCH RISK: LOW
+AE PATCH EXCLUDES: net/advancedplugins/ae/globallisteners/listeners/ReloadEvent.class, net/advancedplugins/ae/globallisteners/listeners/ReloadEvent$*.class
+
+---
+diff --git a/net/advancedplugins/ae/globallisteners/listeners/ReloadEvent.java b/net/advancedplugins/ae/globallisteners/listeners/ReloadEvent.java
+index fc8c535..a2d69d7 100644
+--- a/net/advancedplugins/ae/globallisteners/listeners/ReloadEvent.java
++++ b/net/advancedplugins/ae/globallisteners/listeners/ReloadEvent.java
+@@ -11,7 +11,7 @@ public class ReloadEvent implements Listener {
+    @EventHandler
+    public void reloadEvent(ServerLoadEvent e) {
+       if (e.getType() == LoadType.RELOAD) {
+-         Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> Bukkit.getOnlinePlayers().forEach(p -> {}), 2L);
++         Bukkit.getGlobalRegionScheduler().runDelayed(Core.getInstance(), (task) -> Bukkit.getOnlinePlayers().forEach(p -> {}), 2L);
+       }
+    }
+ }
+

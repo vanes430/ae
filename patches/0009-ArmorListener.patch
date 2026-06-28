@@ -1,5 +1,5 @@
 From: Folia Compatibility Patch
-Subject: [PATCH 0007] Armor-Tracking: Schedule armor updates directly on the player's entity scheduler
+Subject: [PATCH 0009] ArmorListener: Schedule armor updates directly on the player's entity scheduler
 
 AE PATCH REASON: ArmorListener queue runs on global scheduler violating entity region access rules
 AE PATCH FIX: Schedule armor updates directly on the player's entity scheduler
