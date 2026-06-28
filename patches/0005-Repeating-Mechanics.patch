@@ -4,7 +4,7 @@ Subject: [PATCH 0005] Repeating-Mechanics: Migrate RepeatingTrigger and UserRepe
 AE PATCH REASON: Repeating enchantment triggers use incompatible BukkitTask management
 AE PATCH FIX: Migrate RepeatingTrigger and UserRepeaters to FoliaScheduler.Task
 AE PATCH RISK: HIGH
-AE PATCH EXCLUDES: net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.class, net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger$*.class, net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/UserRepeaters.class
+AE PATCH EXCLUDES: net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.class, net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger$*.class, net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/UserRepeaters.class, net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/ArmorWearTrigger.class, net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/ArmorWearTrigger$*.class
 
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.java b/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.java
@@ -102,4 +102,141 @@ index 82df3ed..58edab4 100644
 -   public final HashMap<EquipmentSlot, List<BukkitTask>> itemRunnables = new HashMap<>();
 +   public final HashMap<EquipmentSlot, List<FoliaScheduler.Task>> itemRunnables = new HashMap<>();
  }
+
+diff --git a/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/ArmorWearTrigger.java b/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/ArmorWearTrigger.java
+index c6165ca..fa05230 100644
+--- a/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/ArmorWearTrigger.java
++++ b/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/ArmorWearTrigger.java
+@@ -13,7 +13,6 @@ import net.advancedplugins.ae.impl.effects.effects.EffectsHandler;
+ import net.advancedplugins.ae.impl.effects.effects.actions.AdvancedTrigger;
+ import net.advancedplugins.ae.impl.effects.effects.effects.internal.ApplyPotionEffect;
+ import net.advancedplugins.ae.impl.utils.ASManager;
+-import net.advancedplugins.ae.impl.utils.SchedulerUtils;
+ import org.bukkit.Bukkit;
+ import org.bukkit.Material;
+ import org.bukkit.entity.ArmorStand;
+@@ -45,15 +44,17 @@ public class ArmorWearTrigger extends AdvancedTrigger {
+       if (type != null) {
+          ItemStack[] oldArmor = new ItemStack[]{e.getOldArmorPiece()};
+          ItemStack[] newArmor = new ItemStack[]{e.getNewArmorPiece()};
+-         SchedulerUtils.runTaskLater(() -> {
+-            if (e.getMethod().equals(EquipMethod.PICK_DROP)) {
+-               boolean isSkull = oldArmor[0].getType().name().endsWith("HEAD") || e.getNewArmorPiece().getType().name().endsWith("HEAD");
+-               if (isSkull) {
+-                  oldArmor[0] = e.getPlayer().getItemOnCursor();
+-                  newArmor[0] = e.getPlayer().getInventory().getHelmet();
++         if (e.getPlayer() != null) {
++            e.getPlayer().getScheduler().runDelayed(ASManager.getInstance(), task -> {
++               if (e.getMethod().equals(EquipMethod.PICK_DROP)) {
++                  boolean isSkull = oldArmor[0].getType().name().endsWith("HEAD") || e.getNewArmorPiece().getType().name().endsWith("HEAD");
++                  if (isSkull) {
++                     oldArmor[0] = e.getPlayer().getItemOnCursor();
++                     newArmor[0] = e.getPlayer().getInventory().getHelmet();
++                  }
+                }
+-            }
+-         }, 1L);
++            }, null, 1L);
++         }
+          boolean res = this.updateWornArmor(e.getPlayer(), oldArmor[0], newArmor[0], type, false, e.isSendMessage());
+          if (!res) {
+             e.setCancelled(true);
+@@ -63,15 +64,18 @@ public class ArmorWearTrigger extends AdvancedTrigger {
+ 
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onPlayerJoin(PlayerJoinEvent event) {
+-      SchedulerUtils.runTaskLater(() -> {
+-         Player player = event.getPlayer();
+-
+-         for (Entry<ArmorType, ItemStack> entry : ArmorType.getArmorContents(player).entrySet()) {
+-            if (entry.getValue() != null && !entry.getValue().getType().name().equalsIgnoreCase("AIR")) {
+-               this.updateWornArmor(player, null, entry.getValue(), entry.getKey(), false, false);
++      Player player = event.getPlayer();
++      if (player != null) {
++         player.getScheduler().runDelayed(ASManager.getInstance(), task -> {
++            if (player.isOnline()) {
++               for (Entry<ArmorType, ItemStack> entry : ArmorType.getArmorContents(player).entrySet()) {
++                  if (entry.getValue() != null && !entry.getValue().getType().name().equalsIgnoreCase("AIR")) {
++                     this.updateWornArmor(player, null, entry.getValue(), entry.getKey(), false, false);
++                  }
++               }
+             }
+-         }
+-      }, 20L);
++         }, null, 20L);
++      }
+    }
+ 
+    @EventHandler
+@@ -83,24 +87,28 @@ public class ArmorWearTrigger extends AdvancedTrigger {
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onWorldChange(PlayerChangedWorldEvent event) {
+       Player player = event.getPlayer();
+-      double health = player.getHealth();
+-      SchedulerUtils.runTaskLater(() -> {
+-         List<PotionEffect> effects = ApplyPotionEffect.getActivatedPermanentPotions().getOrDefault(player.getUniqueId(), new ArrayList<>());
+-         List.copyOf(effects).forEach(effect -> ApplyPotionEffect.handlePermanentRemoval(player, effects, effect.getType(), effect.getAmplifier()));
+-         ArmorType.getArmorContents(player).forEach((armorType, itemStack) -> {
+-            this.runCheck(player, itemStack, armorType, false, false);
+-            Bukkit.getPluginManager().callEvent(new ArmorEquipEvent(player, EquipMethod.WORLD_CHANGE, armorType, null, itemStack, false));
+-         });
+-      });
++      if (player != null) {
++         player.getScheduler().runDelayed(ASManager.getInstance(), task -> {
++            if (player.isOnline()) {
++               List<PotionEffect> effects = ApplyPotionEffect.getActivatedPermanentPotions().getOrDefault(player.getUniqueId(), new ArrayList<>());
++               List.copyOf(effects).forEach(effect -> ApplyPotionEffect.handlePermanentRemoval(player, effects, effect.getType(), effect.getAmplifier()));
++               ArmorType.getArmorContents(player).forEach((armorType, itemStack) -> {
++                  this.runCheck(player, itemStack, armorType, false, false);
++                  Bukkit.getPluginManager().callEvent(new ArmorEquipEvent(player, EquipMethod.WORLD_CHANGE, armorType, null, itemStack, false));
++               });
++            }
++         }, null, 1L);
++      }
+    }
+ 
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onResurrect(EntityResurrectEvent event) {
+       if (event.getEntity() instanceof Player player) {
+-         SchedulerUtils.runTaskLater(
+-            () -> ArmorType.getArmorContents(player).forEach((armorType, itemStack) -> this.updateWornArmor(player, null, itemStack, armorType, false, false)),
+-            3L
+-         );
++         player.getScheduler().runDelayed(ASManager.getInstance(), task -> {
++            if (player.isOnline()) {
++               ArmorType.getArmorContents(player).forEach((armorType, itemStack) -> this.updateWornArmor(player, null, itemStack, armorType, false, false));
++            }
++         }, null, 3L);
+       }
+    }
+ 
+@@ -115,7 +123,9 @@ public class ArmorWearTrigger extends AdvancedTrigger {
+             }
+          }
+ 
+-         SchedulerUtils.runTaskLater(() -> toUpdate.forEach(itemx -> this.updateWornArmor(e.getEntity(), itemx, null, ArmorType.matchType(itemx), true)), 10L);
++         e.getEntity().getScheduler().runDelayed(ASManager.getInstance(), task -> {
++            toUpdate.forEach(itemx -> this.updateWornArmor(e.getEntity(), itemx, null, ArmorType.matchType(itemx), true));
++         }, null, 10L);
+       }
+    }
+ 
+@@ -149,7 +159,7 @@ public class ArmorWearTrigger extends AdvancedTrigger {
+                   );
+                if (nonArmorHelmet && livingEntity instanceof Player) {
+                   ItemStack oldPieceClone = oldPiece.clone();
+-                  Bukkit.getScheduler().runTaskLater(EffectsHandler.getInstance(), () -> {
++                  livingEntity.getScheduler().runDelayed(EffectsHandler.getInstance(), task -> {
+                      ItemStack _newPiece = ((Player)livingEntity).getInventory().getHelmet();
+                      ItemStack _oldPiece = newPiece.isSimilar(_newPiece) ? oldPiece : newPiece;
+                      if ((_newPiece == null || _newPiece.getType() == Material.AIR) && _oldPiece.getType() == Material.AIR) {
+@@ -160,7 +170,7 @@ public class ArmorWearTrigger extends AdvancedTrigger {
+                         this.runCheck(livingEntity, _newPiece, slot, false, sendMsg);
+                         processQueue.remove(livingEntity.getUniqueId(), slot);
+                      }
+-                  }, 1L);
++                  }, null, 1L);
+                   return true;
+                } else {
+                   this.runCheck(livingEntity, oldPiece, slot, true, sendMsg);
 

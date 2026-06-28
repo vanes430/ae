@@ -94,7 +94,8 @@
       "patchFile": "patches/0005-Repeating-Mechanics.patch",
       "files": [
         "net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.java",
-        "net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/UserRepeaters.java"
+        "net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/UserRepeaters.java",
+        "net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/ArmorWearTrigger.java"
       ],
       "issue": "Repeating enchantment triggers use incompatible BukkitTask management",
       "fix": "Migrate RepeatingTrigger and UserRepeaters to FoliaScheduler.Task",
@@ -102,7 +103,9 @@
       "excludes": [
         "net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.class",
         "net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger$*.class",
-        "net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/UserRepeaters.class"
+        "net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/UserRepeaters.class",
+        "net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/ArmorWearTrigger.class",
+        "net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/ArmorWearTrigger$*.class"
       ]
     },
     {
