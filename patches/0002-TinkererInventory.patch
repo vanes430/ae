@@ -8,7 +8,7 @@ AE PATCH EXCLUDES: net/advancedplugins/ae/features/tinkerer/TinkererInventory.cl
 
 ---
 diff --git a/net/advancedplugins/ae/features/tinkerer/TinkererInventory.java b/net/advancedplugins/ae/features/tinkerer/TinkererInventory.java
-index 4067aaa..d73b42e 100644
+index a07bac3..acb9086 100644
 --- a/net/advancedplugins/ae/features/tinkerer/TinkererInventory.java
 +++ b/net/advancedplugins/ae/features/tinkerer/TinkererInventory.java
 @@ -2,10 +2,12 @@ package net.advancedplugins.ae.features.tinkerer;
@@ -24,22 +24,6 @@ index 4067aaa..d73b42e 100644
  import java.util.stream.IntStream;
  import net.advancedplugins.ae.Core;
  import net.advancedplugins.ae.api.AEAPI;
-@@ -13,7 +15,6 @@ import net.advancedplugins.ae.api.TinkererTradeEvent;
- import net.advancedplugins.ae.enchanthandler.enchantments.AEnchants;
- import net.advancedplugins.ae.enchanthandler.enchantments.AdvancedEnchantment;
- import net.advancedplugins.ae.enchanthandler.enchantments.AdvancedGroup;
--import net.advancedplugins.ae.features.tinkerer.TinkererInventory.TinkererInvHolder;
- import net.advancedplugins.ae.impl.utils.ColorUtils;
- import net.advancedplugins.ae.impl.utils.nbt.utils.MinecraftVersion;
- import net.advancedplugins.ae.impl.utils.text.Text;
-@@ -31,6 +32,7 @@ import org.bukkit.event.inventory.ClickType;
- import org.bukkit.event.inventory.InventoryClickEvent;
- import org.bukkit.event.inventory.InventoryCloseEvent;
- import org.bukkit.inventory.Inventory;
-+import org.bukkit.inventory.InventoryHolder;
- import org.bukkit.inventory.ItemStack;
- import org.bukkit.inventory.meta.ItemMeta;
- import org.jetbrains.annotations.NotNull;
 @@ -47,23 +49,23 @@ public class TinkererInventory implements Listener {
     private static int[] splitterSlots;
     private static int[] playerSlots;
@@ -56,15 +40,15 @@ index 4067aaa..d73b42e 100644
  
 -   private static boolean isTinkerer(int var0) {
 -      return var0 < 54;
-+   private static boolean isTinkerer(int i) {
-+      return i < 54;
++   private static boolean isTinkerer(int slot) {
++      return slot < 54;
     }
  
     public static void init() {
        inventoryTitle = Text.modify(
           YamlFile.TINKERER.getString("inventory.name") == null ? "You                   Tinkerer" : YamlFile.TINKERER.getString("inventory.name")
        );
--      Inventory var0 = Bukkit.createInventory(new TinkererInvHolder(), 54, Text.modify(inventoryTitle));
+-      Inventory var0 = Bukkit.createInventory(new TinkererInventory.TinkererInvHolder(), 54, Text.modify(inventoryTitle));
 +      Inventory inventory = Bukkit.createInventory(new TinkererInventory.TinkererInvHolder(), 54, Text.modify(inventoryTitle));
        playerConfirmSlot = YamlFile.TINKERER.getInt("inventory.items.player-confirm-trade-item.slot", 0);
        tinkererConfirm = YamlFile.TINKERER.getBoolean("inventory.items.tinkerer-confirm-trade-item.enabled", true);
@@ -176,17 +160,17 @@ index 4067aaa..d73b42e 100644
 -         if (var14 != null) {
 -            var14.setDisplayName(YamlFile.TINKERER.getString("inventory.items.tinkerer-confirm-trade-item.name"));
 -            var14.setLore(YamlFile.TINKERER.getStringList("inventory.items.tinkerer-confirm-trade-item.lore", new ArrayList()));
-+         ItemMeta tinkererConfirmAgreeMeta = tinkererConfirmItem.getItemMeta();
-+         if (tinkererConfirmAgreeMeta != null) {
-+            tinkererConfirmAgreeMeta.setDisplayName(YamlFile.TINKERER.getString("inventory.items.tinkerer-confirm-trade-item.name"));
-+            tinkererConfirmAgreeMeta.setLore(YamlFile.TINKERER.getStringList("inventory.items.tinkerer-confirm-trade-item.lore", new ArrayList()));
++         ItemMeta tinkererConfirmMeta = tinkererConfirmItem.getItemMeta();
++         if (tinkererConfirmMeta != null) {
++            tinkererConfirmMeta.setDisplayName(YamlFile.TINKERER.getString("inventory.items.tinkerer-confirm-trade-item.name"));
++            tinkererConfirmMeta.setLore(YamlFile.TINKERER.getStringList("inventory.items.tinkerer-confirm-trade-item.lore", new ArrayList()));
              if (MinecraftVersion.getVersionNumber() >= 1140 && YamlFile.TINKERER.contains("inventory.items.tinkerer-confirm-trade-item.custom-model-data")) {
 -               var14.setCustomModelData(YamlFile.TINKERER.getInt("inventory.items.tinkerer-confirm-trade-item.custom-model-data"));
-+               tinkererConfirmAgreeMeta.setCustomModelData(YamlFile.TINKERER.getInt("inventory.items.tinkerer-confirm-trade-item.custom-model-data"));
++               tinkererConfirmMeta.setCustomModelData(YamlFile.TINKERER.getInt("inventory.items.tinkerer-confirm-trade-item.custom-model-data"));
              }
  
 -            tinkererConfirmItem.setItemMeta(var14);
-+            tinkererConfirmItem.setItemMeta(tinkererConfirmAgreeMeta);
++            tinkererConfirmItem.setItemMeta(tinkererConfirmMeta);
           }
        }
  
@@ -200,14 +184,14 @@ index 4067aaa..d73b42e 100644
 -      PlayAESound.playSound(var0, YamlFile.TINKERER.getString("inventory.open-sound", "BLOCK_CHEST_OPEN"));
 -      var0.openInventory(var1);
 +   public static void open(@NotNull Player player) {
-+      Inventory cloneInventory = AManager.cloneInventory(tinkerer, inventoryTitle);
-+      inventoryMap.put(player.getUniqueId(), cloneInventory);
++      Inventory playerInventory = AManager.cloneInventory(tinkerer, inventoryTitle);
++      inventoryMap.put(player.getUniqueId(), playerInventory);
 +      PlayAESound.playSound(player, YamlFile.TINKERER.getString("inventory.open-sound", "BLOCK_CHEST_OPEN"));
-+      player.openInventory(cloneInventory);
++      player.openInventory(playerInventory);
     }
  
 -   public static void onClick(InventoryClickEvent var0) {
--      if (var0.getView().getTopInventory().getHolder() instanceof TinkererInvHolder) {
+-      if (var0.getView().getTopInventory().getHolder() instanceof TinkererInventory.TinkererInvHolder) {
 -         if (AManager.isValid(var0.getCurrentItem())) {
 -            Player var1 = (Player)var0.getWhoClicked();
 -            if (var0.getInventory().equals(inventoryMap.get(var1.getUniqueId()))) {
@@ -221,7 +205,7 @@ index 4067aaa..d73b42e 100644
 +            Player player = (Player)event.getWhoClicked();
 +            if (event.getInventory().equals(inventoryMap.get(player.getUniqueId()))) {
 +               event.setCancelled(true);
-+               ItemStack currentItem = event.getCurrentItem();
++               ItemStack clickedItem = event.getCurrentItem();
 +               if (event.getClick() != ClickType.LEFT && event.getClick() != ClickType.SHIFT_LEFT) {
 +                  player.updateInventory();
                 } else {
@@ -234,7 +218,7 @@ index 4067aaa..d73b42e 100644
 -                                 trade(var1, var3);
 +                  Inventory topInventory = player.getOpenInventory().getTopInventory();
 +                  if (!tinkererConfirm || !isTinkererItem(event.getRawSlot())) {
-+                     if (!AEAPI.isCustomEnchantBook(currentItem) && !NBTapi.hasEnchantments(currentItem)) {
++                     if (!AEAPI.isCustomEnchantBook(clickedItem) && !NBTapi.hasEnchantments(clickedItem)) {
 +                        if (!tinkererConfirm || event.getSlot() != tinkererConfirmSlot) {
 +                           if (event.getCurrentItem().isSimilar(playerConfirmItem) && event.getSlot() == playerConfirmSlot) {
 +                              if (canAgree(topInventory)) {
@@ -290,10 +274,10 @@ index 4067aaa..d73b42e 100644
 -                              if (var3.getItem(playerConfirmSlot).isSimilar(playerConfirmItem)) {
 -                                 var3.setItem(playerConfirmSlot, acceptTradeItem);
 +                        if (isTinkerer(event.getRawSlot())) {
-+                           int slot = getSlot().get(event.getRawSlot());
-+                           topInventory.setItem(slot, new ItemStack(Material.AIR));
++                           int partnerSlot = getSlot().get(event.getRawSlot());
++                           topInventory.setItem(partnerSlot, new ItemStack(Material.AIR));
 +                           event.setCurrentItem(new ItemStack(Material.AIR));
-+                           AManager.giveItem(player, new ItemStack[]{currentItem});
++                           AManager.giveItem(player, new ItemStack[]{clickedItem});
 +                           if (!canAgree(topInventory)) {
 +                              if (topInventory.getItem(playerConfirmSlot).isSimilar(playerConfirmItem)) {
 +                                 topInventory.setItem(playerConfirmSlot, acceptTradeItem);
@@ -317,9 +301,9 @@ index 4067aaa..d73b42e 100644
 -                           int var9 = getFirstEmptySlot(var3, playerSlots);
 -                           int var5 = getFirstEmptySlot(var3, tinkererSlots);
 -                           if (var9 == -1) {
-+                           int playerSlot = getFirstEmptySlot(topInventory, playerSlots);
-+                           int tinkererSlot = getFirstEmptySlot(topInventory, tinkererSlots);
-+                           if (playerSlot == -1) {
++                           int firstEmptyPlayerSlot = getFirstEmptySlot(topInventory, playerSlots);
++                           int firstEmptyTinkererSlot = getFirstEmptySlot(topInventory, tinkererSlots);
++                           if (firstEmptyPlayerSlot == -1) {
                                return;
                             }
  
@@ -327,10 +311,10 @@ index 4067aaa..d73b42e 100644
 -                              if (var2.getAmount() > 1) {
 -                                 var2.setAmount(var2.getAmount() - 1);
 -                                 var0.setCurrentItem(var2);
-+                           if (AEAPI.isCustomEnchantBook(currentItem)) {
-+                              if (currentItem.getAmount() > 1) {
-+                                 currentItem.setAmount(currentItem.getAmount() - 1);
-+                                 event.setCurrentItem(currentItem);
++                           if (AEAPI.isCustomEnchantBook(clickedItem)) {
++                              if (clickedItem.getAmount() > 1) {
++                                 clickedItem.setAmount(clickedItem.getAmount() - 1);
++                                 event.setCurrentItem(clickedItem);
                                } else {
 -                                 var0.setCurrentItem(new ItemStack(Material.AIR));
 +                                 event.setCurrentItem(new ItemStack(Material.AIR));
@@ -339,31 +323,31 @@ index 4067aaa..d73b42e 100644
 -                              var2.setAmount(1);
 -                              var3.setItem(var9, var2);
 -                              if (!AEAPI.isCustomEnchantBook(var2)) {
-+                              currentItem.setAmount(1);
-+                              topInventory.setItem(playerSlot, currentItem);
-+                              if (!AEAPI.isCustomEnchantBook(currentItem)) {
++                              clickedItem.setAmount(1);
++                              topInventory.setItem(firstEmptyPlayerSlot, clickedItem);
++                              if (!AEAPI.isCustomEnchantBook(clickedItem)) {
                                   return;
                                }
  
 -                              AdvancedEnchantment var6 = AEnchants.matchEnchant(var2);
 -                              AdvancedGroup var7 = var6.getGroup();
-+                              AdvancedEnchantment advancedEnchantment = AEnchants.matchEnchant(currentItem);
-+                              AdvancedGroup advancedGroup = advancedEnchantment.getGroup();
++                              AdvancedEnchantment matchedEnchantment = AEnchants.matchEnchant(clickedItem);
++                              AdvancedGroup enchantmentGroup = matchedEnchantment.getGroup();
                                if (YamlFile.TINKERER.getBoolean("general.give-item-instead-of-dust.enabled", false)) {
 -                                 int var8 = YamlFile.TINKERER.getInt("general.give-item-instead-of-dust.amountPerGroup." + var7.getName(), 100);
 -                                 var3.setItem(var5, TinkererItems.getOutputItem(var1, var8));
-+                                 int amount = YamlFile.TINKERER.getInt("general.give-item-instead-of-dust.amountPerGroup." + advancedGroup.getName(), 100);
-+                                 topInventory.setItem(tinkererSlot, TinkererItems.getOutputItem(player, amount));
++                                 int dustAmount = YamlFile.TINKERER.getInt("general.give-item-instead-of-dust.amountPerGroup." + enchantmentGroup.getName(), 100);
++                                 topInventory.setItem(firstEmptyTinkererSlot, TinkererItems.getOutputItem(player, dustAmount));
                                } else {
 -                                 var3.setItem(var5, TinkererItems.secretDust(var7));
-+                                 topInventory.setItem(tinkererSlot, TinkererItems.secretDust(advancedGroup));
++                                 topInventory.setItem(firstEmptyTinkererSlot, TinkererItems.secretDust(enchantmentGroup));
                                }
  
 -                              getSlot().put(var9, var5);
-+                              getSlot().put(playerSlot, tinkererSlot);
++                              getSlot().put(firstEmptyPlayerSlot, firstEmptyTinkererSlot);
                             } else {
 -                              if (TinkererFormula.getAmountForItem(var2) == 0) {
-+                              if (TinkererFormula.getAmountForItem(currentItem) == 0) {
++                              if (TinkererFormula.getAmountForItem(clickedItem) == 0) {
                                   return;
                                }
  
@@ -375,9 +359,9 @@ index 4067aaa..d73b42e 100644
 -                              var3.setItem(var5, TinkererItems.output(var1, var2));
 -                              getSlot().put(var9, var5);
 -                              var0.setCurrentItem(new ItemStack(Material.AIR));
-+                              topInventory.setItem(playerSlot, currentItem);
-+                              topInventory.setItem(tinkererSlot, TinkererItems.output(player, currentItem));
-+                              getSlot().put(playerSlot, tinkererSlot);
++                              topInventory.setItem(firstEmptyPlayerSlot, clickedItem);
++                              topInventory.setItem(firstEmptyTinkererSlot, TinkererItems.output(player, clickedItem));
++                              getSlot().put(firstEmptyPlayerSlot, firstEmptyTinkererSlot);
 +                              event.setCurrentItem(new ItemStack(Material.AIR));
                             }
                          }
@@ -481,7 +465,7 @@ index 4067aaa..d73b42e 100644
                       }
                    }
                 }
-@@ -359,17 +363,24 @@ public class TinkererInventory implements Listener {
+@@ -359,13 +363,13 @@ public class TinkererInventory implements Listener {
        }
     }
  
@@ -500,15 +484,4 @@ index 4067aaa..d73b42e 100644
              }
           }
  
-          return -1;
-       }
-    }
-+
-+   public static class TinkererInvHolder implements InventoryHolder {
-+      @NotNull
-+      public Inventory getInventory() {
-+         return null;
-+      }
-+   }
- }
 

@@ -8,7 +8,7 @@ AE PATCH EXCLUDES: net/advancedplugins/ae/features/weapons/AdvancedWeapon.class,
 
 ---
 diff --git a/net/advancedplugins/ae/features/weapons/AdvancedWeapon.java b/net/advancedplugins/ae/features/weapons/AdvancedWeapon.java
-index ba1e76d..9f77bd6 100644
+index ba1e76d..592a837 100644
 --- a/net/advancedplugins/ae/features/weapons/AdvancedWeapon.java
 +++ b/net/advancedplugins/ae/features/weapons/AdvancedWeapon.java
 @@ -15,6 +15,9 @@ import net.advancedplugins.ae.impl.utils.nbt.utils.MinecraftVersion;
@@ -114,7 +114,7 @@ index ba1e76d..9f77bd6 100644
 +                  Attribute attribute = Attribute.valueOf(key.toUpperCase(Locale.ROOT));
 +                  double value = this.config.getDouble("attributes." + key);
 +                  im.addAttributeModifier(attribute, new AttributeModifier(UUID.randomUUID(), "ae_attribute", value, AttributeModifier.Operation.ADD_NUMBER));
-+               } catch (Exception var15) {
++               } catch (Exception e) {
 +                  Core.getInstance().getLogger().warning("Invalid attribute: " + key);
 +               }
 +            }
@@ -155,10 +155,12 @@ index ba1e76d..9f77bd6 100644
 +               if (e == null) {
                    try {
 -                     var1 = AEAPI.applyEnchant(var7, var15, var1);
-+                     item = AEAPI.applyEnchant(ench, finallevel, item);
-                   } catch (Exception var13) {
-                      if (var13 instanceof NullPointerException) {
+-                  } catch (Exception var13) {
+-                     if (var13 instanceof NullPointerException) {
 -                        Core.getInstance().getLogger().info("Enchantment " + var7 + " cannot be found.");
++                     item = AEAPI.applyEnchant(ench, finallevel, item);
++                  } catch (Exception ex) {
++                     if (ex instanceof NullPointerException) {
 +                        Core.getInstance().getLogger().info("Enchantment " + ench + " cannot be found.");
                       }
                    }

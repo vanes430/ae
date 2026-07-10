@@ -8,10 +8,18 @@ AE PATCH EXCLUDES: net/advancedplugins/ae/impl/effects/effects/mechanics/trigger
 
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.java b/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.java
-index f4031b6..f0a1071 100644
+index bb07508..d392bfd 100644
 --- a/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.java
 +++ b/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.java
-@@ -9,15 +9,17 @@ import java.util.LinkedList;
+@@ -2,6 +2,7 @@ package net.advancedplugins.ae.impl.effects.effects.mechanics.triggers.internal;
+ 
+ import com.google.common.cache.Cache;
+ import com.google.common.cache.CacheBuilder;
++import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
+ import java.util.ArrayList;
+ import java.util.Collection;
+ import java.util.HashMap;
+@@ -9,8 +10,8 @@ import java.util.LinkedList;
  import java.util.List;
  import java.util.Map;
  import java.util.UUID;
@@ -21,20 +29,11 @@ index f4031b6..f0a1071 100644
  import net.advancedplugins.ae.impl.effects.effects.EffectsHandler;
  import net.advancedplugins.ae.impl.effects.effects.abilities.AdvancedAbility;
  import net.advancedplugins.ae.impl.effects.effects.actions.ActionExecution;
- import net.advancedplugins.ae.impl.effects.effects.actions.AdvancedTrigger;
- import net.advancedplugins.ae.impl.effects.effects.actions.utils.RollItemType;
--import net.advancedplugins.ae.impl.effects.effects.mechanics.triggers.internal.RepeatingTrigger.1;
-+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
-+import net.advancedplugins.ae.impl.utils.ASManager;
- import org.bukkit.Bukkit;
-+import org.bukkit.entity.Entity;
- import org.bukkit.entity.LivingEntity;
- import org.bukkit.entity.Player;
- import org.bukkit.event.Event;
-@@ -29,10 +31,9 @@ import org.bukkit.event.player.PlayerItemHeldEvent;
+@@ -29,11 +30,9 @@ import org.bukkit.event.player.PlayerItemHeldEvent;
  import org.bukkit.event.player.PlayerPickupItemEvent;
  import org.bukkit.event.player.PlayerQuitEvent;
  import org.bukkit.inventory.ItemStack;
+-import org.bukkit.scheduler.BukkitRunnable;
 -import org.bukkit.scheduler.BukkitTask;
  
  public class RepeatingTrigger extends AdvancedTrigger {
@@ -43,27 +42,27 @@ index f4031b6..f0a1071 100644
     public static final Cache<UUID, Map<String, Long>> COOLDOWN_QUEUE = CacheBuilder.newBuilder().expireAfterWrite(10L, TimeUnit.MINUTES).build();
     private static RepeatingTrigger trigger;
  
-@@ -42,145 +43,166 @@ public class RepeatingTrigger extends AdvancedTrigger {
+@@ -43,161 +42,166 @@ public class RepeatingTrigger extends AdvancedTrigger {
        trigger = this;
     }
  
 -   public void activate(LivingEntity var1, RollItemType var2, ItemStack var3, Event var4) {
-+   public void activate(LivingEntity ent, RollItemType type, ItemStack item, Event e) {
++   public void activate(LivingEntity entity, RollItemType rollType, ItemStack item, Event event) {
        if (this.isEnabled()) {
 -         EffectsHandler.debug("[REPEATING] Starting check for: " + var1.getType());
 -         if (var3 != null) {
 -            ActionExecution var5 = this.executionBuilder()
 -               .setAttacker(var1)
-+         EffectsHandler.debug("[REPEATING] Starting check for: " + ent.getType());
++         EffectsHandler.debug("[REPEATING] Starting check for: " + entity.getType());
 +         if (item != null) {
 +            ActionExecution execution = this.executionBuilder()
-+               .setAttacker(ent)
++               .setAttacker(entity)
                 .setAttackerMain(true)
 -               .setEvent(var4)
 -               .setItemType(var2)
 -               .setItem(var3)
-+               .setEvent(e)
-+               .setItemType(type)
++               .setEvent(event)
++               .setItemType(rollType)
 +               .setItem(item)
                 .asRepeating()
                 .setSkipCooldown(true)
@@ -78,12 +77,12 @@ index f4031b6..f0a1071 100644
 -                  EffectsHandler.debug("Adding repeating item: " + var3.getType() + " " + var6.getName() + ": s" + var6.getRepeatingDelay());
 -                  this.addRepeatingItem(var1.getUniqueId(), var2, var5.getEffects(), var4, var3);
 +            execution.build();
-+            EffectsHandler.debug("[REPEATING] Found effects for " + ent.getType() + " " + item.getType() + ": " + execution.getEffects());
++            EffectsHandler.debug("[REPEATING] Found effects for " + entity.getType() + " " + item.getType() + ": " + execution.getEffects());
 +            if (!execution.getEffects().isEmpty()) {
 +               AdvancedAbility ability = (AdvancedAbility)execution.getEffects().getFirst();
 +               if (ability.getTypes().contains(this.getTriggerName())) {
 +                  EffectsHandler.debug("Adding repeating item: " + item.getType() + " " + ability.getName() + ": s" + ability.getRepeatingDelay());
-+                  this.addRepeatingItem(ent.getUniqueId(), type, execution.getEffects(), e, item);
++                  this.addRepeatingItem(entity.getUniqueId(), rollType, execution.getEffects(), event, item);
                 }
              }
           }
@@ -95,11 +94,11 @@ index f4031b6..f0a1071 100644
 -      if (var2 != null) {
 -         var2.itemRunnables.values().stream().flatMap(Collection::stream).forEach(BukkitTask::cancel);
 -         var2.itemRunnables.clear();
-+   public void stopAll(LivingEntity ent) {
-+      UserRepeaters r = getRepeaters().get(ent.getUniqueId());
-+      if (r != null) {
-+         r.itemRunnables.values().stream().flatMap(Collection::stream).forEach(ScheduledTask::cancel);
-+         r.itemRunnables.clear();
++   public void stopAll(LivingEntity entity) {
++      UserRepeaters userRepeaters = getRepeaters().get(entity.getUniqueId());
++      if (userRepeaters != null) {
++         userRepeaters.itemRunnables.values().stream().flatMap(Collection::stream).forEach(ScheduledTask::cancel);
++         userRepeaters.itemRunnables.clear();
        }
     }
  
@@ -111,19 +110,19 @@ index f4031b6..f0a1071 100644
 -            var5.forEach(BukkitTask::cancel);
 -            var5.clear();
 -            var4.itemRunnables.remove(var2.getSlot());
-+   public void stop(LivingEntity ent, RollItemType type, Event e) {
-+      UserRepeaters r = getRepeaters().get(ent.getUniqueId());
-+      if (r != null) {
-+         List<ScheduledTask> tasks = r.itemRunnables.get(type.getSlot());
++   public void stop(LivingEntity entity, RollItemType rollType, Event event) {
++      UserRepeaters userRepeaters = getRepeaters().get(entity.getUniqueId());
++      if (userRepeaters != null) {
++         List<ScheduledTask> tasks = userRepeaters.itemRunnables.get(rollType.getSlot());
 +         if (tasks != null && !tasks.isEmpty()) {
 +            tasks.forEach(ScheduledTask::cancel);
 +            tasks.clear();
-+            r.itemRunnables.remove(type.getSlot());
++            userRepeaters.itemRunnables.remove(rollType.getSlot());
           }
        }
     }
  
--   private void addRepeatingItem(UUID var1, RollItemType var2, LinkedList<AdvancedAbility> var3, Event var4, ItemStack var5) {
+-   private void addRepeatingItem(UUID var1, final RollItemType var2, LinkedList<AdvancedAbility> var3, final Event var4, final ItemStack var5) {
 +   private void addRepeatingItem(UUID user, final RollItemType type, LinkedList<AdvancedAbility> effects, final Event e, final ItemStack item) {
        try {
 -         UserRepeaters var6 = getRepeaters().computeIfAbsent(var1, var0 -> new UserRepeaters());
@@ -131,7 +130,7 @@ index f4031b6..f0a1071 100644
 -         if (var7 == null) {
 -            var7 = Bukkit.getEntity(var1);
 +         UserRepeaters r = getRepeaters().computeIfAbsent(user, s -> new UserRepeaters());
-+         Entity entity = Bukkit.getPlayer(user);
++         org.bukkit.entity.Entity entity = Bukkit.getPlayer(user);
 +         if (entity == null) {
 +            entity = Bukkit.getEntity(user);
           }
@@ -145,7 +144,7 @@ index f4031b6..f0a1071 100644
 +               Map<String, Long> cooldowns = (Map<String, Long>)COOLDOWN_QUEUE.getIfPresent(user);
 +               List<ScheduledTask> runnables = new ArrayList<>();
  
--               for (AdvancedAbility var12 : var3) {
+-               for (final AdvancedAbility var12 : var3) {
 -                  Long var13 = null;
 -                  if (var9 != null && var9.containsKey(var12.getNameNoLevel())) {
 -                     if ((Long)var9.get(var12.getNameNoLevel()) <= System.currentTimeMillis()) {
@@ -169,18 +168,29 @@ index f4031b6..f0a1071 100644
                    }
  
 -                  long var14 = var13 != null ? var13 : (var12.isRepeatingInstantApply() ? 0L : var12.getRepeatingDelay() * 20L);
--                  BukkitTask var16 = new 1(this, var5, var8, var2, var4, var12)
--                     .runTaskTimer(EffectsHandler.getInstance(), var14, var12.getRepeatingDelay() * 20L);
--                  var10.add(var16);
+-                  BukkitTask var16 = (new BukkitRunnable() {
+-                        public void run() {
+-                           if (!ASManager.itemStackEquals(var5, var8.getEquipment().getItem(var2.getSlot()), false)) {
+-                              this.cancel();
+-                           } else {
+-                              RepeatingTrigger.this.executionBuilder()
+-                                 .setAttacker(var8)
+-                                 .setAttackerMain(true)
+-                                 .setEvent(var4)
+-                                 .setItemType(var2)
+-                                 .setItem(var5)
+-                                 .asRepeating()
+-                                 .only(new AdvancedAbility[]{var12})
+-                                 .buildAndExecute();
 +                  long delay = remainingCooldown != null ? remainingCooldown : (ability.isRepeatingInstantApply() ? 0L : ability.getRepeatingDelay() * 20L);
 +                  ScheduledTask runnable = finalEntity.getScheduler().runAtFixedRate(
 +                     EffectsHandler.getInstance(),
-+                     task2 -> {
++                     task -> {
 +                        if (!ASManager.itemStackEquals(item, finalEntity.getEquipment().getItem(type.getSlot()), false)) {
 +                           UserRepeaters repeaters = getRepeaters().get(user);
 +                           if (repeaters != null && repeaters.itemRunnables.get(type.getSlot()) != null) {
 +                              repeaters.itemRunnables.get(type.getSlot()).forEach(ScheduledTask::cancel);
-+                           }
+                            }
 +                        } else {
 +                           RepeatingTrigger.this.executionBuilder()
 +                              .setAttacker(finalEntity)
@@ -191,7 +201,10 @@ index f4031b6..f0a1071 100644
 +                              .asRepeating()
 +                              .only(new AdvancedAbility[]{ability})
 +                              .buildAndExecute();
-+                        }
+                         }
+-                     })
+-                     .runTaskTimer(EffectsHandler.getInstance(), var14, var12.getRepeatingDelay() * 20L);
+-                  var10.add(var16);
 +                     },
 +                     null,
 +                     delay < 1L ? 1L : delay,
@@ -204,17 +217,18 @@ index f4031b6..f0a1071 100644
 +               r.itemRunnables.put(type.getSlot(), runnables);
              }
           }
-       } catch (Throwable var17) {
+-      } catch (Throwable var17) {
 -         throw var17;
-+         throw new RuntimeException(var17);
++      } catch (Throwable throwable) {
++         throw new RuntimeException(throwable);
        }
     }
  
     @EventHandler
 -   public void onQuit(PlayerQuitEvent var1) {
 -      this.stopAll(var1.getPlayer());
-+   public void onQuit(PlayerQuitEvent e) {
-+      this.stopAll(e.getPlayer());
++   public void onQuit(PlayerQuitEvent event) {
++      this.stopAll(event.getPlayer());
     }
  
     @EventHandler(priority = EventPriority.HIGH)
@@ -235,18 +249,18 @@ index f4031b6..f0a1071 100644
 -         this.stop(var2, var5, var1);
 +   public void onItemChange(PlayerItemHeldEvent event) {
 +      Player player = event.getPlayer();
-+      ItemStack oldItem = player.getInventory().getItem(event.getPreviousSlot());
++      ItemStack previousItem = player.getInventory().getItem(event.getPreviousSlot());
 +      ItemStack newItem = player.getInventory().getItem(event.getNewSlot());
-+      RollItemType oldType = RollItemType.getHand(player, oldItem);
-+      RollItemType newType = RollItemType.getHand(player, newItem);
-+      if (oldType != null) {
-+         this.stop(player, oldType, event);
++      RollItemType previousHandType = RollItemType.getHand(player, previousItem);
++      RollItemType newHandType = RollItemType.getHand(player, newItem);
++      if (previousHandType != null) {
++         this.stop(player, previousHandType, event);
        }
  
 -      if (var6 != null) {
 -         this.activate(var2, var6, var4, var1);
-+      if (newType != null) {
-+         this.activate(player, newType, newItem, event);
++      if (newHandType != null) {
++         this.activate(player, newHandType, newItem, event);
        }
     }
  
@@ -258,9 +272,9 @@ index f4031b6..f0a1071 100644
 -      this.stop(var2, var4, var1);
 +   public void onItemDrop(PlayerDropItemEvent event) {
 +      Player player = event.getPlayer();
-+      ItemStack item = event.getItemDrop().getItemStack();
-+      RollItemType type = RollItemType.getHand(player, item);
-+      this.stop(player, type, event);
++      ItemStack droppedItem = event.getItemDrop().getItemStack();
++      RollItemType handType = RollItemType.getHand(player, droppedItem);
++      this.stop(player, handType, event);
     }
  
     @EventHandler(ignoreCancelled = true)
@@ -272,10 +286,10 @@ index f4031b6..f0a1071 100644
 -         this.activate(var2, var4, var3, var1);
 +   public void onItemPickUp(PlayerPickupItemEvent event) {
 +      Player player = event.getPlayer();
-+      ItemStack item = event.getItem().getItemStack();
-+      RollItemType type = RollItemType.getHand(player, item);
-+      if (type != null) {
-+         this.activate(player, type, item, event);
++      ItemStack pickedUpItem = event.getItem().getItemStack();
++      RollItemType handType = RollItemType.getHand(player, pickedUpItem);
++      if (handType != null) {
++         this.activate(player, handType, pickedUpItem, event);
        }
     }
  

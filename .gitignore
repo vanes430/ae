@@ -5,3 +5,4 @@ src-decompiled/
 src-patched/
 .idea/
 *.log
+tools/vineflower.jar

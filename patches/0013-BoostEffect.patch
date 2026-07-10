@@ -8,7 +8,7 @@ AE PATCH EXCLUDES: net/advancedplugins/ae/impl/effects/effects/effects/internal/
 
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/BoostEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/BoostEffect.java
-index 81fa85d..d0c13a1 100644
+index 81fa85d..a99dfa8 100644
 --- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/BoostEffect.java
 +++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/BoostEffect.java
 @@ -21,60 +21,57 @@ import org.bukkit.util.Vector;
@@ -65,13 +65,14 @@ index 81fa85d..d0c13a1 100644
 -                  double var11 = var6.getZ() * var7;
 -                  String var14 = var3x.toUpperCase(Locale.ROOT);
 -                  Vector var13;
+-                  switch (var14) {
 +                  Vector direction = target.getLocation().getDirection().normalize();
 +                  double number = amount / 10.0;
 +                  double x = direction.getX() * number;
 +                  double z = direction.getZ() * number;
-+                  String var14 = dir.toUpperCase(Locale.ROOT);
++                  String directionUpper = dir.toUpperCase(Locale.ROOT);
 +                  Vector boost;
-                   switch (var14) {
++                  switch (directionUpper) {
                       case "UP":
 -                        var13 = new Vector(0.0, var7, 0.0);
 +                        boost = new Vector(0.0, number, 0.0);
@@ -119,8 +120,10 @@ index 81fa85d..d0c13a1 100644
 +                  if (!this.ignoreFall.contains(target.getUniqueId())) {
 +                     this.ignoreFall.add(target.getUniqueId());
                    }
-                } catch (Exception var23) {
-                   var23.printStackTrace();
+-               } catch (Exception var23) {
+-                  var23.printStackTrace();
++               } catch (Exception e) {
++                  e.printStackTrace();
                 }
 -            },
 -            1L

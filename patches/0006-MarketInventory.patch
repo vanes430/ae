@@ -8,7 +8,7 @@ AE PATCH EXCLUDES: net/advancedplugins/ae/handlers/netsharing/MarketInventory.cl
 
 ---
 diff --git a/net/advancedplugins/ae/handlers/netsharing/MarketInventory.java b/net/advancedplugins/ae/handlers/netsharing/MarketInventory.java
-index a169c0e..e11a816 100644
+index dda213e..e878107 100644
 --- a/net/advancedplugins/ae/handlers/netsharing/MarketInventory.java
 +++ b/net/advancedplugins/ae/handlers/netsharing/MarketInventory.java
 @@ -20,6 +20,7 @@ import java.util.List;
@@ -19,16 +19,7 @@ index a169c0e..e11a816 100644
  import java.util.Map.Entry;
  import java.util.regex.Pattern;
  import net.advancedplugins.ae.Core;
-@@ -27,8 +28,6 @@ import net.advancedplugins.ae.Values;
- import net.advancedplugins.ae.enchanthandler.enchantments.AEnchants;
- import net.advancedplugins.ae.enchanthandler.enchantments.AdvancedEnchantment;
- import net.advancedplugins.ae.handlers.commands.MCI;
--import net.advancedplugins.ae.handlers.netsharing.MarketInventory.1;
--import net.advancedplugins.ae.handlers.netsharing.MarketInventory.MarketInvHolder;
- import net.advancedplugins.ae.impl.utils.items.ItemBuilder;
- import net.advancedplugins.ae.utils.AManager;
- import net.advancedplugins.ae.utils.YamlFile;
-@@ -39,6 +38,7 @@ import org.bukkit.Bukkit;
+@@ -37,6 +38,7 @@ import org.bukkit.Bukkit;
  import org.bukkit.Material;
  import org.bukkit.command.CommandSender;
  import org.bukkit.configuration.ConfigurationSection;
@@ -36,27 +27,29 @@ index a169c0e..e11a816 100644
  import org.bukkit.configuration.file.YamlConfiguration;
  import org.bukkit.entity.Player;
  import org.bukkit.event.EventHandler;
-@@ -47,74 +47,79 @@ import org.bukkit.event.inventory.ClickType;
- import org.bukkit.event.inventory.InventoryClickEvent;
- import org.bukkit.event.player.AsyncPlayerChatEvent;
- import org.bukkit.inventory.Inventory;
-+import org.bukkit.inventory.InventoryHolder;
+@@ -48,78 +50,77 @@ import org.bukkit.inventory.Inventory;
+ import org.bukkit.inventory.InventoryHolder;
  import org.bukkit.inventory.ItemStack;
  import org.bukkit.plugin.java.JavaPlugin;
-+import org.jetbrains.annotations.NotNull;
+-import org.bukkit.scheduler.BukkitRunnable;
+ import org.jetbrains.annotations.NotNull;
  
  public class MarketInventory implements Listener {
 -   private static final LinkedHashMap<String, EnchantPreview> enchantHashmap = new LinkedHashMap<>();
 +   private static final Map<String, EnchantPreview> enchantHashmap = Collections.synchronizedMap(new LinkedHashMap<>());
     private static int taskId = 0;
     private static final List<UUID> pendingPlayersChats = new ArrayList<>();
--
+ 
 -   public static void init(JavaPlugin var0) {
-+   public static void init(JavaPlugin instance) {
++   public static void init(JavaPlugin plugin) {
        if (Values.m_aeMarket) {
--         taskId = new 1().runTaskTimerAsynchronously(var0, 0L, 12000L).getTaskId();
+-         taskId = (new BukkitRunnable() {
+-            public void run() {
+-               MarketInventory.cache();
+-            }
+-         }).runTaskTimerAsynchronously(var0, 0L, 12000L).getTaskId();
 +         Bukkit.getAsyncScheduler().runAtFixedRate(
-+            instance,
++            plugin,
 +            task -> cache(),
 +            0L,
 +            12000L * 50L,
@@ -69,16 +62,15 @@ index a169c0e..e11a816 100644
 -      if (Values.m_aeMarket) {
 -         Bukkit.getScheduler().cancelTask(taskId);
 -      }
-+      // cancelTasks is handled by FoliaScheduler.cancelAll if needed, 
-+      // but here we just leave it for now or implement specific cancel if taskId was used.
++      // Handled by plugin disable / cancelAll in Folia
     }
--
+ 
     @EventHandler
 -   public void onClick(InventoryClickEvent var1) {
 -      if (var1.getCurrentItem() != null) {
 -         if (var1.getClickedInventory() != null) {
 -            if (!var1.getCurrentItem().getType().equals(Material.AIR)) {
--               if (var1.getView().getTopInventory().getHolder() instanceof MarketInvHolder) {
+-               if (var1.getView().getTopInventory().getHolder() instanceof MarketInventory.MarketInvHolder) {
 -                  var1.setCancelled(true);
 -                  Player var2 = (Player)var1.getWhoClicked();
 -                  ItemStack var3 = var1.getCurrentItem();
@@ -88,20 +80,20 @@ index a169c0e..e11a816 100644
 -                     Optional var6 = Arrays.stream(var2.getOpenInventory().getTopInventory().getContents()).findFirst();
 -                     if (var6.isPresent()) {
 -                        var5 = Integer.parseInt(NBTapi.get("page", (ItemStack)var6.get()));
-+   public void onClick(InventoryClickEvent e) {
-+      if (e.getCurrentItem() != null) {
-+         if (e.getClickedInventory() != null) {
-+            if (!e.getCurrentItem().getType().equals(Material.AIR)) {
-+               if (e.getView().getTopInventory().getHolder() instanceof MarketInventory.MarketInvHolder) {
-+                  e.setCancelled(true);
-+                  Player p = (Player)e.getWhoClicked();
-+                  ItemStack i = e.getCurrentItem();
-+                  int slot = e.getRawSlot();
-+                  if (slot <= p.getOpenInventory().getTopInventory().getSize()) {
++   public void onClick(InventoryClickEvent event) {
++      if (event.getCurrentItem() != null) {
++         if (event.getClickedInventory() != null) {
++            if (!event.getCurrentItem().getType().equals(Material.AIR)) {
++               if (event.getView().getTopInventory().getHolder() instanceof MarketInventory.MarketInvHolder) {
++                  event.setCancelled(true);
++                  Player player = (Player)event.getWhoClicked();
++                  ItemStack clickedItem = event.getCurrentItem();
++                  int rawSlot = event.getRawSlot();
++                  if (rawSlot <= player.getOpenInventory().getTopInventory().getSize()) {
 +                     int page = 0;
-+                     Optional<ItemStack> contents = Arrays.stream(p.getOpenInventory().getTopInventory().getContents()).findFirst();
-+                     if (contents.isPresent()) {
-+                        page = Integer.parseInt(NBTapi.get("page", contents.get()));
++                     Optional firstItem = Arrays.stream(player.getOpenInventory().getTopInventory().getContents()).findFirst();
++                     if (firstItem.isPresent()) {
++                        page = Integer.parseInt(NBTapi.get("page", (ItemStack)firstItem.get()));
                       }
  
 -                     if (NBTapi.contains("enchant", var3)) {
@@ -112,21 +104,21 @@ index a169c0e..e11a816 100644
 -                           new FancyMessage("").link(var8.getCreatorProfile()).send(var2);
 -                           new FancyMessage("").link(var8.getCreatorProfile()).send(var2);
 -                           new FancyMessage(AManager.color("&cClick here to open Enchantment Author's profile")).link(var8.getCreatorProfile()).send(var2);
-+                     if (NBTapi.contains("enchant", i)) {
-+                        String enchant = NBTapi.get("enchant", i);
-+                        if (e.getClick().equals(ClickType.RIGHT)) {
-+                           EnchantPreview ep = enchantHashmap.get(enchant);
-+                           p.closeInventory();
-+                           new FancyMessage("").link(ep.getCreatorProfile()).send(p);
-+                           new FancyMessage("").link(ep.getCreatorProfile()).send(p);
-+                           new FancyMessage(AManager.color("&cClick here to open Enchantment Author's profile")).link(ep.getCreatorProfile()).send(p);
++                     if (NBTapi.contains("enchant", clickedItem)) {
++                        String enchantName = NBTapi.get("enchant", clickedItem);
++                        if (event.getClick().equals(ClickType.RIGHT)) {
++                           EnchantPreview preview = enchantHashmap.get(enchantName);
++                           player.closeInventory();
++                           new FancyMessage("").link(preview.getCreatorProfile()).send(player);
++                           new FancyMessage("").link(preview.getCreatorProfile()).send(player);
++                           new FancyMessage(AManager.color("&cClick here to open Enchantment Author's profile")).link(preview.getCreatorProfile()).send(player);
                             return;
                          }
  
 -                        if (AEnchants.matchEnchant(var7) != null) {
 -                           var2.sendMessage("§c§lERROR:§c This enchantment already exists on your server!");
-+                        if (AEnchants.matchEnchant(enchant) != null) {
-+                           p.sendMessage("§c§lERROR:§c This enchantment already exists on your server!");
++                        if (AEnchants.matchEnchant(enchantName) != null) {
++                           player.sendMessage("§c§lERROR:§c This enchantment already exists on your server!");
                             return;
                          }
  
@@ -145,25 +137,25 @@ index a169c0e..e11a816 100644
 -                        var2.sendMessage(" §cWrite §lEnchantment Name§c in §lChat§c which you want to §lShare");
 -                        var2.sendMessage(" §7§o((inappropriate or toxic enchantments will be removed and your access to market will be revoked))");
 -                        pendingPlayersChats.add(var2.getUniqueId());
-+                        p.closeInventory();
-+                        get(p, enchant);
-+                     } else if (slot == 48) {
-+                        open(p, page - 1);
-+                     } else if (slot == 49) {
-+                        p.closeInventory();
-+                     } else if (slot == 50) {
-+                        open(p, page + 1);
-+                     } else if (slot == 53) {
-+                        p.closeInventory();
-+                        p.sendMessage(" ");
-+                        p.sendMessage(" ");
-+                        p.sendMessage(" §cWrite §lEnchantment Name§c in §lChat§c which you want to §lShare");
-+                        p.sendMessage(" §7§o((inappropriate or toxic enchantments will be removed and your access to market will be revoked))");
-+                        pendingPlayersChats.add(p.getUniqueId());
++                        player.closeInventory();
++                        get(player, enchantName);
++                     } else if (rawSlot == 48) {
++                        open(player, page - 1);
++                     } else if (rawSlot == 49) {
++                        player.closeInventory();
++                     } else if (rawSlot == 50) {
++                        open(player, page + 1);
++                     } else if (rawSlot == 53) {
++                        player.closeInventory();
++                        player.sendMessage(" ");
++                        player.sendMessage(" ");
++                        player.sendMessage(" §cWrite §lEnchantment Name§c in §lChat§c which you want to §lShare");
++                        player.sendMessage(" §7§o((inappropriate or toxic enchantments will be removed and your access to market will be revoked))");
++                        pendingPlayersChats.add(player.getUniqueId());
                       }
                    }
                 }
-@@ -123,72 +128,72 @@ public class MarketInventory implements Listener {
+@@ -128,138 +129,138 @@ public class MarketInventory implements Listener {
        }
     }
  
@@ -242,10 +234,12 @@ index a169c0e..e11a816 100644
        try {
 -         var3.createNewFile();
 -         var2.save(var3);
+-      } catch (Exception var15) {
+-         var15.printStackTrace();
 +         tempFile.createNewFile();
 +         tempConfig.save(tempFile);
-       } catch (Exception var15) {
-          var15.printStackTrace();
++      } catch (Exception ex) {
++         ex.printStackTrace();
        }
  
 -      String var16 = readTextFile("enchantments.yml") + readTextFile(var3.getName());
@@ -278,9 +272,10 @@ index a169c0e..e11a816 100644
 -         Integer.parseInt(var0);
 +         Integer.parseInt(input);
           return true;
-       } catch (Exception var2) {
+-      } catch (Exception var2) {
++      } catch (Exception ex) {
           return false;
-@@ -196,65 +201,65 @@ public class MarketInventory implements Listener {
+       }
     }
  
     private static void cache() {
@@ -289,10 +284,11 @@ index a169c0e..e11a816 100644
        try {
 -         String var1 = "http://servers.advancedmarket.co/ae/enchantments/share.php?list=true";
 -         var0 = readUrl(var1);
+-      } catch (Exception var15) {
+-         var0 = new ArrayList();
 +         String url = "http://servers.advancedmarket.co/ae/enchantments/share.php?list=true";
 +         enchants = readUrl(url);
-       } catch (Exception var15) {
--         var0 = new ArrayList();
++      } catch (Exception ex) {
 +         enchants = new ArrayList<>();
        }
  
@@ -325,15 +321,17 @@ index a169c0e..e11a816 100644
 +            int creator;
              try {
 -               var11 = Integer.parseInt(var4[6]);
-+               creator = Integer.parseInt(data[6]);
-             } catch (Exception var13) {
+-            } catch (Exception var13) {
 -               var11 = 0;
++               creator = Integer.parseInt(data[6]);
++            } catch (Exception ex) {
 +               creator = 0;
              }
  
 -            var16.put(var5, new EnchantPreview(var5, var10, var8, var9, var7, var6, var11));
+-         } catch (Exception var14) {
 +            unsorted.put(enchName, new EnchantPreview(enchName, desc, lvl, appliesTo, type, popularity, creator));
-          } catch (Exception var14) {
++         } catch (Exception ex) {
           }
        }
  
@@ -384,7 +382,7 @@ index a169c0e..e11a816 100644
                    }
                 }
              }
-@@ -262,145 +267,151 @@ public class MarketInventory implements Listener {
+@@ -267,145 +268,145 @@ public class MarketInventory implements Listener {
        }
     }
  
@@ -402,20 +400,20 @@ index a169c0e..e11a816 100644
 -            var7 = var7.replaceAll("&", "7and7");
 -            var7 = var7.replaceAll("\n", "7nl7");
 -            var3.append(var6).append("7p7").append(var7).append("7n7");
-+   protected static boolean share(CommandSender p, String enchantName) {
-+      ConfigurationSection cs = YamlFile.ENCHANTMENTS.getConfigSection(enchantName);
-+      StringBuilder enchant = new StringBuilder();
++   protected static boolean share(CommandSender sender, String enchantName) {
++      ConfigurationSection enchantConfig = YamlFile.ENCHANTMENTS.getConfigSection(enchantName);
++      StringBuilder ymlData = new StringBuilder();
 +
-+      for (String key : cs.getKeys(true)) {
++      for (String key : enchantConfig.getKeys(true)) {
 +         String path = enchantName + "." + key;
 +         if (!YamlFile.ENCHANTMENTS.contains(path)) {
-+            String obj = YamlFile.ENCHANTMENTS.get(path) + "";
-+            obj = obj.replaceAll("%", "7l7");
-+            obj = obj.replaceAll("_", "7u7");
-+            obj = obj.replaceAll(" ", "7sp7");
-+            obj = obj.replaceAll("&", "7and7");
-+            obj = obj.replaceAll("\n", "7nl7");
-+            enchant.append(path).append("7p7").append(obj).append("7n7");
++            String value = YamlFile.ENCHANTMENTS.get(path) + "";
++            value = value.replaceAll("%", "7l7");
++            value = value.replaceAll("_", "7u7");
++            value = value.replaceAll(" ", "7sp7");
++            value = value.replaceAll("&", "7and7");
++            value = value.replaceAll("\n", "7nl7");
++            ymlData.append(path).append("7p7").append(value).append("7n7");
           }
        }
  
@@ -426,69 +424,69 @@ index a169c0e..e11a816 100644
 -      String var8 = var2.getString("description").replaceAll("\n", "7nl7");
 -      String var9 = ("http://servers.advancedmarket.co/ae/enchantments/share.php?set="
 -            + var1
-+      String enchantString = enchant.toString().replaceAll("\n", "7nl7").replaceAll("(\r\n|\n)", "7nl7").replaceAll(" ", "7sp7");
-+      String type = cs.getString("type");
-+      int levels = cs.getConfigurationSection("levels").getKeys(false).size();
-+      String appliesTo = cs.getString("applies-to");
-+      String desc = cs.getString("description").replaceAll("\n", "7nl7");
-+      String url = ("http://servers.advancedmarket.co/ae/enchantments/share.php?set="
++      String encodedYml = ymlData.toString().replaceAll("\n", "7nl7").replaceAll("(\r\n|\n)", "7nl7").replaceAll(" ", "7sp7");
++      String enchantType = enchantConfig.getString("type");
++      int levelCount = enchantConfig.getConfigurationSection("levels").getKeys(false).size();
++      String appliesTo = enchantConfig.getString("applies-to");
++      String description = enchantConfig.getString("description").replaceAll("\n", "7nl7");
++      String requestUrl = ("http://servers.advancedmarket.co/ae/enchantments/share.php?set="
 +            + enchantName
              + "&desc="
 -            + var8
-+            + desc
++            + description
              + "&type="
 -            + var13
-+            + type
++            + enchantType
              + "&levels="
 -            + var14
-+            + levels
++            + levelCount
              + "&appliesTo="
 -            + var20
 +            + appliesTo
              + "&yml="
 -            + var12
-+            + enchantString
++            + encodedYml
              + "&creator=")
           .replaceAll(" ", "_");
 -      List var10 = readUrl(var9);
 -      int var11 = Integer.parseInt((String)var10.get(0));
 -      return react(var0, var11);
-+      List<String> output = readUrl(url);
-+      int rt = Integer.parseInt(output.get(0));
-+      return react(p, rt);
++      List response = readUrl(requestUrl);
++      int responseCode = Integer.parseInt((String)response.get(0));
++      return react(sender, responseCode);
     }
  
 -   private static boolean react(CommandSender var0, int var1) {
 -      switch (var1) {
-+   private static boolean react(CommandSender p, int code) {
-+      switch (code) {
++   private static boolean react(CommandSender sender, int responseCode) {
++      switch (responseCode) {
           case 1:
 -            var0.sendMessage("§c§nERROR:§c This action is current on cooldown.");
-+            p.sendMessage("§c§nERROR:§c This action is current on cooldown.");
++            sender.sendMessage("§c§nERROR:§c This action is current on cooldown.");
              return false;
           case 2:
 -            var0.sendMessage("§c§nERROR:§c This enchantment already exists.");
-+            p.sendMessage("§c§nERROR:§c This enchantment already exists.");
++            sender.sendMessage("§c§nERROR:§c This enchantment already exists.");
              return false;
           case 3:
 -            var0.sendMessage("§a§LSUCCESS:§a You successfully completed this action.");
-+            p.sendMessage("§a§LSUCCESS:§a You successfully completed this action.");
++            sender.sendMessage("§a§LSUCCESS:§a You successfully completed this action.");
              return true;
           case 4:
 -            var0.sendMessage("§c§nERROR:§c This action is currently inaccessible.");
-+            p.sendMessage("§c§nERROR:§c This action is currently inaccessible.");
++            sender.sendMessage("§c§nERROR:§c This action is currently inaccessible.");
              return false;
           default:
 -            var0.sendMessage("§c§lFailed to connect to remote server.");
-+            p.sendMessage("§c§lFailed to connect to remote server.");
++            sender.sendMessage("§c§lFailed to connect to remote server.");
              return false;
        }
     }
  
 -   public static List<String> readUrl(String var0) {
 -      ArrayList var1 = new ArrayList();
-+   public static List<String> readUrl(String input) {
-+      List<String> rt = new ArrayList<>();
++   public static List<String> readUrl(String url) {
++      ArrayList lines = new ArrayList();
  
        try {
 -         URLConnection var2 = new URL(var0.replaceAll(" ", "_")).openConnection();
@@ -499,40 +497,39 @@ index a169c0e..e11a816 100644
 -         String var4;
 -         while ((var4 = var3.readLine()) != null) {
 -            var1.add(var4);
-+         URLConnection connection = new URL(input.replaceAll(" ", "_")).openConnection();
-+         connection.setRequestProperty(
-+            "User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11"
-+         );
++         URLConnection connection = new URL(url.replaceAll(" ", "_")).openConnection();
++         connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11");
 +         connection.connect();
-+         BufferedReader r = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
++         BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
 +
 +         String line;
-+         while ((line = r.readLine()) != null) {
-+            rt.add(line);
++         while ((line = reader.readLine()) != null) {
++            lines.add(line);
           }
  
 -         var3.close();
 -         return var1;
-+         r.close();
-+         return rt;
-       } catch (Exception var5) {
+-      } catch (Exception var5) {
++         reader.close();
++         return lines;
++      } catch (Exception ex) {
           return Collections.singletonList("4");
        }
     }
  
 -   public static void open(Player var0, int var1) {
-+   public static void open(Player p, int page) {
++   public static void open(Player player, int page) {
        if (!Values.m_aeMarket) {
 -         var0.sendMessage("§cFeature is disabled.");
-+         p.sendMessage("§cFeature is disabled.");
++         player.sendMessage("§cFeature is disabled.");
        } else {
           try {
--            Inventory var2 = Bukkit.createInventory(new MarketInvHolder(), 54, "§a§lEnchantment Market");
+-            Inventory var2 = Bukkit.createInventory(new MarketInventory.MarketInvHolder(), 54, "§a§lEnchantment Market");
 -            if (var1 < 1) {
 -               var0.sendMessage("§cPage §l" + var1 + "§c does not exist!");
-+            Inventory inv = Bukkit.createInventory(new MarketInventory.MarketInvHolder(), 54, "§a§lEnchantment Market");
++            Inventory inventory = Bukkit.createInventory(new MarketInventory.MarketInvHolder(), 54, "§a§lEnchantment Market");
 +            if (page < 1) {
-+               p.sendMessage("§cPage §l" + page + "§c does not exist!");
++               player.sendMessage("§cPage §l" + page + "§c does not exist!");
                 return;
              }
  
@@ -541,18 +538,18 @@ index a169c0e..e11a816 100644
 -            int var5 = var1 * var3;
 -            if (enchantHashmap.size() < var4) {
 -               var0.sendMessage("§cPage §l" + var1 + "§c does not exist!");
-+            int amountPerPage = 36;
-+            int startWith = (page - 1) * amountPerPage;
-+            int endWith = page * amountPerPage;
-+            if (enchantHashmap.size() < startWith) {
-+               p.sendMessage("§cPage §l" + page + "§c does not exist!");
++            byte itemsPerPage = 36;
++            int startIndex = (page - 1) * itemsPerPage;
++            int endIndex = page * itemsPerPage;
++            if (enchantHashmap.size() < startIndex) {
++               player.sendMessage("§cPage §l" + page + "§c does not exist!");
                 return;
              }
  
 -            if (enchantHashmap.size() < var5 && enchantHashmap.size() > var4) {
 -               var5 = enchantHashmap.size();
-+            if (enchantHashmap.size() < endWith && enchantHashmap.size() > startWith) {
-+               endWith = enchantHashmap.size();
++            if (enchantHashmap.size() < endIndex && enchantHashmap.size() > startIndex) {
++               endIndex = enchantHashmap.size();
              }
  
 -            for (String var7 : enchantHashmap.isEmpty() ? new ArrayList() : new ArrayList<>(enchantHashmap.keySet()).subList(var4, var5)) {
@@ -568,26 +565,22 @@ index a169c0e..e11a816 100644
 -                     int var16 = var15.length / 2;
 -                     var9.addLoreLine("§e§lx §7" + collectArrayTogether(var15, 0, var16));
 -                     var9.addLoreLine("§e§lx §7" + collectArrayTogether(var15, var16, var15.length - 1));
-+            List<String> keys;
-+            synchronized (enchantHashmap) {
-+               keys = enchantHashmap.isEmpty() ? new ArrayList<>() : new ArrayList<>(enchantHashmap.keySet());
-+            }
-+            for (String ench : keys.subList(startWith, endWith)) {
-+               EnchantPreview enchantPreview = enchantHashmap.get(ench);
-+               ItemBuilder itemBuilder = new ItemBuilder(getItemStackDependingOnEnchantType(enchantPreview.getEnchantmentType()))
-+                  .setAmount(enchantPreview.getLevelCount())
-+                  .setName("§7Enchantment §6" + StringUtils.capitalize(ench.toLowerCase(Locale.ROOT)));
-+               String[] desc = enchantPreview.getDesc().contains("\n") ? enchantPreview.getDesc().split("\n") : enchantPreview.getDesc().split("7nl7");
++            for (String enchantName : enchantHashmap.isEmpty() ? new ArrayList() : new ArrayList<>(enchantHashmap.keySet()).subList(startIndex, endIndex)) {
++               EnchantPreview preview = enchantHashmap.get(enchantName);
++               ItemBuilder itemBuilder = new ItemBuilder(getItemStackDependingOnEnchantType(preview.getEnchantmentType()))
++                  .setAmount(preview.getLevelCount())
++                  .setName("§7Enchantment §6" + StringUtils.capitalize(enchantName.toLowerCase(Locale.ROOT)));
++               String[] descLines = preview.getDesc().contains("\n") ? preview.getDesc().split("\n") : preview.getDesc().split("7nl7");
 +
-+               for (String line : desc) {
-+                  if (line.chars().count() > 48L) {
-+                     String[] words = line.split(" ");
-+                     int addTo = words.length / 2;
-+                     itemBuilder.addLoreLine("§e§lx §7" + collectArrayTogether(words, 0, addTo));
-+                     itemBuilder.addLoreLine("§e§lx §7" + collectArrayTogether(words, addTo, words.length - 1));
++               for (String descLine : descLines) {
++                  if (descLine.chars().count() > 48L) {
++                     String[] words = descLine.split(" ");
++                     int midpoint = words.length / 2;
++                     itemBuilder.addLoreLine("§e§lx §7" + collectArrayTogether(words, 0, midpoint));
++                     itemBuilder.addLoreLine("§e§lx §7" + collectArrayTogether(words, midpoint, words.length - 1));
                    } else {
 -                     var9.addLoreLine("§e§lx §7" + var14);
-+                     itemBuilder.addLoreLine("§e§lx §7" + line);
++                     itemBuilder.addLoreLine("§e§lx §7" + descLine);
                    }
                 }
  
@@ -605,56 +598,58 @@ index a169c0e..e11a816 100644
 -               var20 = NBTapi.addNBTTag("page", var1 + "", var20);
 -               var2.addItem(new ItemStack[]{var20});
 +               itemBuilder.addLoreLine("");
-+               itemBuilder.addLoreLine("§6§lx §7Popularity: §e" + enchantPreview.getDownloadCount() + " §eDownloads");
++               itemBuilder.addLoreLine("§6§lx §7Popularity: §e" + preview.getDownloadCount() + " §eDownloads");
 +               itemBuilder.addLoreLine("");
-+               itemBuilder.addLoreLine("§6§lx §7Enchant Type: §e" + enchantPreview.getEnchantmentType());
-+               itemBuilder.addLoreLine("§6§lx §7Applies to: §e" + enchantPreview.getAppliesTo());
-+               itemBuilder.addLoreLine("§6§lx §7Levels: §e" + enchantPreview.getLevelCount());
++               itemBuilder.addLoreLine("§6§lx §7Enchant Type: §e" + preview.getEnchantmentType());
++               itemBuilder.addLoreLine("§6§lx §7Applies to: §e" + preview.getAppliesTo());
++               itemBuilder.addLoreLine("§6§lx §7Levels: §e" + preview.getLevelCount());
 +               itemBuilder.addLoreLine(" ");
 +               itemBuilder.addLoreLine("§8>> §6Right-Click §7to §eVisit Author§7 on §6SpigotMc");
 +               itemBuilder.addLoreLine("§8>> §6Left-Click §7to §eDownload");
-+               ItemStack ting = itemBuilder.toItemStack();
-+               ting = NBTapi.addNBTTag("enchant", ench, ting);
-+               ting = NBTapi.addNBTTag("page", page + "", ting);
-+               inv.addItem(new ItemStack[]{ting});
++               ItemStack itemStack = itemBuilder.toItemStack();
++               itemStack = NBTapi.addNBTTag("enchant", enchantName, itemStack);
++               itemStack = NBTapi.addNBTTag("page", page + "", itemStack);
++               inventory.addItem(new ItemStack[]{itemStack});
              }
  
 -            var2.setItem(
-+            inv.setItem(
++            inventory.setItem(
                 45,
                 new ItemBuilder(Material.BOOK)
                    .setName("§6What is this?")
-@@ -420,14 +431,14 @@ public class MarketInventory implements Listener {
+@@ -425,14 +426,14 @@ public class MarketInventory implements Listener {
                    .toItemStack()
              );
  
 -            for (int var19 : Arrays.asList(46, 47, 51, 52)) {
 -               var2.setItem(var19, new ItemBuilder(AManager.matchMaterial("THIN_GLASS", 1, 0)).setName(" ").toItemStack());
 +            for (int i : Arrays.asList(46, 47, 51, 52)) {
-+               inv.setItem(i, new ItemBuilder(AManager.matchMaterial("THIN_GLASS", 1, 0)).setName(" ").toItemStack());
++               inventory.setItem(i, new ItemBuilder(AManager.matchMaterial("THIN_GLASS", 1, 0)).setName(" ").toItemStack());
              }
  
 -            var2.setItem(48, new ItemBuilder(AManager.matchMaterial("BOOK", 1, 0)).setName("§8§ §6Previous Page").toItemStack());
 -            var2.setItem(49, new ItemBuilder(Material.ANVIL, var1).setName("§6Close the selector.").toItemStack());
 -            var2.setItem(50, new ItemBuilder(AManager.matchMaterial("BOOK", 1, 0)).setName("§8>> §6Next Page").setSkullOwner("MHF_ArrowRight").toItemStack());
 -            var2.setItem(
-+            inv.setItem(48, new ItemBuilder(AManager.matchMaterial("BOOK", 1, 0)).setName("§8§ §6Previous Page").toItemStack());
-+            inv.setItem(49, new ItemBuilder(Material.ANVIL, page).setName("§6Close the selector.").toItemStack());
-+            inv.setItem(50, new ItemBuilder(AManager.matchMaterial("BOOK", 1, 0)).setName("§8>> §6Next Page").setSkullOwner("MHF_ArrowRight").toItemStack());
-+            inv.setItem(
++            inventory.setItem(48, new ItemBuilder(AManager.matchMaterial("BOOK", 1, 0)).setName("§8§ §6Previous Page").toItemStack());
++            inventory.setItem(49, new ItemBuilder(Material.ANVIL, page).setName("§6Close the selector.").toItemStack());
++            inventory.setItem(50, new ItemBuilder(AManager.matchMaterial("BOOK", 1, 0)).setName("§8>> §6Next Page").setSkullOwner("MHF_ArrowRight").toItemStack());
++            inventory.setItem(
                 53,
                 new ItemBuilder(AManager.matchMaterial("STORAGE_MINECART", 1, 0))
                    .setName("§6Share an enchantment")
-@@ -448,38 +459,38 @@ public class MarketInventory implements Listener {
+@@ -453,58 +454,58 @@ public class MarketInventory implements Listener {
                    )
                    .toItemStack()
              );
 -            var0.openInventory(var2);
-+            p.openInventory(inv);
-          } catch (Exception var17) {
-             var17.printStackTrace();
+-         } catch (Exception var17) {
+-            var17.printStackTrace();
 -            var0.sendMessage("§c§lERROR:§c Please wait until the market is cached in your system.");
-+            p.sendMessage("§c§lERROR:§c Please wait until the market is cached in your system.");
++            player.openInventory(inventory);
++         } catch (Exception ex) {
++            ex.printStackTrace();
++            player.sendMessage("§c§lERROR:§c Please wait until the market is cached in your system.");
           }
        }
     }
@@ -698,8 +693,11 @@ index a169c0e..e11a816 100644
 +               returnValue.append(line).append("\n");
              }
           }
-       } catch (FileNotFoundException var9) {
-@@ -488,18 +499,25 @@ public class MarketInventory implements Listener {
+-      } catch (FileNotFoundException var9) {
++      } catch (FileNotFoundException ex) {
+          throw new RuntimeException("File not found");
+-      } catch (IOException var10) {
++      } catch (IOException ex) {
           throw new RuntimeException("IO Error occurred");
        }
  
@@ -715,21 +713,16 @@ index a169c0e..e11a816 100644
 -         var3.write(var1);
 -         var3.close();
 -         var2.close();
+-      } catch (IOException var4) {
+-         var4.printStackTrace();
 +         FileWriter output = new FileWriter(new File(Core.getInstance().getDataFolder(), fileName));
 +         BufferedWriter writer = new BufferedWriter(output);
 +         writer.write(s);
 +         writer.close();
 +         output.close();
-       } catch (IOException var4) {
-          var4.printStackTrace();
++      } catch (IOException ex) {
++         ex.printStackTrace();
        }
     }
-+
-+   private static class MarketInvHolder implements InventoryHolder {
-+      @NotNull
-+      public Inventory getInventory() {
-+         return null;
-+      }
-+   }
- }
+ 
 

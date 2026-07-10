@@ -16,9 +16,8 @@ repositories {
 }
 
 dependencies {
-    // Server API
+    // Server API (Paper/Bukkit)
     compileOnly(files("libs/canvas-api.jar"))
-    compileOnly(files("libs/canvas-server.jar"))
     compileOnly(files("libs/bungeecord-chat.jar"))
     
     // Adventure API (Maven)
@@ -170,8 +169,6 @@ tasks.named<Jar>("jar") {
 // ─── Deploy ───
 val pluginsDir = "/var/lib/pterodactyl/volumes/d64a444d-cbe1-44eb-99f6-1aa116292bef/plugins"
 tasks.register<Copy>("deploy") {
-    dependsOn(tasks.jar)
-
     from(layout.buildDirectory.file("libs/AdvancedEnchantments-9.23.6-folia-patched.jar"))
     into(pluginsDir)
     rename { "AdvancedEnchantments-9.23.6-folia-patched.jar" }

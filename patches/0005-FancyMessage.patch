@@ -8,7 +8,7 @@ AE PATCH EXCLUDES: net/advancedplugins/ae/utils/fanciful/FancyMessage.class, net
 
 ---
 diff --git a/net/advancedplugins/ae/utils/fanciful/FancyMessage.java b/net/advancedplugins/ae/utils/fanciful/FancyMessage.java
-index d7f2fff..c077763 100644
+index d7f2fff..ab91ba5 100644
 --- a/net/advancedplugins/ae/utils/fanciful/FancyMessage.java
 +++ b/net/advancedplugins/ae/utils/fanciful/FancyMessage.java
 @@ -36,12 +36,12 @@ public class FancyMessage implements JsonRepresentedObject, Cloneable, Iterable<
@@ -357,8 +357,9 @@ index d7f2fff..c077763 100644
 +                  result.messageParts.add(new MessagePart(TextualComponent.rawText("\n")));
                 }
 -            } catch (CloneNotSupportedException var6) {
-+            } catch (Exception var6) {
-                Bukkit.getLogger().log(Level.WARNING, "Failed to clone object", (Throwable)var6);
+-               Bukkit.getLogger().log(Level.WARNING, "Failed to clone object", (Throwable)var6);
++            } catch (Exception cloneException) {
++               Bukkit.getLogger().log(Level.WARNING, "Failed to clone object", (Throwable)cloneException);
                 return this;
              }
           }
@@ -452,9 +453,10 @@ index d7f2fff..c077763 100644
           try {
 -            this.writeJson(var2);
 -            var2.close();
+-         } catch (IOException var4) {
 +            this.writeJson(json);
 +            json.close();
-          } catch (IOException var4) {
++         } catch (IOException ioException) {
              throw new RuntimeException("invalid message");
           }
  

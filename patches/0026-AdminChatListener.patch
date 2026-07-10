@@ -8,10 +8,10 @@ AE PATCH EXCLUDES: net/advancedplugins/ae/globallisteners/listeners/AdminChatLis
 
 ---
 diff --git a/net/advancedplugins/ae/globallisteners/listeners/AdminChatListener.java b/net/advancedplugins/ae/globallisteners/listeners/AdminChatListener.java
-index 4ca45ae..7d3cbf3 100644
+index 4ca45ae..94241b7 100644
 --- a/net/advancedplugins/ae/globallisteners/listeners/AdminChatListener.java
 +++ b/net/advancedplugins/ae/globallisteners/listeners/AdminChatListener.java
-@@ -1,18 +1,18 @@
+@@ -1,29 +1,31 @@
  package net.advancedplugins.ae.globallisteners.listeners;
  
  import java.util.ArrayList;
@@ -31,16 +31,26 @@ index 4ca45ae..7d3cbf3 100644
 +   public static List<UUID> listening = Collections.synchronizedList(new ArrayList<>());
  
     @EventHandler
-    public void onChat(AsyncPlayerChatEvent var1) {
-@@ -22,7 +22,9 @@ public class AdminChatListener implements Listener {
-          if (var2.equalsIgnoreCase("cancel")) {
-             var1.getPlayer().sendMessage(ColorUtils.format("&cSearch canceled!"));
+-   public void onChat(AsyncPlayerChatEvent var1) {
+-      if (listening.contains(var1.getPlayer().getUniqueId())) {
+-         var1.setCancelled(true);
+-         String var2 = var1.getMessage();
+-         if (var2.equalsIgnoreCase("cancel")) {
+-            var1.getPlayer().sendMessage(ColorUtils.format("&cSearch canceled!"));
++   public void onChat(AsyncPlayerChatEvent event) {
++      if (listening.contains(event.getPlayer().getUniqueId())) {
++         event.setCancelled(true);
++         String message = event.getMessage();
++         if (message.equalsIgnoreCase("cancel")) {
++            event.getPlayer().sendMessage(ColorUtils.format("&cSearch canceled!"));
           } else {
 -            Bukkit.getScheduler().runTask(Core.getInstance(), () -> AdminInventory.openFor(var1.getPlayer(), 1, var2));
-+            var1.getPlayer().getScheduler().run(Core.getInstance(), task -> {
-+               AdminInventory.openFor(var1.getPlayer(), 1, var2);
+-            listening.remove(var1.getPlayer().getUniqueId());
++            event.getPlayer().getScheduler().run(Core.getInstance(), task -> {
++               AdminInventory.openFor(event.getPlayer(), 1, message);
 +            }, null);
-             listening.remove(var1.getPlayer().getUniqueId());
++            listening.remove(event.getPlayer().getUniqueId());
           }
        }
+    }
 

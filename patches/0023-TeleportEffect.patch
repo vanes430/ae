@@ -8,15 +8,31 @@ AE PATCH EXCLUDES: net/advancedplugins/ae/impl/effects/effects/effects/internal/
 
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportEffect.java
-index f89090c..1b5efdf 100644
+index f89090c..16b5bea 100644
 --- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportEffect.java
 +++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/TeleportEffect.java
-@@ -15,7 +15,7 @@ public class TeleportEffect extends AdvancedEffect {
-       Location var5 = var1.getBuilder().getMain().getLocation();
-       var4.setYaw(var5.getYaw());
-       var4.setPitch(var5.getPitch());
+@@ -6,16 +6,16 @@ import org.bukkit.Location;
+ import org.bukkit.plugin.java.JavaPlugin;
+ 
+ public class TeleportEffect extends AdvancedEffect {
+-   public TeleportEffect(JavaPlugin var1) {
+-      super(var1, "TELEPORT", "Teleport to location", "%e");
++   public TeleportEffect(JavaPlugin plugin) {
++      super(plugin, "TELEPORT", "Teleport to location", "%e");
+    }
+ 
+-   public boolean executeEffect(ExecutionTask var1, Location var2, String[] var3) {
+-      Location var4 = var2.clone();
+-      Location var5 = var1.getBuilder().getMain().getLocation();
+-      var4.setYaw(var5.getYaw());
+-      var4.setPitch(var5.getPitch());
 -      var1.getBuilder().getMain().teleport(var4);
-+      var1.getBuilder().getMain().teleportAsync(var4);
++   public boolean executeEffect(ExecutionTask task, Location targetLocation, String[] args) {
++      Location teleportLocation = targetLocation.clone();
++      Location playerLocation = task.getBuilder().getMain().getLocation();
++      teleportLocation.setYaw(playerLocation.getYaw());
++      teleportLocation.setPitch(playerLocation.getPitch());
++      task.getBuilder().getMain().teleportAsync(teleportLocation);
        return true;
     }
  }

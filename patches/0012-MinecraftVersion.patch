@@ -8,74 +8,18 @@ AE PATCH EXCLUDES: net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.
 
 ---
 diff --git a/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java b/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java
-index 0190e43..74ed3bd 100644
+index 8cf1c05..b075525 100644
 --- a/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java
 +++ b/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java
-@@ -1,9 +1,7 @@
- package net.advancedplugins.ae.impl.utils.nbt.utils;
- 
+@@ -3,7 +3,6 @@ package net.advancedplugins.ae.impl.utils.nbt.utils;
+ import java.util.HashMap;
  import java.util.Map;
--import java.util.Map.Entry;
+ import java.util.Map.Entry;
 -import lombok.Generated;
--import net.advancedplugins.ae.impl.utils.nbt.utils.MinecraftVersion.1;
-+import java.util.HashMap;
  import org.bukkit.Bukkit;
  import org.bukkit.plugin.java.JavaPlugin;
  
-@@ -39,23 +37,43 @@ public enum MinecraftVersion {
-    MC1_21_R4(1214, true),
-    MC1_21_R5(1215, true),
-    MC1_21_R6(1216, true),
--   MC1_21_R7(1217, true),
--   MC26_1(2601, true);
--
--   private static final Map<String, MinecraftVersion> VERSION_TO_REVISION = new 1();
-+   MC1_21_R7(1217, true);
-+
-+   private static final Map<String, MinecraftVersion> VERSION_TO_REVISION = new HashMap<>();
-+   static {
-+      VERSION_TO_REVISION.put("1.20", MinecraftVersion.MC1_20_R1);
-+      VERSION_TO_REVISION.put("1.20.1", MinecraftVersion.MC1_20_R1);
-+      VERSION_TO_REVISION.put("1.20.2", MinecraftVersion.MC1_20_R2);
-+      VERSION_TO_REVISION.put("1.20.3", MinecraftVersion.MC1_20_R3);
-+      VERSION_TO_REVISION.put("1.20.4", MinecraftVersion.MC1_20_R3);
-+      VERSION_TO_REVISION.put("1.20.5", MinecraftVersion.MC1_20_R4);
-+      VERSION_TO_REVISION.put("1.20.6", MinecraftVersion.MC1_20_R4);
-+      VERSION_TO_REVISION.put("1.21", MinecraftVersion.MC1_21_R1);
-+      VERSION_TO_REVISION.put("1.21.1", MinecraftVersion.MC1_21_R1);
-+      VERSION_TO_REVISION.put("1.21.2", MinecraftVersion.MC1_21_R2);
-+      VERSION_TO_REVISION.put("1.21.3", MinecraftVersion.MC1_21_R2);
-+      VERSION_TO_REVISION.put("1.21.4", MinecraftVersion.MC1_21_R3);
-+      VERSION_TO_REVISION.put("1.21.5", MinecraftVersion.MC1_21_R4);
-+      VERSION_TO_REVISION.put("1.21.6", MinecraftVersion.MC1_21_R5);
-+      VERSION_TO_REVISION.put("1.21.7", MinecraftVersion.MC1_21_R5);
-+      VERSION_TO_REVISION.put("1.21.8", MinecraftVersion.MC1_21_R5);
-+      VERSION_TO_REVISION.put("1.21.9", MinecraftVersion.MC1_21_R6);
-+      VERSION_TO_REVISION.put("1.21.10", MinecraftVersion.MC1_21_R7);
-+      VERSION_TO_REVISION.put("1.21.11", MinecraftVersion.MC1_21_R7);
-+   }
-    private final int versionId;
-    public final boolean mojangMapping;
-    private static MinecraftVersion version;
-    private static Boolean hasGsonSupport;
-    private static Boolean isPaper;
- 
--   private MinecraftVersion(int nullxx) {
--      this(nullxx, false);
-+   private MinecraftVersion(int versionId) {
-+      this(versionId, false);
-    }
- 
--   private MinecraftVersion(int nullxx, boolean nullxxx) {
--      this.versionId = nullxx;
--      this.mojangMapping = nullxxx;
-+   private MinecraftVersion(int versionId, boolean _mojangMapping) {
-+      this.versionId = versionId;
-+      this.mojangMapping = _mojangMapping;
-    }
- 
-    public static MinecraftVersion init() {
-@@ -63,33 +81,26 @@ public enum MinecraftVersion {
+@@ -87,33 +86,26 @@ public enum MinecraftVersion {
           return version;
        } else {
           try {
@@ -96,7 +40,7 @@ index 0190e43..74ed3bd 100644
 -               }
 +            String ver = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
 +            version = valueOf(ver.replace("v", "MC"));
-+         } catch (Exception var1) {
++         } catch (Exception e) {
 +            String bukkitVer = Bukkit.getVersion();
 +            String mcVer = null;
 +            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("MC:\\s*([0-9]+\\.[0-9]+(?:\\.[0-9]+)?)").matcher(bukkitVer);
@@ -124,7 +68,16 @@ index 0190e43..74ed3bd 100644
           return version;
        }
     }
-@@ -128,28 +139,25 @@ public enum MinecraftVersion {
+@@ -144,7 +136,7 @@ public enum MinecraftVersion {
+       } else {
+          try {
+             hasGsonSupport = true;
+-         } catch (Exception var1) {
++         } catch (Exception e) {
+             hasGsonSupport = false;
+          }
+ 
+@@ -152,28 +144,25 @@ public enum MinecraftVersion {
        }
     }
  

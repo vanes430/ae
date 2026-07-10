@@ -8,20 +8,18 @@ AE PATCH EXCLUDES: net/advancedplugins/ae/impl/effects/armorutils/ArmorListener.
 
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/armorutils/ArmorListener.java b/net/advancedplugins/ae/impl/effects/armorutils/ArmorListener.java
-index 60e805e..1bfb991 100644
+index e1a3096..d97f77f 100644
 --- a/net/advancedplugins/ae/impl/effects/armorutils/ArmorListener.java
 +++ b/net/advancedplugins/ae/impl/effects/armorutils/ArmorListener.java
-@@ -5,9 +5,7 @@ import java.util.Arrays;
- import java.util.List;
+@@ -6,7 +6,6 @@ import java.util.List;
  import java.util.Objects;
  import net.advancedplugins.ae.impl.effects.armorutils.ArmorEquipEvent.EquipMethod;
--import net.advancedplugins.ae.impl.effects.armorutils.ArmorListener.1;
  import net.advancedplugins.ae.impl.utils.ASManager;
 -import net.advancedplugins.ae.impl.utils.SchedulerUtils;
  import net.advancedplugins.ae.impl.utils.hooks.HookPlugin;
  import net.advancedplugins.ae.impl.utils.hooks.HooksHandler;
  import net.advancedplugins.ae.impl.utils.hooks.plugins.ItemsAdderHook;
-@@ -60,211 +58,213 @@ public class ArmorListener implements Listener {
+@@ -59,211 +58,213 @@ public class ArmorListener implements Listener {
     private final ArrayDeque<ArmorEquipEvent> eventQueue = new ArrayDeque<>();
  
     public ArmorListener() {
@@ -367,7 +365,7 @@ index 60e805e..1bfb991 100644
                             }
                          }
                       }
-@@ -276,70 +276,70 @@ public class ArmorListener implements Listener {
+@@ -275,70 +276,70 @@ public class ArmorListener implements Listener {
     }
  
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -425,11 +423,13 @@ index 60e805e..1bfb991 100644
  
 -            if (var1.getItem() != null) {
 -               if (!var1.getItem().getType().name().endsWith("HEAD") && (!var1.getItem().getType().name().endsWith("SKULL") || !var1.getItem().hasItemMeta())) {
+-                  boolean var14 = false;
 +            if (e.getItem() != null) {
 +               if (!e.getItem().getType().name().endsWith("HEAD") && (!e.getItem().getType().name().endsWith("SKULL") || !e.getItem().hasItemMeta())) {
-                   boolean var14 = false;
++                  boolean isHead = false;
                 } else {
-                   boolean var10000 = true;
+-                  boolean var10000 = true;
++                  boolean isHead = true;
                 }
              } else {
 -               boolean var7 = false;
@@ -470,7 +470,7 @@ index 60e805e..1bfb991 100644
                 }
              }
           }
-@@ -347,58 +347,56 @@ public class ArmorListener implements Listener {
+@@ -346,16 +347,16 @@ public class ArmorListener implements Listener {
     }
  
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -485,11 +485,11 @@ index 60e805e..1bfb991 100644
 -                  var1.setResult(Result.DENY);
 -                  var1.setCancelled(true);
 +   public void inventoryDrag(InventoryDragEvent event) {
-+      ArmorType type = ArmorType.matchType(event.getOldCursor());
++      ArmorType armorType = ArmorType.matchType(event.getOldCursor());
 +      if (!event.getRawSlots().isEmpty()) {
 +         if (event.getInventory() instanceof PlayerInventory) {
-+            if (type != null && type.getSlot() == event.getRawSlots().stream().findFirst().orElse(0)) {
-+               ArmorEquipEvent armorEquipEvent = new ArmorEquipEvent((Player)event.getWhoClicked(), EquipMethod.DRAG, type, null, event.getOldCursor());
++            if (armorType != null && armorType.getSlot() == event.getRawSlots().stream().findFirst().orElse(0)) {
++               ArmorEquipEvent armorEquipEvent = new ArmorEquipEvent((Player)event.getWhoClicked(), EquipMethod.DRAG, armorType, null, event.getOldCursor());
 +               this.addToQueue(armorEquipEvent);
 +               if (armorEquipEvent.isCancelled()) {
 +                  event.setResult(Result.DENY);
@@ -497,11 +497,9 @@ index 60e805e..1bfb991 100644
                 }
              }
           }
-       }
+@@ -363,39 +364,39 @@ public class ArmorListener implements Listener {
     }
  
--   // $VF: Unable to simplify switch on enum
--   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
     @EventHandler(priority = EventPriority.HIGHEST)
 -   public void itemBreakEvent(PlayerItemBreakEvent var1) {
 -      ArmorType var2 = ArmorType.matchType(var1.getBrokenItem());
@@ -513,37 +511,33 @@ index 60e805e..1bfb991 100644
 -            ItemStack var5 = var1.getBrokenItem().clone();
 -            var5.setAmount(1);
 -            var5.setDurability((short)(var5.getDurability() - 1));
--            switch (1.$SwitchMap$net$advancedplugins$commons$armorutils$ArmorType[var2.ordinal()]) {
--               case 1:
--                  var3.getInventory().setHelmet(var5);
-+   public void itemBreakEvent(PlayerItemBreakEvent e) {
-+      ArmorType type = ArmorType.matchType(e.getBrokenItem());
-+      if (type != null) {
-+         Player p = e.getPlayer();
-+         ArmorEquipEvent armorEquipEvent = new ArmorEquipEvent(p, EquipMethod.BROKE, type, e.getBrokenItem(), null);
+-            switch (var2) {
++   public void itemBreakEvent(PlayerItemBreakEvent event) {
++      ArmorType armorType = ArmorType.matchType(event.getBrokenItem());
++      if (armorType != null) {
++         Player player = event.getPlayer();
++         ArmorEquipEvent armorEquipEvent = new ArmorEquipEvent(player, EquipMethod.BROKE, armorType, event.getBrokenItem(), null);
 +         Bukkit.getPluginManager().callEvent(armorEquipEvent);
 +         if (armorEquipEvent.isCancelled()) {
-+            ItemStack i = e.getBrokenItem().clone();
-+            i.setAmount(1);
-+            i.setDurability((short)(i.getDurability() - 1));
-+            switch (type) {
-+               case HELMET:
-+                  p.getInventory().setHelmet(i);
++            ItemStack restoredItem = event.getBrokenItem().clone();
++            restoredItem.setAmount(1);
++            restoredItem.setDurability((short)(restoredItem.getDurability() - 1));
++            switch (armorType) {
+                case HELMET:
+-                  var3.getInventory().setHelmet(var5);
++                  player.getInventory().setHelmet(restoredItem);
                    break;
--               case 2:
+                case CHESTPLATE:
 -                  var3.getInventory().setChestplate(var5);
-+               case CHESTPLATE:
-+                  p.getInventory().setChestplate(i);
++                  player.getInventory().setChestplate(restoredItem);
                    break;
--               case 3:
+                case LEGGINGS:
 -                  var3.getInventory().setLeggings(var5);
-+               case LEGGINGS:
-+                  p.getInventory().setLeggings(i);
++                  player.getInventory().setLeggings(restoredItem);
                    break;
--               case 4:
+                case BOOTS:
 -                  var3.getInventory().setBoots(var5);
-+               case BOOTS:
-+                  p.getInventory().setBoots(i);
++                  player.getInventory().setBoots(restoredItem);
              }
           }
        }
@@ -555,11 +549,11 @@ index 60e805e..1bfb991 100644
 -      ArmorType.getArmorContents(var2).forEach((var1x, var2x) -> {
 -         if (ASManager.isValid(var2x)) {
 -            Bukkit.getPluginManager().callEvent(new ArmorEquipEvent(var2, EquipMethod.DEATH, var1x, var2x, null));
-+   public void playerDeathEvent(PlayerRespawnEvent e) {
-+      Player p = e.getPlayer();
-+      ArmorType.getArmorContents(p).forEach((t, i) -> {
-+         if (ASManager.isValid(i)) {
-+            Bukkit.getPluginManager().callEvent(new ArmorEquipEvent(p, EquipMethod.DEATH, t, i, null));
++   public void playerDeathEvent(PlayerRespawnEvent event) {
++      Player player = event.getPlayer();
++      ArmorType.getArmorContents(player).forEach((armorType, armorPiece) -> {
++         if (ASManager.isValid(armorPiece)) {
++            Bukkit.getPluginManager().callEvent(new ArmorEquipEvent(player, EquipMethod.DEATH, armorType, armorPiece, null));
           }
        });
     }

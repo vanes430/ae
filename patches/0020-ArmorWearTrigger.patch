@@ -8,7 +8,7 @@ AE PATCH EXCLUDES: net/advancedplugins/ae/impl/effects/effects/mechanics/trigger
 
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/ArmorWearTrigger.java b/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/ArmorWearTrigger.java
-index 92e7008..fa05230 100644
+index 92e7008..3d1be28 100644
 --- a/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/ArmorWearTrigger.java
 +++ b/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/ArmorWearTrigger.java
 @@ -6,7 +6,6 @@ import java.util.ArrayList;
@@ -267,9 +267,11 @@ index 92e7008..fa05230 100644
 +                  processQueue.remove(livingEntity.getUniqueId(), slot);
                    return true;
                 }
-             } catch (Exception var11) {
-                var11.printStackTrace();
+-            } catch (Exception var11) {
+-               var11.printStackTrace();
 -               processQueue.remove(var1.getUniqueId(), var4);
++            } catch (Exception e) {
++               e.printStackTrace();
 +               processQueue.remove(livingEntity.getUniqueId(), slot);
                 return true;
              }
