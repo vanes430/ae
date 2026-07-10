@@ -1,60 +1,47 @@
-# Folia Concurrency & Safety Analyses
+# Folia Concurrency Analysis
 
-This document details the safety locks, thread mapping, and concurrency implementations applied to the highest-risk modules of AdvancedEnchantments.
-
----
-
-## 🛡️ Inventory Interactions (Tinkerer & Market)
-
-### The Risk
-In legacy Bukkit, inventory opens/closes and packet data modification are executed synchronously on a single main thread. In Folia, inventory clicks and player transactions execute concurrently on the respective player's region thread. Writing to a shared map or modifying items without locks will cause items duplication (dupe glitch) or inventory wiping.
-
-### Patched Implementation
-1. **Tinkerer Inventory State (`TinkererInventory.java`):**
-   * Shared inventories tracker `inventoryMap` migrated to `ConcurrentHashMap`.
-   * Trade completion status `successfulTrades` migrated to `Collections.synchronizedList`.
-   * All inventory modifications (adding, returning, clearing) are executed strictly inside the event listener thread (which runs on the player's region thread).
-2. **Global Market Cache (`MarketInventory.java`):**
-   * Migrated `enchantHashmap` cache map to `Collections.synchronizedMap(new LinkedHashMap<>())` because it is written to asynchronously by the update checker/cache daemon, and read synchronously by players opening the page.
-   * Paginated queries are protected by a synchronization lock during key extraction:
-     ```java
-     synchronized (enchantHashmap) {
-         keys = new ArrayList<>(enchantHashmap.keySet());
-     }
-     ```
+Safety analysis for the highest-risk patched modules.
 
 ---
 
-## ⚡ Repeating Enchantment Tickers (`RepeatingTrigger.java`)
+## Inventory Interactions (Tinkerer & Market)
 
-### The Risk
-Armor enchants (like speed, regeneration, or glowing) run on a task timer. If scheduled on the global scheduler, they will attempt to check player inventories and apply potion effects on the wrong thread context, resulting in attribute updates packet failure.
+**Risk:** Concurrent inventory clicks on different region threads corrupt shared state → item duplication or loss.
 
-### Patched Implementation
-1. **Entity-Specific Ticker:**
-   * Tickers are scheduled directly on the player's entity scheduler (`finalEntity.getScheduler().runAtFixedRate(...)`).
-   * Tickers execute safely on the player's active region thread.
-2. **Safe Task Dereferencing:**
-   * Active tasks are tracked per equipment slot in `UserRepeaters` using the native Folia `ScheduledTask` class.
-   * Tasks are safely cancelled (`ScheduledTask.cancel()`) on armor swap, world change, drop, or player quit.
-3. **Thread-Safe Registries:**
-   * Global repeaters registry map `repeaters` migrated to `ConcurrentHashMap`.
+### TinkererInventory
+- `inventoryMap` → `ConcurrentHashMap`
+- `successfulTrades` → `Collections.synchronizedList`
+- All modifications run on event listener thread (player's region thread)
+
+### MarketInventory
+- `enchantHashmap` → `Collections.synchronizedMap(new LinkedHashMap<>())` (async cache writes, sync reads)
+- Paginated key extraction protected by `synchronized` block
 
 ---
 
-## 🩸 Armor Attribute & Packet Updates (`ArmorWearTrigger.java` / `ArmorListener.java`)
+## Repeating Enchantment Tickers (RepeatingTrigger)
 
-### The Risk
-When players swap armor, health attributes are updated. In legacy Bukkit, the plugin debounced this update on a global Bukkit task, leading to attribute packet creation calling `.getCurrentRegionizedWorldData()` on the global region scheduler thread (where no world data is bound), resulting in a server-wide crash (`NullPointerException`).
+**Risk:** Timer-based armor enchants on global scheduler access player inventory on wrong thread → packet failure.
 
-### Patched Implementation
-* Removed all global/SchedulerUtils task queues.
-* Debouncing and health attribute calculations are now scheduled directly on the player's entity scheduler:
-  ```java
-  player.getScheduler().runDelayed(plugin, task -> {
-      if (player.isOnline()) {
-          // Safe to reset health attributes and send attributes update packet
-          ASManager.resetPlayerHealth(player, health);
-      }
-  }, null, ticks);
-  ```
+### Fix
+- Tickers scheduled on player's entity scheduler: `entity.getScheduler().runAtFixedRate(...)`
+- Active tasks tracked per slot via Folia `ScheduledTask`
+- Tasks cancelled on armor swap, world change, drop, or quit
+- Global `repeaters` map → `ConcurrentHashMap`
+
+---
+
+## Armor Attribute Updates (ArmorWearTrigger / ArmorListener)
+
+**Risk:** Global debounced health update calls `.getCurrentRegionizedWorldData()` on wrong thread → server crash.
+
+### Fix
+- Removed all global/SchedulerUtils task queues
+- Debouncing and health recalculation on player's entity scheduler:
+```java
+player.getScheduler().runDelayed(plugin, task -> {
+    if (player.isOnline()) {
+        ASManager.resetPlayerHealth(player, health);
+    }
+}, null, ticks);
+```
