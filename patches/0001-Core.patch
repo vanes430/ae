@@ -8,7 +8,7 @@ AE PATCH RISK: LOW
 ---
 diff --git a/net/advancedplugins/ae/Core.java b/net/advancedplugins/ae/Core.java
 --- a/net/advancedplugins/ae/Core.java	2026-07-30 10:27:31.680350231 +0000
-+++ b/net/advancedplugins/ae/Core.java	2026-07-30 10:28:05.837658167 +0000
++++ b/net/advancedplugins/ae/Core.java	2026-07-30 13:46:50.889997700 +0000
 @@ -78,14 +78,14 @@
  import net.advancedplugins.ae.impl.effects.handler.PlayerPlacedBlocksHandler;
  import net.advancedplugins.ae.impl.utils.ASManager;
@@ -16,8 +16,9 @@ diff --git a/net/advancedplugins/ae/Core.java b/net/advancedplugins/ae/Core.java
 +import net.advancedplugins.ae.impl.utils.ReallyFastBlockHandler;
 +import net.advancedplugins.ae.impl.utils.Registry;
  import net.advancedplugins.ae.impl.utils.RemoveDeathItems;
- import net.advancedplugins.ae.impl.utils.RunnableMetrics;
+-import net.advancedplugins.ae.impl.utils.RunnableMetrics;
 -import net.advancedplugins.ae.impl.utils.SchedulerUtils;
++// import net.advancedplugins.ae.impl.utils.RunnableMetrics;
  import net.advancedplugins.ae.impl.utils.hooks.HookPlugin;
  import net.advancedplugins.ae.impl.utils.hooks.HooksHandler;
  import net.advancedplugins.ae.impl.utils.nbt.utils.MinecraftVersion;
@@ -34,7 +35,7 @@ diff --git a/net/advancedplugins/ae/Core.java b/net/advancedplugins/ae/Core.java
  
  public class Core extends JavaPlugin {
     private static Core instance;
-@@ -129,15 +128,14 @@
+@@ -129,20 +128,19 @@
     private boolean lastTime = false;
  
     public void onEnable() {
@@ -53,6 +54,12 @@ diff --git a/net/advancedplugins/ae/Core.java b/net/advancedplugins/ae/Core.java
        }
  
        YamlFile.ANVIL.getFile();
+       YamlFolder.ARMOR_SETS.getDataFiles();
+-      new RunnableMetrics(this, 2005);
++      // new RunnableMetrics(this, 2005); // bStats disabled
+       MinecraftVersion.init();
+       if (!MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_17_R1)) {
+          this.getLogger().severe("AdvancedEnchantments only supports 1.17 or newer Minecraft versions.");
 @@ -165,22 +163,22 @@
              populationHandler = new PopulationHandler(getInstance());
           }

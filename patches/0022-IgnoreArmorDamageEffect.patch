@@ -1,0 +1,20 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0022] IgnoreArmorDamageEffect: 
+
+AE PATCH REASON: 
+AE PATCH FIX: 
+AE PATCH RISK: 
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/IgnoreArmorDamageEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/IgnoreArmorDamageEffect.java
+--- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/IgnoreArmorDamageEffect.java	2026-07-30 10:27:31.667350114 +0000
++++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/IgnoreArmorDamageEffect.java	2026-07-30 14:05:13.232849358 +0000
+@@ -22,7 +22,7 @@
+          var4.getLeggings() == null ? 0 : var4.getLeggings().getDurability(),
+          var4.getBoots() == null ? 0 : var4.getBoots().getDurability()
+       };
+-      Bukkit.getScheduler().scheduleSyncDelayedTask(EffectsHandler.getInstance(), () -> {
++      var2.getScheduler().run(EffectsHandler.getInstance(), (t) -> {
+          if (var4.getHelmet() != null) {
+             var4.getHelmet().setDurability((short)(var5[0] + 1));
+          }

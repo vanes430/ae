@@ -1,0 +1,123 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0045] ASManager: 
+
+AE PATCH REASON: 
+AE PATCH FIX: 
+AE PATCH RISK: 
+
+---
+diff --git a/net/advancedplugins/ae/impl/utils/ASManager.java b/net/advancedplugins/ae/impl/utils/ASManager.java
+--- a/net/advancedplugins/ae/impl/utils/ASManager.java	2026-07-30 10:27:31.674350177 +0000
++++ b/net/advancedplugins/ae/impl/utils/ASManager.java	2026-07-30 14:10:42.346017524 +0000
+@@ -8,6 +8,7 @@
+ import java.io.ByteArrayOutputStream;
+ import java.io.File;
+ import java.io.FileOutputStream;
++import java.io.IOException;
+ import java.io.InputStream;
+ import java.io.InputStreamReader;
+ import java.lang.invoke.StringConcatFactory;
+@@ -16,6 +17,7 @@
+ import java.math.BigDecimal;
+ import java.math.MathContext;
+ import java.net.HttpURLConnection;
++import java.net.MalformedURLException;
+ import java.net.URL;
+ import java.text.DecimalFormat;
+ import java.text.NumberFormat;
+@@ -23,6 +25,7 @@
+ import java.util.Arrays;
+ import java.util.Base64;
+ import java.util.Collection;
++import java.util.zip.ZipException;
+ import java.util.Collections;
+ import java.util.Date;
+ import java.util.Enumeration;
+@@ -44,7 +47,7 @@
+ import java.util.stream.IntStream;
+ import java.util.zip.ZipEntry;
+ import java.util.zip.ZipFile;
+-import lombok.Generated;
++import net.advancedplugins.ae.Core;
+ import net.advancedplugins.ae.impl.utils.annotations.ConfigKey;
+ import net.advancedplugins.ae.impl.utils.evalex.Expression;
+ import net.advancedplugins.ae.impl.utils.nbt.NBTapi;
+@@ -95,7 +98,7 @@
+ public class ASManager {
+    private static final HashSet<String> silkOnly = new HashSet<>(Arrays.asList("LEAVE", "LEAVES", "MUSHROOM_STEM", "TURTLE_EGG", "CORAL"));
+    private static final List<Integer> validSizes = new ArrayList<>(Arrays.asList(9, 18, 27, 36, 45, 54));
+-   private static final ImmutableList<String> vegetationBlockNames = ImmutableList.builder()
++    private static final ImmutableList<String> vegetationBlockNames = ImmutableList.<String>builder()
+       .addAll(
+          Arrays.asList(
+             "GRASS",
+@@ -1001,7 +1004,7 @@
+    }
+ 
+    public static String format(long var0) {
+-      return StringConcatFactory.makeConcatWithConstants<"makeConcatWithConstants","\u0001">(NumberFormat.getInstance(Locale.ROOT).format(var0));
++      return NumberFormat.getInstance(Locale.ROOT).format(var0);
+    }
+ 
+    public static String color(String var0) {
+@@ -1071,7 +1074,7 @@
+       for (ItemStack var3 : var1) {
+          if (isValid(var3) && !var0.getInventory().addItem(new ItemStack[]{var3}).isEmpty()) {
+             if (!Bukkit.isPrimaryThread()) {
+-               SchedulerUtils.runTaskLater(() -> dropItem(var0.getLocation(), var3));
++               var0.getScheduler().runDelayed(Core.getInstance(), (t) -> dropItem(var0.getLocation(), var3), null, 1L);
+             } else {
+                dropItem(var0.getLocation(), var3);
+             }
+@@ -1172,7 +1175,7 @@
+       var0.delete();
+    }
+ 
+-   public static void unZip(File var0, File var1) {
++   public static void unZip(File var0, File var1) throws IOException {
+       if (!var1.exists() || !var1.isDirectory()) {
+          var1.mkdirs();
+       }
+@@ -1605,7 +1608,7 @@
+    }
+ 
+    public static <K, V> ImmutableMap<K, V> toImmutable(Map<K, V> var0) {
+-      return ImmutableMap.builder().putAll(var0).build();
++      return ImmutableMap.<K, V>builder().putAll(var0).build();
+    }
+ 
+    public static <V> ImmutableList<V> toImmutableList(List<V> var0) {
+@@ -1797,7 +1800,7 @@
+       return Math.max(var1, Math.min(var2, var0));
+    }
+ 
+-   public static String fetchJsonFromUrl(String var0) {
++   public static String fetchJsonFromUrl(String var0) throws IOException {
+       URL var1 = new URL(var0);
+       HttpURLConnection var2 = (HttpURLConnection)var1.openConnection();
+       var2.setRequestMethod("GET");
+@@ -1935,7 +1938,7 @@
+       return new HashSet<>(var1);
+    }
+ 
+-   public static String serializeItem(ItemStack var0) {
++   public static String serializeItem(ItemStack var0) throws IOException {
+       ByteArrayOutputStream var1 = new ByteArrayOutputStream();
+       BukkitObjectOutputStream var2 = new BukkitObjectOutputStream(var1);
+       var2.writeObject(var0);
+@@ -1944,14 +1947,13 @@
+       return new String(Base64.getEncoder().encode(var3));
+    }
+ 
+-   public static ItemStack deserializeItem(String var0) {
++   public static ItemStack deserializeItem(String var0) throws IOException, ClassNotFoundException {
+       byte[] var1 = Base64.getDecoder().decode(var0);
+       ByteArrayInputStream var2 = new ByteArrayInputStream(var1);
+       BukkitObjectInputStream var3 = new BukkitObjectInputStream(var2);
+       return (ItemStack)var3.readObject();
+    }
+ 
+-   @Generated
+    public static JavaPlugin getInstance() {
+       return instance;
+    }

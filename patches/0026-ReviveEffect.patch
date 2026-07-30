@@ -1,0 +1,33 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0026] ReviveEffect: 
+
+AE PATCH REASON: 
+AE PATCH FIX: 
+AE PATCH RISK: 
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/ReviveEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/ReviveEffect.java
+--- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/ReviveEffect.java	2026-07-30 10:27:31.666350105 +0000
++++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/ReviveEffect.java	2026-07-30 14:05:25.314989935 +0000
+@@ -7,7 +7,7 @@
+ import org.bukkit.entity.LivingEntity;
+ import org.bukkit.event.entity.EntityDamageEvent;
+ import org.bukkit.plugin.java.JavaPlugin;
+-import org.bukkit.scheduler.BukkitRunnable;
++
+ 
+ public class ReviveEffect extends AdvancedEffect {
+    public ReviveEffect(JavaPlugin var1) {
+@@ -18,11 +18,7 @@
+    public boolean executeEffect(final ExecutionTask var1, LivingEntity var2, String[] var3) {
+       final EntityDamageEvent var4 = (EntityDamageEvent)var1.getBuilder().getEvent();
+       final Location var5 = var4.getEntity().getLocation().clone();
+-      (new BukkitRunnable() {
+-         public void run() {
+-            var1.getDamageHandler().revive(var4.getEntity(), var5);
+-         }
+-      }).runTask(EffectsHandler.getInstance());
++      var4.getEntity().getScheduler().run(EffectsHandler.getInstance(), (t) -> var1.getDamageHandler().revive(var4.getEntity(), var5), null);
+       return true;
+    }
+ }

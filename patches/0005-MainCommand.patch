@@ -1,0 +1,29 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0005] MainCommand: 
+
+AE PATCH REASON: 
+AE PATCH FIX: 
+AE PATCH RISK: 
+
+---
+diff --git a/net/advancedplugins/ae/handlers/commands/MainCommand.java b/net/advancedplugins/ae/handlers/commands/MainCommand.java
+--- a/net/advancedplugins/ae/handlers/commands/MainCommand.java	2026-07-30 10:27:31.654349997 +0000
++++ b/net/advancedplugins/ae/handlers/commands/MainCommand.java	2026-07-30 14:05:46.366234866 +0000
+@@ -267,7 +267,7 @@
+                   }
+ 
+                   boolean var30 = var4.length <= 1 || !var4[1].equalsIgnoreCase("skipPlugins");
+-                  Bukkit.getScheduler().runTaskAsynchronously(Core.getInstance(), () -> {
++                  Bukkit.getAsyncScheduler().runNow(Core.getInstance(), (t) -> {
+                      var1.sendMessage(ColorUtils.format("&6Creating info link, please wait."));
+                      var1.sendMessage(ColorUtils.format("&e" + PlInfo.createInfoLink(var30)));
+                   });
+@@ -278,7 +278,7 @@
+                      return true;
+                   }
+ 
+-                  Bukkit.getScheduler().runTaskAsynchronously(Core.getInstance(), () -> {
++                  Bukkit.getAsyncScheduler().runNow(Core.getInstance(), (t) -> {
+                      Date var1x = new Date();
+                      SimpleDateFormat var2x = new SimpleDateFormat("dd-MM-yyyy--HH-mm-ss");
+                      String var3x = var2x.format(var1x);

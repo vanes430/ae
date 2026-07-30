@@ -1,0 +1,33 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0034] PumpkinDeathListener: 
+
+AE PATCH REASON: 
+AE PATCH FIX: 
+AE PATCH RISK: 
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/utils/PumpkinDeathListener.java b/net/advancedplugins/ae/impl/effects/effects/effects/utils/PumpkinDeathListener.java
+--- a/net/advancedplugins/ae/impl/effects/effects/effects/utils/PumpkinDeathListener.java	2026-07-30 10:27:31.669350132 +0000
++++ b/net/advancedplugins/ae/impl/effects/effects/effects/utils/PumpkinDeathListener.java	2026-07-30 14:05:32.079068636 +0000
+@@ -13,7 +13,7 @@
+ import org.bukkit.event.inventory.InventoryType;
+ import org.bukkit.event.player.PlayerQuitEvent;
+ import org.bukkit.inventory.ItemStack;
+-import org.bukkit.scheduler.BukkitRunnable;
++
+ 
+ public class PumpkinDeathListener implements Listener {
+    private final ItemStack helmet;
+@@ -26,11 +26,7 @@
+       this.pumpkinMaterial = var2;
+       this.livingEntity = var4;
+       EffectsHandler.getInstance().getServer().getPluginManager().registerEvents(this, EffectsHandler.getInstance());
+-      (new BukkitRunnable() {
+-         public void run() {
+-            HandlerList.unregisterAll(PumpkinDeathListener.this);
+-         }
+-      }).runTaskLater(EffectsHandler.getInstance(), (long)var3);
++      Bukkit.getGlobalRegionScheduler().runDelayed(EffectsHandler.getInstance(), (t) -> HandlerList.unregisterAll(PumpkinDeathListener.this), (long)var3);
+    }
+ 
+    @EventHandler

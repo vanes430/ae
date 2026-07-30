@@ -1,0 +1,63 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0051] HooksHandler: 
+
+AE PATCH REASON: 
+AE PATCH FIX: 
+AE PATCH RISK: 
+
+---
+diff --git a/net/advancedplugins/ae/impl/utils/hooks/HooksHandler.java b/net/advancedplugins/ae/impl/utils/hooks/HooksHandler.java
+--- a/net/advancedplugins/ae/impl/utils/hooks/HooksHandler.java	2026-07-30 10:27:31.676350195 +0000
++++ b/net/advancedplugins/ae/impl/utils/hooks/HooksHandler.java	2026-07-30 13:58:49.834386659 +0000
+@@ -2,8 +2,9 @@
+ 
+ import com.google.common.collect.ImmutableMap;
+ import com.google.common.collect.UnmodifiableIterator;
+-import lombok.Generated;
+-import net.advancedplugins.ae.impl.utils.FoliaScheduler;
++
++import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
++import java.util.function.Consumer;
+ import net.advancedplugins.ae.impl.utils.hooks.holograms.CMIHologramHandler;
+ import net.advancedplugins.ae.impl.utils.hooks.holograms.DecentHologramsHandler;
+ import net.advancedplugins.ae.impl.utils.hooks.holograms.HologramHandler;
+@@ -49,11 +50,11 @@
+ public class HooksHandler {
+    private static HologramHandler holograms;
+    private static JavaPlugin plugin;
+-   private static ImmutableMap<HookPlugin, PluginHookInstance> pluginHookMap = ImmutableMap.builder().build();
++    private static ImmutableMap<HookPlugin, PluginHookInstance> pluginHookMap = ImmutableMap.<HookPlugin, PluginHookInstance>builder().build();
+ 
+    public static void hook(JavaPlugin var0) {
+       if (!pluginHookMap.isEmpty()) {
+-         pluginHookMap = ImmutableMap.builder().build();
++         pluginHookMap = ImmutableMap.<HookPlugin, PluginHookInstance>builder().build();
+       }
+ 
+       plugin = var0;
+@@ -166,7 +167,7 @@
+          registerNew(HookPlugin.TAB, new TabHook());
+       }
+ 
+-      FoliaScheduler.runTaskLater(var0, () -> {
++      Bukkit.getGlobalRegionScheduler().runDelayed(var0, (t) -> {
+          if (isPluginEnabled(HookPlugin.FACTIONS.getPluginName())) {
+             if (isPluginEnabled("MassiveCore")) {
+                registerNew(HookPlugin.FACTIONS, new FactionsMCoreHook());
+@@ -218,7 +219,7 @@
+    }
+ 
+    private static void registerNew(HookPlugin var0, PluginHookInstance var1, boolean var2) {
+-      pluginHookMap = ImmutableMap.builder().putAll(pluginHookMap).put(var0, var1).build();
++      pluginHookMap = ImmutableMap.<HookPlugin, PluginHookInstance>builder().putAll(pluginHookMap).put(var0, var1).build();
+       if (var2) {
+          plugin.getServer().getPluginManager().registerEvents((Listener)var1, plugin);
+       }
+@@ -270,7 +271,6 @@
+       return (PermissionHook)(isEnabled(HookPlugin.LUCKPERMS) ? (LuckPermsHook)getHook(HookPlugin.LUCKPERMS) : (VaultHook)getHook(HookPlugin.VAULT));
+    }
+ 
+-   @Generated
+    public static HologramHandler getHolograms() {
+       return holograms;
+    }

@@ -1,0 +1,75 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0013] BleedEffect: 
+
+AE PATCH REASON: 
+AE PATCH FIX: 
+AE PATCH RISK: 
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/BleedEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/BleedEffect.java
+--- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/BleedEffect.java	2026-07-30 10:27:31.667350114 +0000
++++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/BleedEffect.java	2026-07-30 14:04:58.222674705 +0000
+@@ -11,7 +11,8 @@
+ import org.bukkit.entity.LivingEntity;
+ import org.bukkit.metadata.FixedMetadataValue;
+ import org.bukkit.plugin.java.JavaPlugin;
+-import org.bukkit.scheduler.BukkitRunnable;
++import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
++import java.util.function.Consumer;
+ 
+ public class BleedEffect extends AdvancedEffect {
+    public BleedEffect(JavaPlugin var1) {
+@@ -23,33 +24,30 @@
+       final double var4 = var3.length >= 1 ? Double.parseDouble(var3[0]) : 1.0;
+       final int var6 = var3.length >= 2 ? ASManager.parseInt(var3[1]) : 5;
+       int var7 = var3.length >= 3 ? ASManager.parseInt(var3[2]) : 20;
+-      (new BukkitRunnable() {
+-         private int loop = 0;
+-         private final long lastDeath = (long)var2.getTicksLived();
+-
+-         public void run() {
+-            if (!var2.isDead() && (long)var2.getTicksLived() >= this.lastDeath) {
+-               if (var1.getBuilder().isDamageEventNotGoingToRun()) {
+-                  var2.setMetadata("ae_damage_event_not_going_to_run", new FixedMetadataValue(EffectsHandler.getInstance(), true));
+-               }
++      final int[] loop = {0};
++      final long lastDeath = (long)var2.getTicksLived();
++      var2.getScheduler().runAtFixedRate(EffectsHandler.getInstance(), (task) -> {
++         if (!var2.isDead() && (long)var2.getTicksLived() >= lastDeath) {
++            if (var1.getBuilder().isDamageEventNotGoingToRun()) {
++               var2.setMetadata("ae_damage_event_not_going_to_run", new FixedMetadataValue(EffectsHandler.getInstance(), true));
++            }
+ 
+-               var1.getDamageHandler().damage(var2, BleedEffect.this.getOtherEntity(var2, var1), var4);
+-               if (var1.getBuilder().isDamageEventNotGoingToRun()) {
+-                  var2.removeMetadata("ae_damage_event_not_going_to_run", EffectsHandler.getInstance());
+-               }
++            var1.getDamageHandler().damage(var2, BleedEffect.this.getOtherEntity(var2, var1), var4);
++            if (var1.getBuilder().isDamageEventNotGoingToRun()) {
++               var2.removeMetadata("ae_damage_event_not_going_to_run", EffectsHandler.getInstance());
++            }
+ 
+-               Location var1x = var2.getLocation();
+-               ASManager.playEffect(Bukkit.getVersion().contains("1.8") ? "LAVADRIP" : "DRIP_LAVA", 0.0F, 10, var1x);
+-               var1x.getWorld().playEffect(var1x.add(0.0, 0.8, 0.0), Effect.STEP_SOUND, Material.REDSTONE_BLOCK);
+-               this.loop++;
+-               if (this.loop >= var6) {
+-                  this.cancel();
+-               }
+-            } else {
+-               this.cancel();
++            Location var1x = var2.getLocation();
++            ASManager.playEffect(Bukkit.getVersion().contains("1.8") ? "LAVADRIP" : "DRIP_LAVA", 0.0F, 10, var1x);
++            var1x.getWorld().playEffect(var1x.add(0.0, 0.8, 0.0), Effect.STEP_SOUND, Material.REDSTONE_BLOCK);
++            loop[0]++;
++            if (loop[0] >= var6) {
++               task.cancel();
+             }
++         } else {
++            task.cancel();
+          }
+-      }).runTaskTimer(EffectsHandler.getInstance(), (long)var7, (long)var7);
++      }, null, (long)var7, (long)var7);
+       return true;
+    }
+ }

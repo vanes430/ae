@@ -1,0 +1,20 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0015] ConsoleCommandEffect: 
+
+AE PATCH REASON: 
+AE PATCH FIX: 
+AE PATCH RISK: 
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/ConsoleCommandEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/ConsoleCommandEffect.java
+--- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/ConsoleCommandEffect.java	2026-07-30 10:27:31.665350096 +0000
++++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/ConsoleCommandEffect.java	2026-07-30 14:05:12.681842947 +0000
+@@ -23,7 +23,7 @@
+    public boolean executeEffect(ExecutionTask var1, LivingEntity var2, String[] var3) {
+       String var4 = String.join(":", var3);
+       if (!Bukkit.isPrimaryThread()) {
+-         Bukkit.getScheduler().runTask(ASManager.getInstance(), () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), var4));
++         Bukkit.getGlobalRegionScheduler().run(ASManager.getInstance(), (t) -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), var4));
+          return true;
+       } else {
+          Bukkit.dispatchCommand(Bukkit.getConsoleSender(), var4);
