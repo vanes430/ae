@@ -8,7 +8,7 @@ AE PATCH RISK:
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/IgnoreArmorDamageEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/IgnoreArmorDamageEffect.java
 --- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/IgnoreArmorDamageEffect.java	2026-07-30 10:27:31.667350114 +0000
-+++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/IgnoreArmorDamageEffect.java	2026-07-30 14:05:13.232849358 +0000
++++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/IgnoreArmorDamageEffect.java	2026-07-30 23:41:07.715941456 +0000
 @@ -22,7 +22,7 @@
           var4.getLeggings() == null ? 0 : var4.getLeggings().getDurability(),
           var4.getBoots() == null ? 0 : var4.getBoots().getDurability()
@@ -18,3 +18,12 @@ diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/Ignore
           if (var4.getHelmet() != null) {
              var4.getHelmet().setDurability((short)(var5[0] + 1));
           }
+@@ -38,7 +38,7 @@
+          if (var4.getBoots() != null) {
+             var4.getBoots().setDurability((short)(var5[3] + 1));
+          }
+-      }, 0L);
++      }, null);
+       return true;
+    }
+ }

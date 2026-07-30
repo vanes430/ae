@@ -8,8 +8,16 @@ AE PATCH RISK:
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/utils/PumpkinDeathListener.java b/net/advancedplugins/ae/impl/effects/effects/effects/utils/PumpkinDeathListener.java
 --- a/net/advancedplugins/ae/impl/effects/effects/effects/utils/PumpkinDeathListener.java	2026-07-30 10:27:31.669350132 +0000
-+++ b/net/advancedplugins/ae/impl/effects/effects/effects/utils/PumpkinDeathListener.java	2026-07-30 14:05:32.079068636 +0000
-@@ -13,7 +13,7 @@
++++ b/net/advancedplugins/ae/impl/effects/effects/effects/utils/PumpkinDeathListener.java	2026-07-30 23:41:10.664960392 +0000
+@@ -3,6 +3,7 @@
+ import java.util.List;
+ import net.advancedplugins.ae.impl.effects.effects.EffectsHandler;
+ import net.advancedplugins.ae.impl.effects.effects.effects.internal.PumpkinEffect;
++import org.bukkit.Bukkit;
+ import org.bukkit.Material;
+ import org.bukkit.entity.LivingEntity;
+ import org.bukkit.event.EventHandler;
+@@ -13,7 +14,7 @@
  import org.bukkit.event.inventory.InventoryType;
  import org.bukkit.event.player.PlayerQuitEvent;
  import org.bukkit.inventory.ItemStack;
@@ -18,7 +26,7 @@ diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/utils/PumpkinDe
  
  public class PumpkinDeathListener implements Listener {
     private final ItemStack helmet;
-@@ -26,11 +26,7 @@
+@@ -26,11 +27,7 @@
        this.pumpkinMaterial = var2;
        this.livingEntity = var4;
        EffectsHandler.getInstance().getServer().getPluginManager().registerEvents(this, EffectsHandler.getInstance());
