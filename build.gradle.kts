@@ -93,21 +93,11 @@ val extractOriginalJar = tasks.register<Copy>("extractOriginalJar") {
 }
 
 // ─── Inject folia-supported: true into plugin.yml ───
-val injectFoliaSupport = tasks.register("injectFoliaSupport") {
+val injectFoliaSupport = tasks.register<Exec>("injectFoliaSupport") {
     dependsOn(extractOriginalJar)
-    doLast {
-        val pluginYml = file("${extractDir.get()}/plugin.yml")
-        val content = pluginYml.readText()
-        if (!content.contains("folia-supported:")) {
-            pluginYml.writeText(content.replace(
-                "api-version: \"1.13\"",
-                "api-version: \"1.13\"\nfolia-supported: true"
-            ))
-            println("✅ Injected folia-supported: true into plugin.yml")
-        } else {
-            println("ℹ️  folia-supported already present in plugin.yml, skipping")
-        }
-    }
+    val script = file("tools/scripts/inject-folia-support.sh")
+    val pluginYml = file("${extractDir.get()}/plugin.yml")
+    commandLine("bash", script.absolutePath, pluginYml.absolutePath)
 }
 
 // ─── Standard Jar Task (Patched) ───
