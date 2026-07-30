@@ -1,0 +1,313 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0014] RepeatingTrigger: Migrate to Folia ScheduledTask with ConcurrentHashMap
+
+AE PATCH REASON: HashMap is not thread-safe for region-thread access; BukkitRunnable/BukkitTask are incompatible with Folia.
+AE PATCH FIX: Replace HashMap with ConcurrentHashMap for repeaters map. Replace BukkitRunnable/BukkitTask with Folia ScheduledTask. Migrate runTaskTimer() to entity.getScheduler().runAtFixedRate(). Remove @Generated lombok annotations. Add proper task cancellation tracking.
+AE PATCH RISK: LOW
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.java b/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.java
+--- a/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.java	2026-07-30 10:27:31.660350051 +0000
++++ b/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/RepeatingTrigger.java	2026-07-30 10:28:05.885658599 +0000
+@@ -2,6 +2,7 @@
+ 
+ import com.google.common.cache.Cache;
+ import com.google.common.cache.CacheBuilder;
++import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
+ import java.util.ArrayList;
+ import java.util.Collection;
+ import java.util.HashMap;
+@@ -9,8 +10,8 @@
+ import java.util.List;
+ import java.util.Map;
+ import java.util.UUID;
++import java.util.concurrent.ConcurrentHashMap;
+ import java.util.concurrent.TimeUnit;
+-import lombok.Generated;
+ import net.advancedplugins.ae.impl.effects.effects.EffectsHandler;
+ import net.advancedplugins.ae.impl.effects.effects.abilities.AdvancedAbility;
+ import net.advancedplugins.ae.impl.effects.effects.actions.ActionExecution;
+@@ -29,11 +30,9 @@
+ import org.bukkit.event.player.PlayerPickupItemEvent;
+ import org.bukkit.event.player.PlayerQuitEvent;
+ import org.bukkit.inventory.ItemStack;
+-import org.bukkit.scheduler.BukkitRunnable;
+-import org.bukkit.scheduler.BukkitTask;
+ 
+ public class RepeatingTrigger extends AdvancedTrigger {
+-   private static final HashMap<UUID, UserRepeaters> repeaters = new HashMap<>();
++   private static final Map<UUID, UserRepeaters> repeaters = new ConcurrentHashMap<>();
+    public static final Cache<UUID, Map<String, Long>> COOLDOWN_QUEUE = CacheBuilder.newBuilder().expireAfterWrite(10L, TimeUnit.MINUTES).build();
+    private static RepeatingTrigger trigger;
+ 
+@@ -43,170 +42,174 @@
+       trigger = this;
+    }
+ 
+-   public void activate(LivingEntity var1, RollItemType var2, ItemStack var3, Event var4) {
++   public void activate(LivingEntity entity, RollItemType rollType, ItemStack item, Event event) {
+       if (this.isEnabled()) {
+-         EffectsHandler.debug("[REPEATING] Starting check for: " + var1.getType());
+-         if (var3 != null) {
+-            ActionExecution var5 = this.executionBuilder()
+-               .setAttacker(var1)
++         EffectsHandler.debug("[REPEATING] Starting check for: " + entity.getType());
++         if (item != null) {
++            ActionExecution execution = this.executionBuilder()
++               .setAttacker(entity)
+                .setAttackerMain(true)
+-               .setEvent(var4)
+-               .setItemType(var2)
+-               .setItem(var3)
++               .setEvent(event)
++               .setItemType(rollType)
++               .setItem(item)
+                .asRepeating()
+                .setSkipCooldown(true)
+                .skipChances()
+                .skipConditions()
+                .build();
+-            var5.build();
+-            EffectsHandler.debug("[REPEATING] Found effects for " + var1.getType() + " " + var3.getType() + ": " + var5.getEffects());
+-            if (!var5.getEffects().isEmpty()) {
+-               AdvancedAbility var6 = var5.getEffects().getFirst();
+-               if (var6.getTypes().contains(this.getTriggerName())) {
+-                  EffectsHandler.debug("Adding repeating item: " + var3.getType() + " " + var6.getName() + ": s" + var6.getRepeatingDelay());
+-                  this.addRepeatingItem(var1.getUniqueId(), var2, var5.getEffects(), var4, var3);
++            execution.build();
++            EffectsHandler.debug("[REPEATING] Found effects for " + entity.getType() + " " + item.getType() + ": " + execution.getEffects());
++            if (!execution.getEffects().isEmpty()) {
++               AdvancedAbility ability = (AdvancedAbility)execution.getEffects().getFirst();
++               if (ability.getTypes().contains(this.getTriggerName())) {
++                  EffectsHandler.debug("Adding repeating item: " + item.getType() + " " + ability.getName() + ": s" + ability.getRepeatingDelay());
++                  this.addRepeatingItem(entity.getUniqueId(), rollType, execution.getEffects(), event, item);
+                }
+             }
+          }
+       }
+    }
+ 
+-   public void stopAll(LivingEntity var1) {
+-      UserRepeaters var2 = getRepeaters().get(var1.getUniqueId());
+-      if (var2 != null) {
+-         var2.itemRunnables.values().stream().flatMap(Collection::stream).forEach(BukkitTask::cancel);
+-         var2.itemRunnables.clear();
++   public void stopAll(LivingEntity entity) {
++      UserRepeaters userRepeaters = getRepeaters().get(entity.getUniqueId());
++      if (userRepeaters != null) {
++         userRepeaters.itemRunnables.values().stream().flatMap(Collection::stream).forEach(ScheduledTask::cancel);
++         userRepeaters.itemRunnables.clear();
+       }
+    }
+ 
+-   public void stop(LivingEntity var1, RollItemType var2, Event var3) {
+-      UserRepeaters var4 = getRepeaters().get(var1.getUniqueId());
+-      if (var4 != null) {
+-         List var5 = var4.itemRunnables.get(var2.getSlot());
+-         if (var5 != null && !var5.isEmpty()) {
+-            var5.forEach(BukkitTask::cancel);
+-            var5.clear();
+-            var4.itemRunnables.remove(var2.getSlot());
++   public void stop(LivingEntity entity, RollItemType rollType, Event event) {
++      UserRepeaters userRepeaters = getRepeaters().get(entity.getUniqueId());
++      if (userRepeaters != null) {
++         List<ScheduledTask> tasks = userRepeaters.itemRunnables.get(rollType.getSlot());
++         if (tasks != null && !tasks.isEmpty()) {
++            tasks.forEach(ScheduledTask::cancel);
++            tasks.clear();
++            userRepeaters.itemRunnables.remove(rollType.getSlot());
+          }
+       }
+    }
+ 
+-   private void addRepeatingItem(UUID var1, final RollItemType var2, LinkedList<AdvancedAbility> var3, final Event var4, final ItemStack var5) {
++   private void addRepeatingItem(UUID user, final RollItemType type, LinkedList<AdvancedAbility> effects, final Event e, final ItemStack item) {
+       try {
+-         UserRepeaters var6 = getRepeaters().computeIfAbsent(var1, var0 -> new UserRepeaters());
+-         Object var7 = Bukkit.getPlayer(var1);
+-         if (var7 == null) {
+-            var7 = Bukkit.getEntity(var1);
++         UserRepeaters r = getRepeaters().computeIfAbsent(user, s -> new UserRepeaters());
++         org.bukkit.entity.Entity entity = Bukkit.getPlayer(user);
++         if (entity == null) {
++            entity = Bukkit.getEntity(user);
+          }
+ 
+-         if (var7 instanceof LivingEntity var8) {
+-            if (var8.getEquipment() != null) {
+-               Map var9 = (Map)COOLDOWN_QUEUE.getIfPresent(var1);
+-               ArrayList var10 = new ArrayList();
+-
+-               for (final AdvancedAbility var12 : var3) {
+-                  Long var13 = null;
+-                  if (var9 != null && var9.containsKey(var12.getNameNoLevel())) {
+-                     if ((Long)var9.get(var12.getNameNoLevel()) <= System.currentTimeMillis()) {
+-                        var9.remove(var12.getNameNoLevel());
++         if (entity instanceof LivingEntity finalEntity) {
++            if (finalEntity.getEquipment() != null) {
++               Map<String, Long> cooldowns = (Map<String, Long>)COOLDOWN_QUEUE.getIfPresent(user);
++               List<ScheduledTask> runnables = new ArrayList<>();
++
++               for (final AdvancedAbility ability : effects) {
++                  Long remainingCooldown = null;
++                  if (cooldowns != null && cooldowns.containsKey(ability.getNameNoLevel())) {
++                     if (cooldowns.get(ability.getNameNoLevel()) <= System.currentTimeMillis()) {
++                        cooldowns.remove(ability.getNameNoLevel());
+                      } else {
+-                        var13 = ((Long)var9.get(var12.getNameNoLevel()) - System.currentTimeMillis()) / 50L;
++                        remainingCooldown = (cooldowns.get(ability.getNameNoLevel()) - System.currentTimeMillis()) / 50L;
+                      }
+                   }
+ 
+-                  if (var9 == null || !var9.containsKey(var12.getNameNoLevel())) {
+-                     ((Map)COOLDOWN_QUEUE.get(var1, HashMap::new))
+-                        .put(var12.getNameNoLevel(), System.currentTimeMillis() + (long)var12.getRepeatingDelay() * 1000L);
++                  if (cooldowns == null || !cooldowns.containsKey(ability.getNameNoLevel())) {
++                     ((Map)COOLDOWN_QUEUE.get(user, HashMap::new))
++                        .put(ability.getNameNoLevel(), System.currentTimeMillis() + ability.getRepeatingDelay() * 1000L);
+                   }
+ 
+-                  long var14 = var13 != null ? var13 : (var12.isRepeatingInstantApply() ? 0L : (long)var12.getRepeatingDelay() * 20L);
+-                  BukkitTask var16 = (new BukkitRunnable() {
+-                        public void run() {
+-                           if (!ASManager.itemStackEquals(var5, var8.getEquipment().getItem(var2.getSlot()), false)) {
+-                              this.cancel();
+-                           } else {
+-                              RepeatingTrigger.this.executionBuilder()
+-                                 .setAttacker(var8)
+-                                 .setAttackerMain(true)
+-                                 .setEvent(var4)
+-                                 .setItemType(var2)
+-                                 .setItem(var5)
+-                                 .asRepeating()
+-                                 .only(var12)
+-                                 .buildAndExecute();
++                  long delay = remainingCooldown != null ? remainingCooldown : (ability.isRepeatingInstantApply() ? 0L : ability.getRepeatingDelay() * 20L);
++                  ScheduledTask runnable = finalEntity.getScheduler().runAtFixedRate(
++                     EffectsHandler.getInstance(),
++                     task -> {
++                        if (!ASManager.itemStackEquals(item, finalEntity.getEquipment().getItem(type.getSlot()), false)) {
++                           UserRepeaters repeaters = getRepeaters().get(user);
++                           if (repeaters != null && repeaters.itemRunnables.get(type.getSlot()) != null) {
++                              repeaters.itemRunnables.get(type.getSlot()).forEach(ScheduledTask::cancel);
+                            }
++                        } else {
++                           RepeatingTrigger.this.executionBuilder()
++                              .setAttacker(finalEntity)
++                              .setAttackerMain(true)
++                              .setEvent(e)
++                              .setItemType(type)
++                              .setItem(item)
++                              .asRepeating()
++                              .only(new AdvancedAbility[]{ability})
++                              .buildAndExecute();
+                         }
+-                     })
+-                     .runTaskTimer(EffectsHandler.getInstance(), var14, (long)var12.getRepeatingDelay() * 20L);
+-                  var10.add(var16);
++                     },
++                     null,
++                     delay < 1L ? 1L : delay,
++                     ability.getRepeatingDelay() * 20L
++                  );
++                  runnables.add(runnable);
+                }
+ 
+-               var6.itemRunnables.put(var2.getSlot(), var10);
++               r.itemRunnables.put(type.getSlot(), runnables);
+             }
+          }
+-      } catch (Throwable var17) {
+-         throw var17;
++      } catch (Throwable throwable) {
++         throw new RuntimeException(throwable);
+       }
+    }
+ 
+    @EventHandler
+-   public void onQuit(PlayerQuitEvent var1) {
+-      this.stopAll(var1.getPlayer());
++   public void onQuit(PlayerQuitEvent event) {
++      this.stopAll(event.getPlayer());
+    }
+ 
+    @EventHandler(
+       priority = EventPriority.HIGH
+    )
+-   public void onWorldChange(PlayerChangedWorldEvent var1) {
+-      this.stopAll(var1.getPlayer());
++   public void onWorldChange(PlayerChangedWorldEvent event) {
++      this.stopAll(event.getPlayer());
+    }
+ 
+    @EventHandler(
+       ignoreCancelled = true
+    )
+-   public void onItemChange(PlayerItemHeldEvent var1) {
+-      Player var2 = var1.getPlayer();
+-      ItemStack var3 = var2.getInventory().getItem(var1.getPreviousSlot());
+-      ItemStack var4 = var2.getInventory().getItem(var1.getNewSlot());
+-      RollItemType var5 = RollItemType.getHand(var2, var3);
+-      RollItemType var6 = RollItemType.getHand(var2, var4);
+-      if (var5 != null) {
+-         this.stop(var2, var5, var1);
++   public void onItemChange(PlayerItemHeldEvent event) {
++      Player player = event.getPlayer();
++      ItemStack previousItem = player.getInventory().getItem(event.getPreviousSlot());
++      ItemStack newItem = player.getInventory().getItem(event.getNewSlot());
++      RollItemType previousHandType = RollItemType.getHand(player, previousItem);
++      RollItemType newHandType = RollItemType.getHand(player, newItem);
++      if (previousHandType != null) {
++         this.stop(player, previousHandType, event);
+       }
+ 
+-      if (var6 != null) {
+-         this.activate(var2, var6, var4, var1);
++      if (newHandType != null) {
++         this.activate(player, newHandType, newItem, event);
+       }
+    }
+ 
+    @EventHandler(
+       ignoreCancelled = true
+    )
+-   public void onItemDrop(PlayerDropItemEvent var1) {
+-      Player var2 = var1.getPlayer();
+-      ItemStack var3 = var1.getItemDrop().getItemStack();
+-      RollItemType var4 = RollItemType.getHand(var2, var3);
+-      this.stop(var2, var4, var1);
++   public void onItemDrop(PlayerDropItemEvent event) {
++      Player player = event.getPlayer();
++      ItemStack droppedItem = event.getItemDrop().getItemStack();
++      RollItemType handType = RollItemType.getHand(player, droppedItem);
++      this.stop(player, handType, event);
+    }
+ 
+    @EventHandler(
+       ignoreCancelled = true
+    )
+-   public void onItemPickUp(PlayerPickupItemEvent var1) {
+-      Player var2 = var1.getPlayer();
+-      ItemStack var3 = var1.getItem().getItemStack();
+-      RollItemType var4 = RollItemType.getHand(var2, var3);
+-      if (var4 != null) {
+-         this.activate(var2, var4, var3, var1);
++   public void onItemPickUp(PlayerPickupItemEvent event) {
++      Player player = event.getPlayer();
++      ItemStack pickedUpItem = event.getItem().getItemStack();
++      RollItemType handType = RollItemType.getHand(player, pickedUpItem);
++      if (handType != null) {
++         this.activate(player, handType, pickedUpItem, event);
+       }
+    }
+ 
+-   @Generated
+-   public static HashMap<UUID, UserRepeaters> getRepeaters() {
++   public static Map<UUID, UserRepeaters> getRepeaters() {
+       return repeaters;
+    }
+ 
+-   @Generated
+    public static RepeatingTrigger getTrigger() {
+       return trigger;
+    }

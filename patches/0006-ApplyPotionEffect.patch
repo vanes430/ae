@@ -1,0 +1,186 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0006] ApplyPotionEffect: Thread safety and SchedulerUtils removal
+
+AE PATCH REASON: HashMap is not thread-safe for region-thread access; SchedulerUtils bypasses Folia scheduler lifecycle.
+AE PATCH FIX: Replace HashMap with ConcurrentHashMap for activatedPermanentPotions. Remove SchedulerUtils import, replace health queue scheduler with Bukkit.getGlobalRegionScheduler().runAtFixedRate(). Remove @Generated lombok annotations. Rename obfuscated variables to meaningful names.
+AE PATCH RISK: LOW
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/ApplyPotionEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/ApplyPotionEffect.java
+--- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/ApplyPotionEffect.java	2026-07-30 10:27:31.666350105 +0000
++++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/ApplyPotionEffect.java	2026-07-30 10:28:05.848658266 +0000
+@@ -4,18 +4,18 @@
+ import java.util.ArrayList;
+ import java.util.HashMap;
+ import java.util.Iterator;
++import java.util.concurrent.ConcurrentHashMap;
+ import java.util.List;
+ import java.util.Map;
+ import java.util.Queue;
+ import java.util.UUID;
+-import lombok.Generated;
+ import net.advancedplugins.ae.impl.effects.effects.actions.execution.ExecutionTask;
+ import net.advancedplugins.ae.impl.effects.effects.effects.AdvancedEffect;
+ import net.advancedplugins.ae.impl.utils.ASManager;
+ import net.advancedplugins.ae.impl.utils.PotionEffectMatcher;
+-import net.advancedplugins.ae.impl.utils.SchedulerUtils;
+ import net.advancedplugins.ae.impl.utils.nbt.utils.MinecraftVersion;
+ import org.apache.commons.lang3.tuple.Triple;
++import org.bukkit.Bukkit;
+ import org.bukkit.entity.LivingEntity;
+ import org.bukkit.plugin.java.JavaPlugin;
+ import org.bukkit.potion.PotionEffect;
+@@ -23,103 +23,103 @@
+ 
+ public class ApplyPotionEffect extends AdvancedEffect {
+    private static int permanentLength = -1;
+-   private static final Map<UUID, List<PotionEffect>> activatedPermanentPotions = new HashMap<>();
++   private static final Map<UUID, List<PotionEffect>> activatedPermanentPotions = new ConcurrentHashMap<>();
+    private static final Queue<Triple<Long, LivingEntity, Double>> healthQueue = new ArrayDeque<>();
+ 
+-   public ApplyPotionEffect(JavaPlugin var1) {
+-      super(var1, "POTION", "Add potion effect", "%e:<POTION>:<LEVEL>:[TICKS]");
++   public ApplyPotionEffect(JavaPlugin plugin) {
++      super(plugin, "POTION", "Add potion effect", "%e:<POTION>:<LEVEL>:[TICKS]");
+       if (!MinecraftVersion.isNewerThan(MinecraftVersion.MC1_19_R3)) {
+          permanentLength = Integer.MAX_VALUE;
+       }
+    }
+ 
+    @Override
+-   public boolean executeEffect(ExecutionTask var1, LivingEntity var2, String[] var3) {
+-      PotionEffectType var4 = PotionEffectMatcher.matchPotion(var3[0]);
+-      int var5 = ASManager.parseInt(var3[1]);
+-      if (var2 == null) {
++   public boolean executeEffect(ExecutionTask task, LivingEntity target, String[] args) {
++      PotionEffectType potionEffectType = PotionEffectMatcher.matchPotion(args[0]);
++      int level = ASManager.parseInt(args[1]);
++      if (target == null) {
+          return true;
+-      } else if (var1.getBuilder().isPermanent()) {
+-         if (var1.getBuilder().isRemoved()) {
+-            List var8 = activatedPermanentPotions.getOrDefault(var2.getUniqueId(), new ArrayList<>());
+-            handlePermanentRemoval(var2, var8, var4, var5);
+-            if (var8.isEmpty()) {
+-               activatedPermanentPotions.remove(var2.getUniqueId());
++      } else if (task.getBuilder().isPermanent()) {
++         if (task.getBuilder().isRemoved()) {
++            List<PotionEffect> list = activatedPermanentPotions.getOrDefault(target.getUniqueId(), new ArrayList<>());
++            handlePermanentRemoval(target, list, potionEffectType, level);
++            if (list.isEmpty()) {
++               activatedPermanentPotions.remove(target.getUniqueId());
+             } else {
+-               activatedPermanentPotions.put(var2.getUniqueId(), var8);
++               activatedPermanentPotions.put(target.getUniqueId(), list);
+             }
+          } else {
+-            PotionEffect var9 = new PotionEffect(var4, permanentLength, var5, true, false);
+-            if (!var2.hasPotionEffect(var4) || !ASManager.hasPotionEffect(var2, var4, var5)) {
+-               var2.addPotionEffect(var9);
++            PotionEffect potionEffect = new PotionEffect(potionEffectType, permanentLength, level, true, false);
++            if (!target.hasPotionEffect(potionEffectType) || !ASManager.hasPotionEffect(target, potionEffectType, level)) {
++               target.addPotionEffect(potionEffect);
+             }
+ 
+-            List var10 = activatedPermanentPotions.getOrDefault(var2.getUniqueId(), new ArrayList<>());
+-            var10.add(var9);
+-            activatedPermanentPotions.put(var2.getUniqueId(), var10);
++            List<PotionEffect> list = activatedPermanentPotions.getOrDefault(target.getUniqueId(), new ArrayList<>());
++            list.add(potionEffect);
++            activatedPermanentPotions.put(target.getUniqueId(), list);
+          }
+ 
+          return true;
+-      } else if (var3.length <= 2) {
++      } else if (args.length <= 2) {
+          return true;
+       } else {
+-         int var6 = ASManager.parseInt(var3[2]);
+-         if (var2.hasPotionEffect(var4) || ASManager.hasPotionEffect(var2, var4, var5)) {
+-            PotionEffect var7 = var2.getPotionEffect(var4);
+-            if (var7.getAmplifier() > var5 || var7.getAmplifier() == var5 && var7.getDuration() > var6) {
++         int duration = ASManager.parseInt(args[2]);
++         if (target.hasPotionEffect(potionEffectType) || ASManager.hasPotionEffect(target, potionEffectType, level)) {
++            PotionEffect effect = target.getPotionEffect(potionEffectType);
++            if (effect.getAmplifier() > level || effect.getAmplifier() == level && effect.getDuration() > duration) {
+                return true;
+             }
+          }
+ 
+-         if (var3.length > 3 && !ASManager.parseBoolean(var3[3], true)) {
++         if (args.length > 3 && !ASManager.parseBoolean(args[3], true)) {
+             return true;
+          } else {
+-            var2.addPotionEffect(new PotionEffect(var4, var6, var5));
++            target.addPotionEffect(new PotionEffect(potionEffectType, duration, level));
+             return true;
+          }
+       }
+    }
+ 
+-   public static void handlePermanentRemoval(LivingEntity var0, List<PotionEffect> var1, PotionEffectType var2, int var3) {
+-      if (var1.stream().<PotionEffectType>map(PotionEffect::getType).anyMatch(var2::equals)) {
+-         Iterator var4 = var1.iterator();
+-         double var5 = var0.getHealth();
+-
+-         while (var4.hasNext()) {
+-            PotionEffect var7 = (PotionEffect)var4.next();
+-            if (var7.getType().equals(var2) && var7.getAmplifier() == var3) {
+-               var4.remove();
++   public static void handlePermanentRemoval(LivingEntity target, List<PotionEffect> list, PotionEffectType potionEffectType, int level) {
++      if (list.stream().<PotionEffectType>map(PotionEffect::getType).anyMatch(potionEffectType::equals)) {
++         Iterator<PotionEffect> iterator = list.iterator();
++         double hpBefore = target.getHealth();
++
++         while (iterator.hasNext()) {
++            PotionEffect potionEffect = iterator.next();
++            if (potionEffect.getType().equals(potionEffectType) && potionEffect.getAmplifier() == level) {
++               iterator.remove();
+                break;
+             }
+          }
+ 
+-         healthQueue.add(Triple.of(System.currentTimeMillis(), var0, var5));
+-         var0.removePotionEffect(var2);
++         healthQueue.add(Triple.of(System.currentTimeMillis(), target, hpBefore));
++         target.removePotionEffect(potionEffectType);
+       }
+    }
+ 
+-   @Generated
+    public static int getPermanentLength() {
+       return permanentLength;
+    }
+ 
+-   @Generated
+    public static Map<UUID, List<PotionEffect>> getActivatedPermanentPotions() {
+       return activatedPermanentPotions;
+    }
+ 
+    static {
+-      SchedulerUtils.runTaskTimer(() -> {
+-         long var0 = System.currentTimeMillis();
++      Bukkit.getGlobalRegionScheduler().runAtFixedRate(ASManager.getInstance(), task -> {
++         long currentTime = System.currentTimeMillis();
+ 
+-         while (!healthQueue.isEmpty() && healthQueue.peek().getLeft() + 500L < var0) {
+-            Triple var2 = healthQueue.poll();
+-            if (var2 != null) {
+-               LivingEntity var3 = (LivingEntity)var2.getMiddle();
+-               double var4 = (Double)var2.getRight();
+-               if (!(var4 <= var3.getHealth())) {
+-                  var3.setHealth(Math.min(var4, var3.getMaxHealth()));
+-               }
++         while (!healthQueue.isEmpty() && healthQueue.peek().getLeft() + 500L < currentTime) {
++            Triple<Long, LivingEntity, Double> triple = healthQueue.poll();
++            if (triple != null) {
++               LivingEntity target = (LivingEntity)triple.getMiddle();
++               double hpBefore = (Double)triple.getRight();
++               target.getScheduler().run(ASManager.getInstance(), t -> {
++                  if (!target.isDead() && hpBefore > target.getHealth()) {
++                     target.setHealth(Math.min(hpBefore, target.getMaxHealth()));
++                  }
++               }, null);
+             }
+          }
+       }, 1L, 1L);

@@ -3,15 +3,20 @@ plugins {
 }
 
 group = "net.advancedplugins"
-version = "9.23.6-folia"
 
-val originalJar = file("libs/AdvancedEnchantments-9.23.6.jar")
+// Auto-detect version from libs/AdvancedEnchantments-*.jar
+val aeJars = file("libs").listFiles { f -> f.name.matches(Regex("AdvancedEnchantments-\\d+\\.\\d+\\.\\d+\\.jar")) }?.toList()
+    ?: error("libs/ directory not found")
+require(aeJars.size == 1) { "Expected 1 AdvancedEnchantments JAR in libs/, found ${aeJars.size}: ${aeJars.map { it.name }}" }
+val originalJar = aeJars[0]
+val detectedVersion = originalJar.name.removePrefix("AdvancedEnchantments-").removeSuffix(".jar")
+version = detectedVersion
+
 val extractDir = layout.buildDirectory.dir("extracted")
 val patchedClassesDir = layout.buildDirectory.dir("classes/java/main")
 
 // ─── Dependencies ───
 repositories {
-    mavenCentral()
     flatDir { dirs("libs") }
 }
 
@@ -20,16 +25,20 @@ dependencies {
     compileOnly(files("libs/canvas-api.jar"))
     compileOnly(files("libs/bungeecord-chat.jar"))
     
-    // Adventure API (Maven)
-    val adventureVersion = "4.17.0"
-    compileOnly("net.kyori:adventure-api:$adventureVersion")
-    compileOnly("net.kyori:adventure-text-minimessage:$adventureVersion")
-    compileOnly("net.kyori:adventure-text-serializer-gson:$adventureVersion")
-    compileOnly("net.kyori:adventure-text-serializer-plain:$adventureVersion")
-    compileOnly("net.kyori:adventure-key:$adventureVersion")
-    compileOnly("net.kyori:examination-api:1.3.0")
+    // Adventure API (highest available versions)
+    compileOnly(files(
+        "libs/adventure-api-4.26.1.jar",
+        "libs/adventure-key-4.26.1.jar",
+        "libs/adventure-nbt-4.26.1.jar",
+        "libs/adventure-text-minimessage-4.26.1.jar",
+        "libs/adventure-text-serializer-gson-4.26.1.jar",
+        "libs/adventure-text-serializer-json-4.26.1.jar",
+        "libs/adventure-text-serializer-plain-4.26.1.jar",
+        "libs/adventure-text-serializer-legacy-4.26.1.jar",
+        "libs/examination-api-1.3.0.jar",
+    ))
     
-    compileOnly("org.jetbrains:annotations:24.1.0")
+    compileOnly(files("libs/annotations-24.1.0.jar"))
 
     // Plugin hooks
     compileOnly(files("libs/Vault.jar"))
@@ -39,15 +48,30 @@ dependencies {
     compileOnly(files(originalJar))
 
     // Gson & Guava (needed for FancyMessage)
-    compileOnly("com.google.code.gson:gson:2.10.1")
-    compileOnly("com.google.guava:guava:33.0.0-jre")
+    compileOnly(files("libs/gson-2.10.1.jar"))
+    compileOnly(files("libs/guava-33.0.0-jre.jar"))
 }
+
+// Derive patched file list from patches/ headers
+val patchedFiles = file("patches").listFiles()
+    ?.filter { it.extension == "patch" }
+    ?.mapNotNull { patch ->
+        patch.useLines { lines ->
+            lines.firstOrNull { it.startsWith("diff --git") }
+                ?.substringAfter(" b/")
+                ?.trim()
+        }
+    }
+    ?.distinct()
+    ?: emptyList()
 
 java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(25))
+
     sourceSets.main {
         java {
             srcDir("src-patched")
+            patchedFiles.forEach { include(it) }
             exclude("**/MainCommand.java")
         }
         resources {
@@ -57,27 +81,9 @@ java {
     }
 }
 
-// ─── Compile stubs first ───
-val stubsClassesDir = layout.buildDirectory.dir("classes/stubs")
-
-val compileStubs by tasks.registering(JavaCompile::class) {
-    onlyIf { file("stubs-patched").exists() }
-    source = fileTree("stubs-patched").matching { include("**/*.java") }
-    destinationDirectory.set(stubsClassesDir)
-    options.encoding = "UTF-8"
-    classpath = files(originalJar) + fileTree("libs")
-}
-
 // ─── Compile Java ───
 tasks.named<JavaCompile>("compileJava") {
-    dependsOn(compileStubs)
     options.encoding = "UTF-8"
-    doFirst {
-        val stubsOut = stubsClassesDir.get().asFile
-        if (stubsOut.exists()) {
-            classpath = classpath + files(stubsOut)
-        }
-    }
 }
 
 // ─── Extract original JAR ───
@@ -86,95 +92,38 @@ val extractOriginalJar = tasks.register<Copy>("extractOriginalJar") {
     into(extractDir)
 }
 
-// ─── Custom resources override ───
-val copyCustomResources = tasks.register<Copy>("copyCustomResources") {
-    dependsOn(extractOriginalJar)
-
-    // General extracted resources (EXCEPT armorSets, customWeapons, enchantments.yml)
-    val extractedResources = file("src-patched/main/resources/_extracted")
-    if (extractedResources.exists()) {
-        from(extractedResources) {
-            exclude("armorSets/**")
-            exclude("customWeapons/**")
-            exclude("enchantments.yml")
-        }
-        into(extractDir)
-    }
-
-    // Our edited enchantments.yml override
-    val editedEnchantments = file("resources/enchantments.yml")
-    if (editedEnchantments.exists()) {
-        from(editedEnchantments)
-        into(extractDir)
-    }
-
-    // ArmorSets override (overwrite original armorSets in JAR)
-    val armorSetsDir = file("resources/armorSets")
-    if (armorSetsDir.exists()) {
-        from(armorSetsDir)
-        into(file("${extractDir.get()}/armorSets"))
-    }
-
-    // Custom Weapons override (overwrite original customWeapons in JAR)
-    val customWeaponsDir = file("resources/customWeapons")
-    if (customWeaponsDir.exists()) {
-        from(customWeaponsDir)
-        into(file("${extractDir.get()}/customWeapons"))
-    }
-}
-
 // ─── Standard Jar Task (Patched) ───
 tasks.named<Jar>("jar") {
-    dependsOn(extractOriginalJar, copyCustomResources)
+    dependsOn(extractOriginalJar)
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
-    archiveFileName.set("AdvancedEnchantments-9.23.6-folia-patched.jar")
+    archiveFileName.set("AdvancedEnchantments-${detectedVersion}-folia-patched.jar")
 
-    // Layer 1: Original extracted JAR (exclude classes + resources we're overriding)
+    // Layer 1: Original JAR minus patched classes (replaced by compiled versions)
     from(extractDir) {
-        val registryFile = file("patch-registry.json")
-        if (registryFile.exists()) {
-            @Suppress("UNCHECKED_CAST")
-            val registry = groovy.json.JsonSlurper().parse(registryFile) as Map<String, Any>
-            @Suppress("UNCHECKED_CAST")
-            val patches = registry["patches"] as List<Map<String, Any>>
-            val allExcludes = patches.flatMap { 
-                @Suppress("UNCHECKED_CAST")
-                it["excludes"] as List<String> 
-            }
-            allExcludes.forEach { exclude(it) }
+        patchedFiles.forEach {
+            val classPath = it.replace(".java", ".class")
+            exclude(classPath)
+            exclude(classPath.replace(".class", "\$*.class"))
         }
-
-        exclude("net/advancedplugins/ae/features/weapons/AdvancedWeapon.class")
-        // Exclude original armorSets and customWeapons (we override entirely)
-        exclude("armorSets/**")
-        exclude("customWeapons/**")
-        exclude("enchantments.yml")
-        exclude("plugin.yml")
     }
 
-    // Layer 2: Patched classes (from main sourceSet)
+    // Layer 2: Patched classes (compiled versions override originals)
     from(patchedClassesDir)
 
-    // Layer 3: Our overrides
-    from("resources/armorSets") { into("armorSets") }
-    from("resources/customWeapons") { into("customWeapons") }
-    from("resources/enchantments.yml") { into("") }
-    from("resources/plugin.yml") { into("") }
-
-    // Exclude original META-INF
-    exclude("META-INF/**")
+    // Layer 3: Resource overrides
+    from("resources")
 }
 
 // ─── Deploy ───
 val pluginsDir = "/var/lib/pterodactyl/volumes/d64a444d-cbe1-44eb-99f6-1aa116292bef/plugins"
 tasks.register<Copy>("deploy") {
-    from(layout.buildDirectory.file("libs/AdvancedEnchantments-9.23.6-folia-patched.jar"))
+    from(layout.buildDirectory.file("libs/AdvancedEnchantments-${detectedVersion}-folia-patched.jar"))
     into(pluginsDir)
-    rename { "AdvancedEnchantments-9.23.6-folia-patched.jar" }
+    rename { "AdvancedEnchantments-${detectedVersion}-folia-patched.jar" }
 
     doLast {
-        val deployedFile = file("$pluginsDir/AdvancedEnchantments-9.23.6-folia-patched.jar")
+        val deployedFile = file("$pluginsDir/AdvancedEnchantments-${detectedVersion}-folia-patched.jar")
         if (deployedFile.exists()) {
             println("✅ Deployed to ${deployedFile.absolutePath}")
             println("   Size: ${deployedFile.length()} bytes")

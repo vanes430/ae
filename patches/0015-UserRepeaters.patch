@@ -1,0 +1,23 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0015] UserRepeaters: Migrate BukkitTask to Folia ScheduledTask
+
+AE PATCH REASON: BukkitTask is incompatible with Folia server architecture.
+AE PATCH FIX: Replace BukkitTask type with Folia ScheduledTask from paper-API threaded schedulers. Add ScheduledTask import.
+AE PATCH RISK: LOW
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/UserRepeaters.java b/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/UserRepeaters.java
+--- a/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/UserRepeaters.java	2026-07-30 10:27:31.660350051 +0000
++++ b/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/UserRepeaters.java	2026-07-30 10:28:05.888658626 +0000
+@@ -2,9 +2,9 @@
+ 
+ import java.util.HashMap;
+ import java.util.List;
++import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
+ import org.bukkit.inventory.EquipmentSlot;
+-import org.bukkit.scheduler.BukkitTask;
+ 
+ class UserRepeaters {
+-   public final HashMap<EquipmentSlot, List<BukkitTask>> itemRunnables = new HashMap<>();
++   public final HashMap<EquipmentSlot, List<ScheduledTask>> itemRunnables = new HashMap<>();
+ }

@@ -1,81 +1,79 @@
 #!/bin/bash
 set -euo pipefail
 
-REGISTRY_PATH="patch-registry.json"
-if [ ! -f "$REGISTRY_PATH" ]; then
-  echo "Error: patch-registry.json not found." >&2
+if [ ! -d "src-decompiled" ] || [ ! -d "src-patched" ]; then
+  echo "Error: Need both src-decompiled/ and src-patched/" >&2
   exit 1
 fi
 
-# Clear old patches
-rm -rf patches
-mkdir -p patches
+# Find differing files
+diffs=()
+while IFS= read -r line; do
+  f=${line#src-decompiled/}
+  diffs+=("$f")
+done < <(diff -rq src-decompiled src-patched 2>/dev/null | grep "differ$" | sed 's/Files src-decompiled\///;s/ and.*//')
 
-num_patches=$(jq '.patches | length' "$REGISTRY_PATH")
+if [ ${#diffs[@]} -eq 0 ]; then
+  echo "No differences found."
+  exit 0
+fi
 
-for ((i=0; i<num_patches; i++)); do
-  patch=$(jq -c ".patches[$i]" "$REGISTRY_PATH")
-  id=$(echo "$patch" | jq -r '.id')
-  name=$(echo "$patch" | jq -r '.name')
-  patchFile=$(echo "$patch" | jq -r '.patchFile')
-  issue=$(echo "$patch" | jq -r '.issue')
-  fix=$(echo "$patch" | jq -r '.fix')
-  risk=$(echo "$patch" | jq -r '.risk')
-  excludes=$(echo "$patch" | jq -r '.excludes | join(", ")')
-  
-  echo "Generating $patchFile..."
-  
-  # Write patch header
-  cat << EOF > "$patchFile"
+echo "Found ${#diffs[@]} differing files"
+
+next_num=$(ls patches/*.patch 2>/dev/null | wc -l)
+next_num=$((next_num + 1))
+
+for f in "${diffs[@]}"; do
+  diff -u "src-decompiled/$f" "src-patched/$f" 2>/dev/null | tail -n +3 > "patches/.tmp-diff" || true
+
+  # Check if patch already exists
+  existing=$(grep -rl "b/$f" patches/*.patch 2>/dev/null || true)
+
+  if [ -n "$existing" ]; then
+    # Extract existing AE metadata lines, preserve them
+    ae_meta=$(grep "^AE PATCH" "$existing" || true)
+    echo "  UPDATE: $(basename "$existing")"
+
+    # Extract subject line
+    subj=$(grep "^Subject:" "$existing" | head -1 || echo "")
+
+    # Write header + old AE metadata + new diff
+    {
+      head -1 "$existing"  # From:
+      echo "$subj"
+      echo ""
+      [ -n "$ae_meta" ] && echo "$ae_meta" || echo -e "AE PATCH REASON: \nAE PATCH FIX: \nAE PATCH RISK: "
+      echo ""
+      echo "---"
+      echo "diff --git a/${f} b/${f}"
+      echo "--- a/${f}"
+      echo "+++ b/${f}"
+      cat patches/.tmp-diff
+    } > "$existing"
+  else
+    name=$(basename "$f" .java)
+    pnum=$(printf "%04d" $next_num)
+    pfile="patches/${pnum}-${name}.patch"
+
+    echo "  GEN: $pfile"
+
+    cat > "$pfile" << EOF
 From: Folia Compatibility Patch
-Subject: [PATCH $id] $name: $fix
+Subject: [PATCH ${pnum}] ${name}: 
 
-AE PATCH REASON: $issue
-AE PATCH FIX: $fix
-AE PATCH RISK: $risk
-AE PATCH EXCLUDES: $excludes
+AE PATCH REASON: 
+AE PATCH FIX: 
+AE PATCH RISK: 
 
 ---
+diff --git a/${f} b/${f}
+--- a/${f}
++++ b/${f}
+$(cat patches/.tmp-diff)
 EOF
 
-  num_files=$(echo "$patch" | jq '.files | length')
-  for ((j=0; j<num_files; j++)); do
-    classPath=$(echo "$patch" | jq -r ".files[$j]")
-    decompiledFile="src-decompiled/$classPath"
-    patchedFile="src-patched/main/java/$classPath"
-    
-    if [ ! -f "$decompiledFile" ]; then
-      echo "Warning: Decompiled file missing: $decompiledFile" >&2
-      continue
-    fi
-    if [ ! -f "$patchedFile" ]; then
-      echo "Warning: Patched file missing: $patchedFile" >&2
-      continue
-    fi
-    
-    # Run git diff --no-index.
-    # Note: git diff --no-index returns exit status 1 if differences are found, so we must allow it.
-    set +e
-    stdout=$(git diff --no-index -- "$decompiledFile" "$patchedFile")
-    exit_code=$?
-    set -e
-    
-    if [ -z "$stdout" ]; then
-      echo "No differences found for $classPath"
-      continue
-    fi
-    
-    # Process lines to normalize paths to git standard
-    cleaned_diff=$(echo "$stdout" | sed \
-      -e "s|^--- a/src-decompiled/|--- a/|g" \
-      -e "s|^+++ b/src-patched/main/java/|+++ b/|g" \
-      -e "s|^diff --git a/src-decompiled/[^ ]* b/src-patched/main/java/[^ ]*|diff --git a/${classPath} b/${classPath}|g" \
-      -e "s|^diff --git a/[^ ]* b/src-patched/main/java/[^ ]*|diff --git a/${classPath} b/${classPath}|g" \
-      -e "s|^diff --git [^ ]* [^ ]*|diff --git a/${classPath} b/${classPath}|g")
-    
-    echo "$cleaned_diff" >> "$patchFile"
-    echo "" >> "$patchFile"
-  done
-done
+    next_num=$((next_num + 1))
+  fi
 
-echo "Patch generation complete."
+  rm -f patches/.tmp-diff
+done

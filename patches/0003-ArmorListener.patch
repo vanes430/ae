@@ -1,0 +1,570 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0003] ArmorListener: Migrate SchedulerUtils to EntityScheduler
+
+AE PATCH REASON: SchedulerUtils delegation layer is incompatible with Folia scheduler lifecycle; obfuscated variable names reduce maintainability.
+AE PATCH FIX: Remove SchedulerUtils import. Replace SchedulerUtils.runTaskTimer() event queue with per-player EntityScheduler.runDelayed() calls in addToQueue. Migrate from BukkitRunnable to ScheduledTask. Rename obfuscated variables to meaningful names.
+AE PATCH RISK: LOW
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/armorutils/ArmorListener.java b/net/advancedplugins/ae/impl/effects/armorutils/ArmorListener.java
+--- a/net/advancedplugins/ae/impl/effects/armorutils/ArmorListener.java	2026-07-30 10:27:31.670350141 +0000
++++ b/net/advancedplugins/ae/impl/effects/armorutils/ArmorListener.java	2026-07-30 10:28:05.841658203 +0000
+@@ -5,7 +5,6 @@
+ import java.util.List;
+ import java.util.Objects;
+ import net.advancedplugins.ae.impl.utils.ASManager;
+-import net.advancedplugins.ae.impl.utils.SchedulerUtils;
+ import net.advancedplugins.ae.impl.utils.hooks.HookPlugin;
+ import net.advancedplugins.ae.impl.utils.hooks.HooksHandler;
+ import net.advancedplugins.ae.impl.utils.hooks.plugins.ItemsAdderHook;
+@@ -58,228 +57,222 @@
+    private final ArrayDeque<ArmorEquipEvent> eventQueue = new ArrayDeque<>();
+ 
+    public ArmorListener() {
+-      this.runEventQueue();
+    }
+ 
+-   private void addToQueue(ArmorEquipEvent var1) {
+-      ItemStack var2 = var1.getOldArmorPiece();
+-      ItemStack var3 = var1.getNewArmorPiece();
+-      var1.setOldArmorPiece(var2 != null ? var2.clone() : null);
+-      var1.setNewArmorPiece(var3 != null ? var3.clone() : null);
+-      this.eventQueue.add(var1);
+-   }
+-
+-   private void runEventQueue() {
+-      SchedulerUtils.runTaskTimer(
+-         () -> {
+-            while (!this.eventQueue.isEmpty()) {
+-               ArmorEquipEvent var1 = this.eventQueue.poll();
+-               ItemStack var2 = var1.getOldArmorPiece();
+-               if (var1.getType() != null && var1.getType().getEquipmentSlot() != null) {
+-                  ItemStack var3 = var1.getPlayer().getEquipment().getItem(var1.getType().getEquipmentSlot());
+-                  if (var1.getMethod() != ArmorEquipEvent.EquipMethod.HOTBAR
+-                     && HooksHandler.isEnabled(HookPlugin.ITEMSADDER)
+-                     && !ASManager.isAir(var2)
+-                     && !ASManager.isAir(var3)) {
+-                     ItemsAdderHook var4 = (ItemsAdderHook)HooksHandler.getHook(HookPlugin.ITEMSADDER);
+-                     if (var4.isCustomItem(var2)) {
+-                        var1.setOldArmorPiece(var1.getNewArmorPiece());
+-                        var1.setNewArmorPiece(var2);
+-                        var2 = var1.getOldArmorPiece();
+-                     }
++   private void addToQueue(ArmorEquipEvent event) {
++      ItemStack oldArmor = event.getOldArmorPiece();
++      ItemStack newArmor = event.getNewArmorPiece();
++      event.setOldArmorPiece(oldArmor != null ? oldArmor.clone() : null);
++      event.setNewArmorPiece(newArmor != null ? newArmor.clone() : null);
++      Player player = event.getPlayer();
++      if (player != null) {
++         player.getScheduler().runDelayed(ASManager.getInstance(), (task) -> {
++            ItemStack oldEventArmor = event.getOldArmorPiece();
++            if (event.getType() != null && event.getType().getEquipmentSlot() != null) {
++               ItemStack newCurrentArmor = player.getEquipment().getItem(event.getType().getEquipmentSlot());
++               if (event.getMethod() != ArmorEquipEvent.EquipMethod.HOTBAR
++                  && HooksHandler.isEnabled(HookPlugin.ITEMSADDER)
++                  && !ASManager.isAir(oldEventArmor)
++                  && !ASManager.isAir(newCurrentArmor)) {
++                  ItemsAdderHook itemsAdderHook = (ItemsAdderHook)HooksHandler.getHook(HookPlugin.ITEMSADDER);
++                  if (itemsAdderHook.isCustomItem(oldEventArmor)) {
++                     event.setOldArmorPiece(event.getNewArmorPiece());
++                     event.setNewArmorPiece(oldEventArmor);
++                     oldEventArmor = event.getOldArmorPiece();
+                   }
++               }
+ 
+-                  if (!Objects.equals(var2, var3) && (!ASManager.isAir(var2) || !ASManager.isAir(var3))) {
+-                     Bukkit.getPluginManager().callEvent(var1);
+-                  }
++               if (!Objects.equals(oldEventArmor, newCurrentArmor) && (!ASManager.isAir(oldEventArmor) || !ASManager.isAir(newCurrentArmor))) {
++                  Bukkit.getPluginManager().callEvent(event);
+                }
+             }
+-         },
+-         0L,
+-         3L
+-      );
++         }, () -> {}, 3L);
++      }
++   }
++
++   private void runEventQueue() {
+    }
+ 
+    @EventHandler(
+       priority = EventPriority.HIGHEST,
+       ignoreCancelled = true
+    )
+-   public final void onInventoryClick(InventoryClickEvent var1) {
+-      boolean var2 = false;
+-      boolean var3 = false;
+-      if (var1.getClick() == ClickType.SHIFT_LEFT || var1.getClick() == ClickType.SHIFT_RIGHT) {
+-         var2 = true;
++   public final void onInventoryClick(InventoryClickEvent e) {
++      boolean shift = false;
++      boolean numberkey = false;
++      if (e.getClick() == ClickType.SHIFT_LEFT || e.getClick() == ClickType.SHIFT_RIGHT) {
++         shift = true;
+       }
+ 
+-      if (var1.getClick() == ClickType.NUMBER_KEY) {
+-         var3 = true;
++      if (e.getClick() == ClickType.NUMBER_KEY) {
++         numberkey = true;
+       }
+ 
+-      if (var1.getSlotType() == SlotType.ARMOR || var1.getSlotType() == SlotType.QUICKBAR || var1.getSlotType() == SlotType.CONTAINER) {
+-         if (var1.getClickedInventory() == null || var1.getClickedInventory().getType() == InventoryType.PLAYER) {
+-            if (var1.getInventory().getType() == InventoryType.CRAFTING || var1.getInventory().getType() == InventoryType.PLAYER) {
+-               if (var1.getWhoClicked() instanceof Player) {
+-                  ArmorType var4 = ArmorType.matchType(var2 ? var1.getCurrentItem() : var1.getCursor());
+-                  if (var1.getAction() == InventoryAction.HOTBAR_MOVE_AND_READD && var4 == null) {
+-                     var4 = ArmorType.matchType(var1.getCurrentItem());
++      if (e.getSlotType() == SlotType.ARMOR || e.getSlotType() == SlotType.QUICKBAR || e.getSlotType() == SlotType.CONTAINER) {
++         if (e.getClickedInventory() == null || e.getClickedInventory().getType() == InventoryType.PLAYER) {
++            if (e.getInventory().getType() == InventoryType.CRAFTING || e.getInventory().getType() == InventoryType.PLAYER) {
++               if (e.getWhoClicked() instanceof Player) {
++                  ArmorType newArmorType = ArmorType.matchType(shift ? e.getCurrentItem() : e.getCursor());
++                  if (e.getAction() == InventoryAction.HOTBAR_MOVE_AND_READD && newArmorType == null) {
++                     newArmorType = ArmorType.matchType(e.getCurrentItem());
+                   }
+ 
+-                  if (var1.getAction() == InventoryAction.SWAP_WITH_CURSOR) {
+-                     var4 = ArmorType.matchType(var1.getCursor());
++                  if (e.getAction() == InventoryAction.SWAP_WITH_CURSOR) {
++                     newArmorType = ArmorType.matchType(e.getCursor());
+                   }
+ 
+-                  if (var2 || var4 == null || var1.getRawSlot() == var4.getSlot()) {
+-                     if (var2) {
+-                        var4 = ArmorType.matchType(var1.getCurrentItem());
+-                        if (var4 == null && HooksHandler.isEnabled(HookPlugin.ITEMSADDER)) {
+-                           ItemsAdderHook var5 = (ItemsAdderHook)HooksHandler.getHook(HookPlugin.ITEMSADDER);
+-                           ItemStack var6 = var1.getWhoClicked().getEquipment().getHelmet();
+-                           if (var5.isCustomItem(var6)) {
++                  if (shift || newArmorType == null || e.getRawSlot() == newArmorType.getSlot()) {
++                     if (shift) {
++                        newArmorType = ArmorType.matchType(e.getCurrentItem());
++                        if (newArmorType == null && HooksHandler.isEnabled(HookPlugin.ITEMSADDER)) {
++                           ItemsAdderHook iaHook = (ItemsAdderHook)HooksHandler.getHook(HookPlugin.ITEMSADDER);
++                           ItemStack helmetItem = e.getWhoClicked().getEquipment().getHelmet();
++                           if (iaHook.isCustomItem(helmetItem)) {
+                               this.addToQueue(
+-                                 new ArmorEquipEvent((Player)var1.getWhoClicked(), ArmorEquipEvent.EquipMethod.SHIFT_CLICK, ArmorType.HELMET, null, var6)
++                                 new ArmorEquipEvent((Player)e.getWhoClicked(), ArmorEquipEvent.EquipMethod.SHIFT_CLICK, ArmorType.HELMET, null, helmetItem)
+                               );
+                            }
+ 
+-                           ItemStack var7 = var1.getWhoClicked().getEquipment().getChestplate();
+-                           if (var5.isCustomItem(var7)) {
++                           ItemStack chestplateItem = e.getWhoClicked().getEquipment().getChestplate();
++                           if (iaHook.isCustomItem(chestplateItem)) {
+                               this.addToQueue(
+-                                 new ArmorEquipEvent((Player)var1.getWhoClicked(), ArmorEquipEvent.EquipMethod.SHIFT_CLICK, ArmorType.CHESTPLATE, null, var7)
++                                 new ArmorEquipEvent((Player)e.getWhoClicked(), ArmorEquipEvent.EquipMethod.SHIFT_CLICK, ArmorType.CHESTPLATE, null, chestplateItem)
+                               );
+                            }
+ 
+-                           ItemStack var8 = var1.getWhoClicked().getEquipment().getLeggings();
+-                           if (var5.isCustomItem(var8)) {
++                           ItemStack leggingsItem = e.getWhoClicked().getEquipment().getLeggings();
++                           if (iaHook.isCustomItem(leggingsItem)) {
+                               this.addToQueue(
+-                                 new ArmorEquipEvent((Player)var1.getWhoClicked(), ArmorEquipEvent.EquipMethod.SHIFT_CLICK, ArmorType.LEGGINGS, null, var8)
++                                 new ArmorEquipEvent((Player)e.getWhoClicked(), ArmorEquipEvent.EquipMethod.SHIFT_CLICK, ArmorType.LEGGINGS, null, leggingsItem)
+                               );
+                            }
+ 
+-                           ItemStack var9 = var1.getWhoClicked().getEquipment().getBoots();
+-                           if (var5.isCustomItem(var9)) {
++                           ItemStack bootsItem = e.getWhoClicked().getEquipment().getBoots();
++                           if (iaHook.isCustomItem(bootsItem)) {
+                               this.addToQueue(
+-                                 new ArmorEquipEvent((Player)var1.getWhoClicked(), ArmorEquipEvent.EquipMethod.SHIFT_CLICK, ArmorType.BOOTS, null, var9)
++                                 new ArmorEquipEvent((Player)e.getWhoClicked(), ArmorEquipEvent.EquipMethod.SHIFT_CLICK, ArmorType.BOOTS, null, bootsItem)
+                               );
+                            }
+                         }
+ 
+-                        if (var4 != null) {
+-                           boolean var11 = true;
+-                           if (var1.getRawSlot() == var4.getSlot()) {
+-                              if (var1.getWhoClicked().getInventory().firstEmpty() == -1) {
+-                                 var1.setCancelled(true);
++                        if (newArmorType != null) {
++                           boolean equipping = true;
++                           if (e.getRawSlot() == newArmorType.getSlot()) {
++                              if (e.getWhoClicked().getInventory().firstEmpty() == -1) {
++                                 e.setCancelled(true);
+                                  return;
+                               }
+ 
+-                              var11 = false;
++                              equipping = false;
+                            }
+ 
+-                           if (var4 == ArmorType.HELMET && var11 == ASManager.isAir(var1.getWhoClicked().getInventory().getHelmet())
+-                              || var4 == ArmorType.CHESTPLATE && var11 == ASManager.isAir(var1.getWhoClicked().getInventory().getChestplate())
+-                              || var4 == ArmorType.LEGGINGS && var11 == ASManager.isAir(var1.getWhoClicked().getInventory().getLeggings())
+-                              || var4 == ArmorType.BOOTS && var11 == ASManager.isAir(var1.getWhoClicked().getInventory().getBoots())) {
+-                              if (var11) {
+-                                 ItemStack var15 = var1.getCurrentItem().clone();
+-                                 ArmorEquipEvent var19 = new ArmorEquipEvent(
+-                                    (Player)var1.getWhoClicked(), ArmorEquipEvent.EquipMethod.SHIFT_CLICK, var4, null, var15
++                           if (newArmorType == ArmorType.HELMET && equipping == ASManager.isAir(e.getWhoClicked().getInventory().getHelmet())
++                              || newArmorType == ArmorType.CHESTPLATE && equipping == ASManager.isAir(e.getWhoClicked().getInventory().getChestplate())
++                              || newArmorType == ArmorType.LEGGINGS && equipping == ASManager.isAir(e.getWhoClicked().getInventory().getLeggings())
++                              || newArmorType == ArmorType.BOOTS && equipping == ASManager.isAir(e.getWhoClicked().getInventory().getBoots())) {
++                              if (equipping) {
++                                 ItemStack currentItemClone = e.getCurrentItem().clone();
++                                 ArmorEquipEvent armorEquipEvent = new ArmorEquipEvent(
++                                    (Player)e.getWhoClicked(), ArmorEquipEvent.EquipMethod.SHIFT_CLICK, newArmorType, null, currentItemClone
+                                  );
+-                                 this.addToQueue(var19);
++                                 this.addToQueue(armorEquipEvent);
+                               } else {
+-                                 ArmorEquipEvent var16 = new ArmorEquipEvent(
+-                                    (Player)var1.getWhoClicked(), ArmorEquipEvent.EquipMethod.SHIFT_CLICK, var4, var1.getCurrentItem(), null
++                                 ArmorEquipEvent armorEquipEvent = new ArmorEquipEvent(
++                                    (Player)e.getWhoClicked(), ArmorEquipEvent.EquipMethod.SHIFT_CLICK, newArmorType, e.getCurrentItem(), null
+                                  );
+-                                 this.addToQueue(var16);
+-                                 if (var16.isCancelled()) {
+-                                    var1.setCancelled(true);
++                                 this.addToQueue(armorEquipEvent);
++                                 if (armorEquipEvent.isCancelled()) {
++                                    e.setCancelled(true);
+                                  }
+                               }
+                            }
+                         }
+                      } else {
+                         if (MinecraftVersion.getVersionNumber() >= 1160
+-                           && var1.getAction() == InventoryAction.HOTBAR_SWAP
+-                           && var1.getClick() == ClickType.SWAP_OFFHAND) {
+-                           EntityEquipment var14 = var1.getWhoClicked().getEquipment();
+-                           if (var14 == null) {
++                           && e.getAction() == InventoryAction.HOTBAR_SWAP
++                           && e.getClick() == ClickType.SWAP_OFFHAND) {
++                           EntityEquipment entityEquipment = e.getWhoClicked().getEquipment();
++                           if (entityEquipment == null) {
+                               return;
+                            }
+ 
+-                           ItemStack var18 = null;
+-                           ItemStack var22 = var14.getItemInOffHand();
+-                           switch (var1.getRawSlot()) {
++                           ItemStack oldItem = null;
++                           ItemStack newItem = entityEquipment.getItemInOffHand();
++                           switch (e.getRawSlot()) {
+                               case 5:
+-                                 var18 = var14.getHelmet();
+-                                 var4 = ArmorType.HELMET;
++                                 oldItem = entityEquipment.getHelmet();
++                                 newArmorType = ArmorType.HELMET;
+                                  break;
+                               case 6:
+-                                 var18 = var14.getChestplate();
+-                                 var4 = ArmorType.CHESTPLATE;
++                                 oldItem = entityEquipment.getChestplate();
++                                 newArmorType = ArmorType.CHESTPLATE;
+                                  break;
+                               case 7:
+-                                 var18 = var14.getLeggings();
+-                                 var4 = ArmorType.LEGGINGS;
++                                 oldItem = entityEquipment.getLeggings();
++                                 newArmorType = ArmorType.LEGGINGS;
+                                  break;
+                               case 8:
+-                                 var18 = var14.getBoots();
+-                                 var4 = ArmorType.BOOTS;
++                                 oldItem = entityEquipment.getBoots();
++                                 newArmorType = ArmorType.BOOTS;
+                                  break;
+                               case 45:
+                                  return;
+                            }
+ 
+-                           if (var18 == null) {
+-                              var18 = new ItemStack(Material.AIR);
++                           if (oldItem == null) {
++                              oldItem = new ItemStack(Material.AIR);
+                            }
+ 
+-                           ArmorEquipEvent var24 = new ArmorEquipEvent(
+-                              (Player)var1.getWhoClicked(), ArmorEquipEvent.EquipMethod.OFFHAND_SWAP, var4, var18, var22
++                           ArmorEquipEvent armorEquipEvent = new ArmorEquipEvent(
++                              (Player)e.getWhoClicked(), ArmorEquipEvent.EquipMethod.OFFHAND_SWAP, newArmorType, oldItem, newItem
+                            );
+-                           this.addToQueue(var24);
+-                           if (var24.isCancelled()) {
+-                              var1.setCancelled(true);
++                           this.addToQueue(armorEquipEvent);
++                           if (armorEquipEvent.isCancelled()) {
++                              e.setCancelled(true);
+                            }
+ 
+                            return;
+                         }
+ 
+-                        if (var1.getAction() == InventoryAction.HOTBAR_MOVE_AND_READD) {
+-                           ArmorEquipEvent var13 = new ArmorEquipEvent(
+-                              (Player)var1.getWhoClicked(), ArmorEquipEvent.EquipMethod.HOTBAR_SWAP, var4, var1.getCurrentItem(), null
++                        if (e.getAction() == InventoryAction.HOTBAR_MOVE_AND_READD) {
++                           ArmorEquipEvent armorEquipEvent = new ArmorEquipEvent(
++                              (Player)e.getWhoClicked(), ArmorEquipEvent.EquipMethod.HOTBAR_SWAP, newArmorType, e.getCurrentItem(), null
+                            );
+-                           this.addToQueue(var13);
+-                           if (var13.isCancelled()) {
+-                              var1.setCancelled(true);
++                           this.addToQueue(armorEquipEvent);
++                           if (armorEquipEvent.isCancelled()) {
++                              e.setCancelled(true);
+                            }
+ 
+                            return;
+                         }
+ 
+-                        ItemStack var12 = var1.getCursor();
+-                        ItemStack var17 = var1.getCurrentItem();
+-                        if (var3) {
+-                           if (var1.getClickedInventory().getType() == InventoryType.PLAYER) {
+-                              ItemStack var20 = var1.getClickedInventory().getItem(var1.getHotbarButton());
+-                              if (!ASManager.isAir(var20)) {
+-                                 var4 = ArmorType.matchType(var20);
+-                                 var12 = var20;
+-                                 var17 = var1.getClickedInventory().getItem(var1.getSlot());
++                        ItemStack newArmorPiece = e.getCursor();
++                        ItemStack oldArmorPiece = e.getCurrentItem();
++                        if (numberkey) {
++                           if (e.getClickedInventory().getType() == InventoryType.PLAYER) {
++                              ItemStack hotbarItem = e.getClickedInventory().getItem(e.getHotbarButton());
++                              if (!ASManager.isAir(hotbarItem)) {
++                                 newArmorType = ArmorType.matchType(hotbarItem);
++                                 newArmorPiece = hotbarItem;
++                                 oldArmorPiece = e.getClickedInventory().getItem(e.getSlot());
+                               } else {
+-                                 var4 = ArmorType.matchType(!ASManager.isAir(var1.getCurrentItem()) ? var1.getCurrentItem() : var1.getCursor());
++                                 newArmorType = ArmorType.matchType(!ASManager.isAir(e.getCurrentItem()) ? e.getCurrentItem() : e.getCursor());
+                               }
+                            }
+-                        } else if (ASManager.isAir(var1.getCursor()) && !ASManager.isAir(var1.getCurrentItem())) {
+-                           var4 = ArmorType.matchType(var1.getCurrentItem());
++                        } else if (ASManager.isAir(e.getCursor()) && !ASManager.isAir(e.getCurrentItem())) {
++                           newArmorType = ArmorType.matchType(e.getCurrentItem());
+                         }
+ 
+-                        if (var4 != null && var1.getRawSlot() == var4.getSlot()) {
+-                           ArmorEquipEvent.EquipMethod var21 = ArmorEquipEvent.EquipMethod.PICK_DROP;
+-                           if (var1.getAction() == InventoryAction.HOTBAR_SWAP || var3) {
+-                              var21 = ArmorEquipEvent.EquipMethod.HOTBAR_SWAP;
++                        if (newArmorType != null && e.getRawSlot() == newArmorType.getSlot()) {
++                           ArmorEquipEvent.EquipMethod method = ArmorEquipEvent.EquipMethod.PICK_DROP;
++                           if (e.getAction() == InventoryAction.HOTBAR_SWAP || numberkey) {
++                              method = ArmorEquipEvent.EquipMethod.HOTBAR_SWAP;
+                            }
+ 
+-                           ArmorEquipEvent var23 = new ArmorEquipEvent((Player)var1.getWhoClicked(), var21, var4, var17, var12);
+-                           this.addToQueue(var23);
+-                           if (var23.isCancelled()) {
+-                              var1.setCancelled(true);
++                           ArmorEquipEvent armorEquipEvent = new ArmorEquipEvent((Player)e.getWhoClicked(), method, newArmorType, oldArmorPiece, newArmorPiece);
++                           this.addToQueue(armorEquipEvent);
++                           if (armorEquipEvent.isCancelled()) {
++                              e.setCancelled(true);
+                            }
+                         }
+                      }
+@@ -293,70 +286,70 @@
+    @EventHandler(
+       priority = EventPriority.HIGHEST
+    )
+-   public void playerInteractEvent(PlayerInteractEvent var1) {
+-      if (var1.getAction() != Action.PHYSICAL) {
+-         if (var1.getAction() == Action.RIGHT_CLICK_AIR || var1.getAction() == Action.RIGHT_CLICK_BLOCK) {
+-            if (var1.getAction() == Action.RIGHT_CLICK_BLOCK) {
+-               if (var1.getClickedBlock().getType().isInteractable() || var1.isCancelled()) {
+-                  if (!(var1.getClickedBlock().getState() instanceof Container) || var1.getPlayer().isSneaking()) {
+-                     ItemStack var8 = var1.getItem();
+-                     ArmorType var10 = ArmorType.getClosest(var1.getPlayer(), var8);
+-                     if (var10 == null) {
++   public void playerInteractEvent(PlayerInteractEvent e) {
++      if (e.getAction() != Action.PHYSICAL) {
++         if (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
++            if (e.getAction() == Action.RIGHT_CLICK_BLOCK) {
++               if (e.getClickedBlock().getType().isInteractable() || e.isCancelled()) {
++                  if (!(e.getClickedBlock().getState() instanceof Container) || e.getPlayer().isSneaking()) {
++                     ItemStack newItem = e.getItem();
++                     ArmorType armorType = ArmorType.getClosest(e.getPlayer(), newItem);
++                     if (armorType == null) {
+                         return;
+                      }
+ 
+-                     ItemStack var12 = var10.get(var1.getPlayer());
+-                     ArmorEquipEvent var13 = new ArmorEquipEvent(var1.getPlayer(), ArmorEquipEvent.EquipMethod.HOTBAR_SWAP, var10, var12, var8);
+-                     this.addToQueue(var13);
++                     ItemStack oldItem = armorType.get(e.getPlayer());
++                     ArmorEquipEvent armorEquipEvent = new ArmorEquipEvent(e.getPlayer(), ArmorEquipEvent.EquipMethod.HOTBAR_SWAP, armorType, oldItem, newItem);
++                     this.addToQueue(armorEquipEvent);
+                   }
+ 
+                   return;
+                }
+ 
+-               if (var1.getClickedBlock() != null) {
+-                  Material var2 = var1.getClickedBlock().getType();
++               if (e.getClickedBlock() != null) {
++                  Material mat = e.getClickedBlock().getType();
+ 
+-                  for (String var4 : this.blockedMaterials) {
+-                     if (var2.name().contains(var4)) {
++                  for (String s : this.blockedMaterials) {
++                     if (mat.name().contains(s)) {
+                         return;
+                      }
+                   }
+                }
+             }
+ 
+-            if (var1.isCancelled() && var1.getAction() != Action.RIGHT_CLICK_AIR) {
++            if (e.isCancelled() && e.getAction() != Action.RIGHT_CLICK_AIR) {
+                return;
+             }
+ 
+-            if (var1.getItem() != null) {
+-               if (!var1.getItem().getType().name().endsWith("HEAD") && (!var1.getItem().getType().name().endsWith("SKULL") || !var1.getItem().hasItemMeta())) {
+-                  boolean var14 = false;
++            if (e.getItem() != null) {
++               if (!e.getItem().getType().name().endsWith("HEAD") && (!e.getItem().getType().name().endsWith("SKULL") || !e.getItem().hasItemMeta())) {
++                  boolean isHead = false;
+                } else {
+-                  boolean var10000 = true;
++                  boolean isHead = true;
+                }
+             } else {
+-               boolean var7 = false;
++               boolean wasHeadWithMetaData = false;
+             }
+ 
+-            if (var1.getItem() != null && var1.getItem().getType().isBlock() && var1.getPlayer().getTargetBlock(null, 5).getType().isSolid()) {
++            if (e.getItem() != null && e.getItem().getType().isBlock() && e.getPlayer().getTargetBlock(null, 5).getType().isSolid()) {
+                return;
+             }
+ 
+-            Player var9 = var1.getPlayer();
+-            ArmorType var11 = ArmorType.matchType(var1.getItem());
+-            if (var11 != null) {
+-               String var5 = var1.getItem().getType().name();
+-               if (var5.contains("HEAD") || var5.contains("SKULL")) {
++            Player player = e.getPlayer();
++            ArmorType newArmorType = ArmorType.matchType(e.getItem());
++            if (newArmorType != null) {
++               String itemName = e.getItem().getType().name();
++               if (itemName.contains("HEAD") || itemName.contains("SKULL")) {
+                   return;
+                }
+ 
+-               ArmorEquipEvent var6 = new ArmorEquipEvent(
+-                  var9, ArmorEquipEvent.EquipMethod.HOTBAR, var11, var9.getInventory().getItem(var11.getEquipmentSlot()), var1.getItem()
++               ArmorEquipEvent armorEquipEvent = new ArmorEquipEvent(
++                  player, ArmorEquipEvent.EquipMethod.HOTBAR, newArmorType, player.getInventory().getItem(newArmorType.getEquipmentSlot()), e.getItem()
+                );
+-               this.addToQueue(var6);
+-               if (var6.isCancelled()) {
+-                  var1.setCancelled(true);
+-                  var9.updateInventory();
++               this.addToQueue(armorEquipEvent);
++               if (armorEquipEvent.isCancelled()) {
++                  e.setCancelled(true);
++                  player.updateInventory();
+                }
+             }
+          }
+@@ -366,16 +359,16 @@
+    @EventHandler(
+       priority = EventPriority.HIGHEST
+    )
+-   public void inventoryDrag(InventoryDragEvent var1) {
+-      ArmorType var2 = ArmorType.matchType(var1.getOldCursor());
+-      if (!var1.getRawSlots().isEmpty()) {
+-         if (var1.getInventory() instanceof PlayerInventory) {
+-            if (var2 != null && var2.getSlot() == var1.getRawSlots().stream().findFirst().orElse(0)) {
+-               ArmorEquipEvent var3 = new ArmorEquipEvent((Player)var1.getWhoClicked(), ArmorEquipEvent.EquipMethod.DRAG, var2, null, var1.getOldCursor());
+-               this.addToQueue(var3);
+-               if (var3.isCancelled()) {
+-                  var1.setResult(Result.DENY);
+-                  var1.setCancelled(true);
++   public void inventoryDrag(InventoryDragEvent event) {
++      ArmorType armorType = ArmorType.matchType(event.getOldCursor());
++      if (!event.getRawSlots().isEmpty()) {
++         if (event.getInventory() instanceof PlayerInventory) {
++            if (armorType != null && armorType.getSlot() == event.getRawSlots().stream().findFirst().orElse(0)) {
++               ArmorEquipEvent armorEquipEvent = new ArmorEquipEvent((Player)event.getWhoClicked(), ArmorEquipEvent.EquipMethod.DRAG, armorType, null, event.getOldCursor());
++               this.addToQueue(armorEquipEvent);
++               if (armorEquipEvent.isCancelled()) {
++                  event.setResult(Result.DENY);
++                  event.setCancelled(true);
+                }
+             }
+          }
+@@ -385,28 +378,28 @@
+    @EventHandler(
+       priority = EventPriority.HIGHEST
+    )
+-   public void itemBreakEvent(PlayerItemBreakEvent var1) {
+-      ArmorType var2 = ArmorType.matchType(var1.getBrokenItem());
+-      if (var2 != null) {
+-         Player var3 = var1.getPlayer();
+-         ArmorEquipEvent var4 = new ArmorEquipEvent(var3, ArmorEquipEvent.EquipMethod.BROKE, var2, var1.getBrokenItem(), null);
+-         Bukkit.getPluginManager().callEvent(var4);
+-         if (var4.isCancelled()) {
+-            ItemStack var5 = var1.getBrokenItem().clone();
+-            var5.setAmount(1);
+-            var5.setDurability((short)(var5.getDurability() - 1));
+-            switch (var2) {
++   public void itemBreakEvent(PlayerItemBreakEvent event) {
++      ArmorType armorType = ArmorType.matchType(event.getBrokenItem());
++      if (armorType != null) {
++         Player player = event.getPlayer();
++         ArmorEquipEvent armorEquipEvent = new ArmorEquipEvent(player, ArmorEquipEvent.EquipMethod.BROKE, armorType, event.getBrokenItem(), null);
++         Bukkit.getPluginManager().callEvent(armorEquipEvent);
++         if (armorEquipEvent.isCancelled()) {
++            ItemStack restoredItem = event.getBrokenItem().clone();
++            restoredItem.setAmount(1);
++            restoredItem.setDurability((short)(restoredItem.getDurability() - 1));
++            switch (armorType) {
+                case HELMET:
+-                  var3.getInventory().setHelmet(var5);
++                  player.getInventory().setHelmet(restoredItem);
+                   break;
+                case CHESTPLATE:
+-                  var3.getInventory().setChestplate(var5);
++                  player.getInventory().setChestplate(restoredItem);
+                   break;
+                case LEGGINGS:
+-                  var3.getInventory().setLeggings(var5);
++                  player.getInventory().setLeggings(restoredItem);
+                   break;
+                case BOOTS:
+-                  var3.getInventory().setBoots(var5);
++                  player.getInventory().setBoots(restoredItem);
+             }
+          }
+       }
+@@ -415,11 +408,11 @@
+    @EventHandler(
+       priority = EventPriority.HIGHEST
+    )
+-   public void playerDeathEvent(PlayerRespawnEvent var1) {
+-      Player var2 = var1.getPlayer();
+-      ArmorType.getArmorContents(var2).forEach((var1x, var2x) -> {
+-         if (ASManager.isValid(var2x)) {
+-            Bukkit.getPluginManager().callEvent(new ArmorEquipEvent(var2, ArmorEquipEvent.EquipMethod.DEATH, var1x, var2x, null));
++   public void playerDeathEvent(PlayerRespawnEvent event) {
++      Player player = event.getPlayer();
++      ArmorType.getArmorContents(player).forEach((armorType, armorPiece) -> {
++         if (ASManager.isValid(armorPiece)) {
++            Bukkit.getPluginManager().callEvent(new ArmorEquipEvent(player, ArmorEquipEvent.EquipMethod.DEATH, armorType, armorPiece, null));
+          }
+       });
+    }

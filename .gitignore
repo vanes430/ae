@@ -6,3 +6,15 @@ src-patched/
 .idea/
 *.log
 tools/vineflower.jar
+
+# Eclipse / JDTLS auto-generated
+.project
+.classpath
+.settings/
+
+# Backup
+patches-backup.zip
+
+# OpenCode / workspace
+.omo/
+.mimocode/

@@ -1,17 +1,15 @@
 From: Folia Compatibility Patch
-Subject: [PATCH 0001] Core: Migrate to GlobalRegionScheduler and AsyncScheduler
+Subject: [PATCH 0001] Core: Folia scheduling migration and cleanup
 
-AE PATCH REASON: Bukkit scheduler incompatible with Folia plugin lifecycle
-AE PATCH FIX: Migrate to GlobalRegionScheduler and AsyncScheduler
+AE PATCH REASON: Bukkit scheduler is incompatible with Folia; SchedulerUtils delegation layer bypasses Folia lifecycle; obfuscated variable names reduce maintainability.
+AE PATCH FIX: Migrate BukkitRunnable and Bukkit.getScheduler() calls to GlobalRegionScheduler/AsyncScheduler. Remove SchedulerUtils import, replace with native Folia scheduling. Rename var1/var2/var3 to meaningful names. Add Registry check and ReallyFastBlockHandler import. Remove BlockModifyListener registration.
 AE PATCH RISK: LOW
-AE PATCH EXCLUDES: net/advancedplugins/ae/Core.class, net/advancedplugins/ae/Core$*.class
 
 ---
 diff --git a/net/advancedplugins/ae/Core.java b/net/advancedplugins/ae/Core.java
-index 40e96a0..c346df5 100644
---- a/net/advancedplugins/ae/Core.java
-+++ b/net/advancedplugins/ae/Core.java
-@@ -79,14 +79,14 @@ import net.advancedplugins.ae.impl.effects.handler.BowFullChangeHandler;
+--- a/net/advancedplugins/ae/Core.java	2026-07-30 10:27:31.680350231 +0000
++++ b/net/advancedplugins/ae/Core.java	2026-07-30 10:28:05.837658167 +0000
+@@ -78,14 +78,14 @@
  import net.advancedplugins.ae.impl.effects.handler.PlayerPlacedBlocksHandler;
  import net.advancedplugins.ae.impl.utils.ASManager;
  import net.advancedplugins.ae.impl.utils.EntitySpawnUtils;
@@ -28,7 +26,7 @@ index 40e96a0..c346df5 100644
  import net.advancedplugins.ae.items.HolyWhiteScroll;
  import net.advancedplugins.ae.items.ItemLoader;
  import net.advancedplugins.ae.items.StatTrak;
-@@ -108,7 +108,6 @@ import org.bukkit.plugin.PluginManager;
+@@ -107,7 +107,6 @@
  import org.bukkit.plugin.RegisteredServiceProvider;
  import org.bukkit.plugin.java.JavaPlugin;
  import org.bukkit.plugin.java.JavaPluginLoader;
@@ -36,7 +34,7 @@ index 40e96a0..c346df5 100644
  
  public class Core extends JavaPlugin {
     private static Core instance;
-@@ -130,15 +129,14 @@ public class Core extends JavaPlugin {
+@@ -129,15 +128,14 @@
     private boolean lastTime = false;
  
     public void onEnable() {
@@ -55,7 +53,7 @@ index 40e96a0..c346df5 100644
        }
  
        YamlFile.ANVIL.getFile();
-@@ -166,22 +164,22 @@ public class Core extends JavaPlugin {
+@@ -165,22 +163,22 @@
              populationHandler = new PopulationHandler(getInstance());
           }
  
@@ -82,7 +80,7 @@ index 40e96a0..c346df5 100644
              TinkererInventory.init();
              new AlchemistInventory();
           }, 15L);
-@@ -199,7 +197,7 @@ public class Core extends JavaPlugin {
+@@ -198,7 +196,7 @@
           }
  
           effectsHandler = new EffectsHandler("ae", this, new ItemEnchantsReader());
@@ -91,7 +89,7 @@ index 40e96a0..c346df5 100644
              AEnchantmentSorting.start();
              AEnchants.initializeEnchantsListBlacklist();
           }, 40L);
-@@ -210,52 +208,52 @@ public class Core extends JavaPlugin {
+@@ -209,52 +207,52 @@
           GKits.setStatus(YamlFile.GKITS.getBoolean("gkits-enabled"));
  
           try {
@@ -143,7 +141,7 @@ index 40e96a0..c346df5 100644
  
 -            var4.register("aegive", new AEGiveCommand("aegive"));
 -            var4.register("advancedsets", new SetsCommand());
--            var5 = ((String)GKitsCommand.getGkitCommand().get(0)).replace("/", "");
+-            var5 = GKitsCommand.getGkitCommand().get(0).replace("/", "");
 +            commandMap.register("aegive", new AEGiveCommand("aegive"));
 +            commandMap.register("advancedsets", new SetsCommand());
 +            command = ((String)GKitsCommand.getGkitCommand().get(0)).replace("/", "");
@@ -172,7 +170,7 @@ index 40e96a0..c346df5 100644
           }
  
           this.getCommand("AdvancedEnchantments").setExecutor(new MainCommand());
-@@ -266,14 +264,26 @@ public class Core extends JavaPlugin {
+@@ -265,14 +263,26 @@
              instance.getLogger().info("Successfully hooked into economy plugin (Vault)");
           }
  
@@ -205,7 +203,7 @@ index 40e96a0..c346df5 100644
           this.registerListeners();
           if (HooksHandler.getHook(HookPlugin.PLACEHOLDERAPI) != null) {
              new PapiPlaceholders().register();
-@@ -284,9 +294,9 @@ public class Core extends JavaPlugin {
+@@ -283,9 +293,9 @@
     private void onPostLoad() {
        if (MinecraftVersion.getVersionNumber() >= 1160) {
           if (getPopulationHandler().getRandomLootMap().isEnabled()) {
@@ -218,7 +216,7 @@ index 40e96a0..c346df5 100644
              }
           }
  
-@@ -297,53 +307,52 @@ public class Core extends JavaPlugin {
+@@ -296,53 +306,52 @@
     }
  
     private void registerListeners() {
@@ -305,15 +303,15 @@ index 40e96a0..c346df5 100644
        }
  
        if (YamlFile.CONFIG.getBoolean("settings.grindstones-remove-custom-enchants", true) && MinecraftVersion.getVersionNumber() >= 1160) {
--         var1.registerEvents(new SpigotListener(), instance);
-+         p.registerEvents(new SpigotListener(), instance);
+-         var1.registerEvents(new GrindstoneListener.SpigotListener(), instance);
++         p.registerEvents(new GrindstoneListener.SpigotListener(), instance);
           if (MinecraftVersion.getVersionNumber() >= 1180) {
--            var1.registerEvents(new Grindstone1_18_Listener(), instance);
-+            p.registerEvents(new Grindstone1_18_Listener(), instance);
+-            var1.registerEvents(new GrindstoneListener.Grindstone1_18_Listener(), instance);
++            p.registerEvents(new GrindstoneListener.Grindstone1_18_Listener(), instance);
           }
        }
     }
-@@ -356,14 +365,15 @@ public class Core extends JavaPlugin {
+@@ -355,14 +364,15 @@
        return whiteScroll;
     }
  
@@ -332,7 +330,7 @@ index 40e96a0..c346df5 100644
        effectsHandler.unload();
     }
  
-@@ -371,47 +381,47 @@ public class Core extends JavaPlugin {
+@@ -370,47 +380,47 @@
        return itemLoader;
     }
  
@@ -397,4 +395,3 @@ index 40e96a0..c346df5 100644
     }
  
     public static Core getInstance() {
-

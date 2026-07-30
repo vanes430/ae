@@ -1,0 +1,111 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0025] MinecraftVersion: Fix version parsing and remove lombok
+
+AE PATCH REASON: Minecraft version parsing fails on some server versions (Paper/Folia) where NMS package name format differs. @Generated lombok annotations add unnecessary noise.
+AE PATCH FIX: Replace fallback version parsing with regex-based extraction of MC version from Bukkit.getVersion() string. Add fallback to MC1_21_R7 for unknown versions with informative log message. Remove @Generated annotations from accessor methods.
+AE PATCH RISK: LOW
+
+---
+diff --git a/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java b/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java
+--- a/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java	2026-07-30 10:27:31.677350204 +0000
++++ b/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java	2026-07-30 10:28:05.923658942 +0000
+@@ -3,7 +3,6 @@
+ import java.util.HashMap;
+ import java.util.Map;
+ import java.util.Map.Entry;
+-import lombok.Generated;
+ import org.bukkit.Bukkit;
+ import org.bukkit.plugin.java.JavaPlugin;
+ 
+@@ -87,33 +86,26 @@
+          return version;
+       } else {
+          try {
+-            String var0 = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+-            version = valueOf(var0.replace("v", "MC"));
+-         } catch (Exception var5) {
+-            String var1 = Bukkit.getServer().getBukkitVersion().split("-")[0];
+-            Bukkit.getServer().getLogger().info("Found Minecraft: " + var1 + "! Trying to find NMS support");
+-            version = VERSION_TO_REVISION.get(var1);
+-            if (version == null) {
+-               String var2 = var1.split("\\.build")[0];
+-
+-               for (Entry var4 : VERSION_TO_REVISION.entrySet()) {
+-                  if (var2.startsWith((String)var4.getKey())
+-                     && (version == null || ((MinecraftVersion)var4.getValue()).getVersionId() > version.getVersionId())) {
+-                     version = (MinecraftVersion)var4.getValue();
+-                  }
+-               }
++            String ver = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
++            version = valueOf(ver.replace("v", "MC"));
++         } catch (Exception e) {
++            String bukkitVer = Bukkit.getVersion();
++            String mcVer = null;
++            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("MC:\\s*([0-9]+\\.[0-9]+(?:\\.[0-9]+)?)").matcher(bukkitVer);
++            if (matcher.find()) {
++               mcVer = matcher.group(1);
+             }
+-
+-            if (version == null) {
+-               version = Unknown;
++            if (mcVer == null) {
++               mcVer = Bukkit.getServer().getBukkitVersion().split("-")[0];
++            }
++            version = VERSION_TO_REVISION.getOrDefault(mcVer, Unknown);
++            if (version == Unknown) {
++               version = MC1_21_R7;
++               Bukkit.getServer().getLogger().info("[AdvancedEnchantments] Unknown Minecraft version pattern (" + Bukkit.getServer().getBukkitVersion() + "), falling back to MC1_21_R7.");
+             }
+          }
+ 
+          isPaper = Package.getPackage("com.destroystokyo.paper") != null;
+-         if (version == Unknown) {
+-            Bukkit.getServer().getLogger().warning("You are using invalid version of Minecraft [" + Bukkit.getServer().getBukkitVersion() + "]! Disabling...");
+-         }
+-
+          return version;
+       }
+    }
+@@ -144,7 +136,7 @@
+       } else {
+          try {
+             hasGsonSupport = true;
+-         } catch (Exception var1) {
++         } catch (Exception e) {
+             hasGsonSupport = false;
+          }
+ 
+@@ -152,28 +144,25 @@
+       }
+    }
+ 
+-   public static boolean isAtLeastVersion(MinecraftVersion var0) {
+-      return getVersion().getVersionId() >= var0.getVersionId();
++   public static boolean isAtLeastVersion(MinecraftVersion version) {
++      return getVersion().getVersionId() >= version.getVersionId();
+    }
+ 
+-   public static boolean isNewerThan(MinecraftVersion var0) {
+-      return getVersion().getVersionId() > var0.getVersionId();
++   public static boolean isNewerThan(MinecraftVersion version) {
++      return getVersion().getVersionId() > version.getVersionId();
+    }
+ 
+-   public static void disableDuplicateUUIDReporting(JavaPlugin var0) {
++   public static void disableDuplicateUUIDReporting(JavaPlugin plugin) {
+    }
+ 
+-   @Generated
+    public int getVersionId() {
+       return this.versionId;
+    }
+ 
+-   @Generated
+    public boolean isMojangMapping() {
+       return this.mojangMapping;
+    }
+ 
+-   @Generated
+    public static MinecraftVersion getVersion() {
+       return version;
+    }
