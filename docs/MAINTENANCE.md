@@ -20,10 +20,9 @@ ae/
 ├── src-patched/           # Decompiled + patches applied (hand-edit here for fixes)
 ├── tools/
 │   └── scripts/
-│       ├── decompile.sh           # Extract + decompile the JAR → src-decompiled/
-│       ├── apply-patches.sh       # Copy src-decompiled → src-patched, apply all patches
-│       ├── generate-patch.sh      # Diff 1 file, output patch (for single-file fixes)
-│       └── regenerate-patches.sh  # Diff all changed files, regenerate all patches
+│       ├── decompile_src.sh       # Extract + decompile the JAR → src-decompiled/
+│       ├── apply_patches.sh       # Copy src-decompiled → src-patched, apply all patches
+│       └── generate_patches.sh    # Diff: no args = bulk regenerate, <path> = single file
 └── docs/
 ```
 
@@ -137,9 +136,9 @@ Patches are auto-generated **without** headers — `Subject`, `AE PATCH REASON/F
 
 ## Patch Scripts
 
-### decompile.sh
+### decompile_src.sh
 ```bash
-bash tools/scripts/decompile.sh
+bash tools/scripts/decompile_src.sh
 ```
 - Auto-detects the JAR in `libs/`
 - Auto-downloads Vineflower decompiler to `tools/vineflower.jar` (first run only)
@@ -147,32 +146,30 @@ bash tools/scripts/decompile.sh
 - Stripts shaded libs from decompile output
 - Requires: `java`, `curl`, `jq`, `unzip`
 
-### apply-patches.sh
+### apply_patches.sh
 ```bash
-bash tools/scripts/apply-patches.sh
+bash tools/scripts/apply_patches.sh
 ```
 - Copies `src-decompiled/` → `src-patched/` (nuclear replace)
 - Applies all `patches/*.patch` via `git apply --directory=src-patched`
 - Reports: OK/FAIL per patch, final summary count
 
-### generate-patch.sh (single file)
-```bash
-bash tools/scripts/generate-patch.sh <relative-path>
-```
-- Diffs `src-decompiled/<path>` vs `src-patched/<path>`
-- Outputs patch to stdout with `diff --git` header
-- Example:
-  ```bash
-  bash tools/scripts/generate-patch.sh net/advancedplugins/ae/impl/utils/FoliaScheduler.java > patches/0021-FoliaScheduler.patch
-  ```
+### generate_patches.sh (single or bulk)
 
-### regenerate-patches.sh (bulk)
 ```bash
-bash tools/scripts/regenerate-patches.sh
+# Bulk regenerate all patches (preserves headers):
+bash tools/scripts/generate_patches.sh
+
+# Single file (print patch to stdout):
+bash tools/scripts/generate_patches.sh <relative-path>
 ```
-- Finds all differing files between `src-decompiled/` and `src-patched/`
-- Regenerates every patch from scratch (numbered 0001–NNNN)
-- Old patches are wiped — regenerate AFTER all manual edits in `src-patched/`
+
+- **Bulk mode**: Finds all differing files, regenerates every patch from scratch (numbered 0001–NNNN). Saves old headers before wipe, restores after generation.
+- **Single mode**: Diffs `src-decompiled/<path>` vs `src-patched/<path>`, outputs to stdout with `diff --git` header.
+- Example single mode:
+  ```bash
+  bash tools/scripts/generate_patches.sh net/advancedplugins/ae/impl/utils/FoliaScheduler.java > patches/0021-FoliaScheduler.patch
+  ```
 
 ---
 
@@ -181,10 +178,10 @@ bash tools/scripts/regenerate-patches.sh
 ```
 1. Place new AdvancedEnchantments-<NEWVER>.jar into libs/
 2. Remove old JAR from libs/  (only 1 allowed)
-3. bash tools/scripts/decompile.sh
-4. bash tools/scripts/apply-patches.sh
+3. bash tools/scripts/decompile_src.sh
+4. bash tools/scripts/apply_patches.sh
 5. Fix any FAIL-ed patches manually in src-patched/
-6. bash tools/scripts/regenerate-patches.sh
+6. bash tools/scripts/generate_patches.sh
 7. Check patch headers — auto-restored from old patches. For new patches (no old header), fill Subject, AE PATCH REASON/FIX/RISK manually.
 8. ./gradlew clean build
 9. ./gradlew deploy  (if deploying)

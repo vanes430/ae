@@ -95,6 +95,6 @@ Complete inventory of all 27 Folia compatibility patches. Each patch migrates Bu
 
 ## Patch Generation
 
-Patches are auto-generated via `tools/scripts/generate-patch.sh` or batch-regenerated via `tools/scripts/regenerate-patches.sh`. Headers (Subject, AE PATCH REASON/FIX/RISK) are filled manually.
+Patches are auto-generated via `tools/scripts/generate_patches.sh` (no args = bulk regenerate; with `<path>` = single file). Headers are auto-restored from old patches on regenerate.
 
 Patches apply on top of `src-decompiled/` via `git apply --directory=src-patched`. The `a/` and `b/` paths in each patch are relative to `src-patched/` and `src-decompiled/` respectively.

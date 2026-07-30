@@ -18,10 +18,10 @@ cd ae
 cp /path/to/AdvancedEnchantments-<VERSION>.jar libs/
 
 # 3. Decompile
-bash tools/scripts/decompile.sh
+bash tools/scripts/decompile_src.sh
 
 # 4. Apply patches
-bash tools/scripts/apply-patches.sh
+bash tools/scripts/apply_patches.sh
 
 # 5. Build patched JAR
 ./gradlew clean build
@@ -38,7 +38,7 @@ bash tools/scripts/apply-patches.sh
 |----------|---------|
 | `patches/*.patch` | **27 patch files** — the actual Folia changes. Only source of truth for patching. |
 | `resources/` | Override files (`plugin.yml`, `enchantments.yml`, armor sets, weapons) |
-| `tools/scripts/` | Build scripts (decompile, apply, generate, regenerate) |
+| `tools/scripts/` | 3 scripts: decompile_src.sh, apply_patches.sh, generate_patches.sh |
 | `build.gradle.kts` | Gradle build — version auto-detection, fat JAR assembly |
 | `settings.gradle.kts` | Project name |
 | `gradlew` / `gradlew.bat` | Gradle wrapper |
@@ -82,11 +82,11 @@ Only edit files in **`src-patched/`**. Everything else is either auto-generated 
 ## Daily Maintenance Cycle
 
 ```
-src-patched/  →  regenerate-patches.sh  →  patches/*.patch  →  build
+src-patched/  →  generate_patches.sh  →  patches/*.patch  →  build
 ```
 
 1. **Edit** — modify files in `src-patched/` directly
-2. **Regenerate** — `bash tools/scripts/regenerate-patches.sh`
+2. **Generate** — `bash tools/scripts/generate_patches.sh`
    - Saves old patch headers automatically
    - Generates fresh diffs against `src-decompiled/`
    - Restores headers or creates blank template
@@ -96,7 +96,7 @@ src-patched/  →  regenerate-patches.sh  →  patches/*.patch  →  build
 ### Fresh start (discard all changes)
 
 ```bash
-bash tools/scripts/apply-patches.sh   # re-copies src-decompiled → src-patched, re-applies patches
+bash tools/scripts/apply_patches.sh   # re-copies src-decompiled → src-patched, re-applies patches
 ```
 
 ---
@@ -106,10 +106,10 @@ bash tools/scripts/apply-patches.sh   # re-copies src-decompiled → src-patched
 ```
 1. Place AdvancedEnchantments-<NEWVER>.jar into libs/
 2. Remove old JAR from libs/  (exactly 1 allowed)
-3. bash tools/scripts/decompile.sh
-4. bash tools/scripts/apply-patches.sh
+3. bash tools/scripts/decompile_src.sh
+4. bash tools/scripts/apply_patches.sh
 5. Fix any FAIL-ed patches manually in src-patched/
-6. bash tools/scripts/regenerate-patches.sh
+6. bash tools/scripts/generate_patches.sh
 7. Check patch headers — auto-restored from old patches
 8. ./gradlew clean build
 ```
@@ -126,6 +126,6 @@ ae/
 ├── resources/             # Override files (plugin.yml, etc.)
 ├── src-decompiled/        # Read-only decompiler output
 ├── src-patched/           # Editable source (decompiled + patches applied)
-├── tools/scripts/         # Shell scripts for patch workflow
+├── tools/scripts/         # 3 scripts: decompile_src.sh, apply_patches.sh, generate_patches.sh
 └── docs/                  # Documentation
 ```
