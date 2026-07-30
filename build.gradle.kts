@@ -121,6 +121,27 @@ tasks.named<Jar>("jar") {
 
     // Layer 3: Resource overrides
     from("resources")
+
+    // Post-process: re-pack with `jar cf` so `file` command
+    // detects as "Java archive data (JAR)" not "Zip archive data".
+    // Gradle shadowJar uses ZIP data descriptors that confuse libmagic.
+    doLast {
+        val jarFile = archiveFile.get().asFile
+        val tmpDir = file(temporaryDir).resolve("jarfix")
+        tmpDir.deleteRecursively()
+        tmpDir.mkdirs()
+        copy {
+            from(zipTree(jarFile))
+            into(tmpDir)
+        }
+        val cmd = arrayOf("jar", "cf", jarFile.absolutePath, "-C", tmpDir.absolutePath, ".")
+        val proc = ProcessBuilder(*cmd).inheritIO().start()
+        val exit = proc.waitFor()
+        if (exit != 0) {
+            throw GradleException("jar cf repack failed (exit $exit)")
+        }
+        tmpDir.deleteRecursively()
+    }
 }
 
 // ─── Deploy ───
