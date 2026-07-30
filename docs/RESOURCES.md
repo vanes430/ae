@@ -8,7 +8,6 @@ Files in `resources/` are overlaid onto the patched JAR at build time, replacing
 
 | Path | Purpose |
 |------|---------|
-| `plugin.yml` | Plugin descriptor (may need version bump on upgrade) |
 | `enchantments.yml` | Enchantment definitions, levels, applicable items |
 | `armorSets/` | Custom armor set configurations |
 | `customWeapons/` | Custom weapon configurations |
@@ -63,5 +62,6 @@ Source defines all enchantments, their max levels, and which items they apply to
 
 - **Balance changes** → edit `enchantments.yml` (max levels, applicable items)
 - **New enchantment** → add definition to `enchantments.yml`
-- **Plugin metadata change** → edit `plugin.yml`
 - **Custom armor/weapon set** → add YAML to `armorSets/` or `customWeapons/`
+
+> `plugin.yml` is NOT overridden — `folia-supported: true` is auto-injected during build via `injectFoliaSupport` task.

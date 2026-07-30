@@ -92,9 +92,27 @@ val extractOriginalJar = tasks.register<Copy>("extractOriginalJar") {
     into(extractDir)
 }
 
+// ─── Inject folia-supported: true into plugin.yml ───
+val injectFoliaSupport = tasks.register("injectFoliaSupport") {
+    dependsOn(extractOriginalJar)
+    doLast {
+        val pluginYml = file("${extractDir.get()}/plugin.yml")
+        val content = pluginYml.readText()
+        if (!content.contains("folia-supported:")) {
+            pluginYml.writeText(content.replace(
+                "api-version: \"1.13\"",
+                "api-version: \"1.13\"\nfolia-supported: true"
+            ))
+            println("✅ Injected folia-supported: true into plugin.yml")
+        } else {
+            println("ℹ️  folia-supported already present in plugin.yml, skipping")
+        }
+    }
+}
+
 // ─── Standard Jar Task (Patched) ───
 tasks.named<Jar>("jar") {
-    dependsOn(extractOriginalJar)
+    dependsOn(extractOriginalJar, injectFoliaSupport)
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     archiveFileName.set("AdvancedEnchantments-${detectedVersion}-folia-patched.jar")

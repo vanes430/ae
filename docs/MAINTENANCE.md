@@ -42,7 +42,7 @@ ae/
 3. **jar** — 3-layer fat JAR assembly:
    - Layer 1: Original JAR classes minus patched `.class` files
    - Layer 2: Compiled patched classes override originals
-   - Layer 3: `resources/` overrides (`plugin.yml`, `enchantments.yml`, armor sets, weapons)
+   - Layer 3: `resources/` overrides (`enchantments.yml`, armor sets, weapons). `plugin.yml` gets `folia-supported: true` auto-injected during extraction.
 
 ### Version Detection
 
