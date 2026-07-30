@@ -1,0 +1,131 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0008] DropsHandler: 
+
+AE PATCH REASON: 
+AE PATCH FIX: 
+AE PATCH RISK: 
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/effects/actions/handlers/DropsHandler.java b/net/advancedplugins/ae/impl/effects/effects/actions/handlers/DropsHandler.java
+--- a/net/advancedplugins/ae/impl/effects/effects/actions/handlers/DropsHandler.java	2026-07-30 10:27:31.669350132 +0000
++++ b/net/advancedplugins/ae/impl/effects/effects/actions/handlers/DropsHandler.java	2026-07-30 12:31:14.644227255 +0000
+@@ -8,7 +8,6 @@
+ import java.util.Map.Entry;
+ import java.util.concurrent.ConcurrentHashMap;
+ import java.util.stream.Collectors;
+-import lombok.Generated;
+ import net.advancedplugins.ae.impl.effects.effects.EffectsHandler;
+ import net.advancedplugins.ae.impl.effects.effects.actions.ActionExecutionBuilder;
+ import net.advancedplugins.ae.impl.effects.effects.settings.SettingValues;
+@@ -17,7 +16,6 @@
+ import net.advancedplugins.ae.impl.utils.ItemDurability;
+ import net.advancedplugins.ae.impl.utils.LocalLocation;
+ import net.advancedplugins.ae.impl.utils.ReallyFastBlockHandler;
+-import net.advancedplugins.ae.impl.utils.SchedulerUtils;
+ import net.advancedplugins.ae.impl.utils.abilities.DropsSettings;
+ import net.advancedplugins.ae.impl.utils.abilities.SmeltMaterial;
+ import net.advancedplugins.ae.impl.utils.hooks.HookPlugin;
+@@ -231,35 +229,35 @@
+                }
+ 
+                if (HooksHandler.getHook(HookPlugin.ITEMSADDER) != null) {
+-                  ItemsAdderHook var29 = (ItemsAdderHook)HooksHandler.getHook(HookPlugin.ITEMSADDER);
+-                  Block var35 = ((Location)var7.getKey()).getBlock();
+-                  if (var29.isCustomBlock(var35)) {
+-                     if (var35.hasMetadata("ae_custom_block_break")) {
+-                        var35.removeMetadata("ae_custom_block_break", EffectsHandler.getInstance());
+-                        List var46 = var29.getLootForCustomBlock(this.settings.getTool(), var35);
++                  ItemsAdderHook itemsAdderHook = (ItemsAdderHook)HooksHandler.getHook(HookPlugin.ITEMSADDER);
++                  Block itemsAdderBlock = ((Location)var7.getKey()).getBlock();
++                  if (itemsAdderHook.isCustomBlock(itemsAdderBlock)) {
++                     if (itemsAdderBlock.hasMetadata("ae_custom_block_break")) {
++                        itemsAdderBlock.removeMetadata("ae_custom_block_break", EffectsHandler.getInstance());
++                        List var46 = itemsAdderHook.getLootForCustomBlock(this.settings.getTool(), itemsAdderBlock);
+                         DropsCollection var55 = new DropsCollection();
+                         var55.getParsedItems().addAll(var46);
+                         var7.setValue(var55);
+-                        SchedulerUtils.runTaskLater(() -> var29.removeBlock(var35));
++                        Bukkit.getRegionScheduler().runDelayed(EffectsHandler.getInstance(), itemsAdderBlock.getLocation(), scheduledTask -> itemsAdderHook.removeBlock(itemsAdderBlock), 1L);
+                         continue;
+                      }
+ 
+-                     if (var35.hasMetadata("ae-skip-trigger") || this.settings.isSmelt()) {
++                      if (itemsAdderBlock.hasMetadata("ae-skip-trigger") || this.settings.isSmelt()) {
+                         continue;
+                      }
+                   }
+                }
+ 
+                if (HooksHandler.getHook(HookPlugin.ORAXEN) != null) {
+-                  OraxenHook var30 = (OraxenHook)HooksHandler.getHook(HookPlugin.ORAXEN);
+-                  Block var36 = ((Location)var7.getKey()).getBlock();
+-                  if (var30.isCustomBlock(var36) && var36.hasMetadata("ae_custom_block_break")) {
+-                     var36.removeMetadata("ae_custom_block_break", EffectsHandler.getInstance());
+-                     List var45 = var30.getLootForCustomBlock(var36);
++                  OraxenHook oraxenHook = (OraxenHook)HooksHandler.getHook(HookPlugin.ORAXEN);
++                  Block oraxenBlock = ((Location)var7.getKey()).getBlock();
++                  if (oraxenHook.isCustomBlock(oraxenBlock) && oraxenBlock.hasMetadata("ae_custom_block_break")) {
++                     oraxenBlock.removeMetadata("ae_custom_block_break", EffectsHandler.getInstance());
++                     List var45 = oraxenHook.getLootForCustomBlock(oraxenBlock);
+                      DropsCollection var54 = new DropsCollection();
+                      var54.getParsedItems().addAll(var45);
+                      var7.setValue(var54);
+-                     SchedulerUtils.runTaskLater(() -> var30.removeBlock(var36));
++                     Bukkit.getRegionScheduler().runDelayed(EffectsHandler.getInstance(), oraxenBlock.getLocation(), scheduledTask -> oraxenHook.removeBlock(oraxenBlock), 1L);
+                      continue;
+                   }
+                }
+@@ -353,7 +351,7 @@
+                               this.handleTallBlock(var8.getBlock());
+                            }
+ 
+-                           if (var58.name().equalsIgnoreCase("REDSTONE_WIRE")) {
++                           if (((Material)var58).name().equalsIgnoreCase("REDSTONE_WIRE")) {
+                               var58 = ASManager.matchMaterial("REDSTONE", 1, 0).getType();
+                            }
+ 
+@@ -410,7 +408,7 @@
+                   if (this.settings.isAddToInventory() && var1 instanceof Player) {
+                      if (HooksHandler.isEnabled(HookPlugin.ITEMSADDER)) {
+                         ItemsAdderHook var42 = (ItemsAdderHook)HooksHandler.getHook(HookPlugin.ITEMSADDER);
+-                        ArrayList var52 = new ArrayList();
++                        ArrayList<Location> var52 = new ArrayList<>();
+                         this.dropsMap
+                            .keySet()
+                            .stream()
+@@ -429,7 +427,7 @@
+ 
+                      if (HooksHandler.isEnabled(HookPlugin.ORAXEN)) {
+                         OraxenHook var43 = (OraxenHook)HooksHandler.getHook(HookPlugin.ORAXEN);
+-                        ArrayList var53 = new ArrayList();
++                        ArrayList<Location> var53 = new ArrayList<>();
+                         this.dropsMap
+                            .keySet()
+                            .stream()
+@@ -521,7 +519,7 @@
+             }
+          }
+ 
+-         List var6 = Arrays.stream(var4).filter(var1x -> {
++         List<Block> var6 = Arrays.stream(var4).filter(var1x -> {
+             if (this.builder.getEvent() instanceof BlockBreakEvent var2x && var2x.getBlock().equals(var1x)) {
+                return false;
+             }
+@@ -596,17 +594,14 @@
+       this.dropsMap.remove(var1.getLocation());
+    }
+ 
+-   @Generated
+    public DropsSettings getSettings() {
+       return this.settings;
+    }
+ 
+-   @Generated
+    public ConcurrentHashMap<Location, DropsCollection> getDropsMap() {
+       return this.dropsMap;
+    }
+ 
+-   @Generated
+    public void setBuilder(ActionExecutionBuilder var1) {
+       this.builder = var1;
+    }

@@ -1,0 +1,208 @@
+From: Folia Compatibility Patch
+Subject: [PATCH] WaterWalkerEffect: Replace Bukkit.getScheduler().runTaskLater with native Folia schedulers
+
+AE PATCH REASON: Bukkit.getScheduler().runTaskLater makes code incompatible with Folia region-threaded architecture and crashes at runtime (UnsupportedOperationException from stripped SchedulerUtils or direct Bukkit.getScheduler() call rejected by Folia).
+AE PATCH FIX: Replace Bukkit.getScheduler().runTaskLater and cancelTask with native Folia Bukkit.getRegionScheduler().runDelayed. Remove dead removalTasks/clearQueue code. Replace HashMap with ConcurrentHashMap. Rename obfuscated vars.
+AE PATCH RISK: LOW - MIGRATE: Bukkit scheduler → RegionScheduler. DROP: dead code. THREAD: ConcurrentHashMap. RF: var rename. No behavior change.
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/WaterWalkerEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/WaterWalkerEffect.java
+--- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/WaterWalkerEffect.java	2026-07-30 10:27:31.663350078 +0000
++++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/WaterWalkerEffect.java	2026-07-30 12:09:41.913847043 +0000
+@@ -5,12 +5,12 @@
+ import java.util.List;
+ import java.util.Map;
+ import java.util.UUID;
++import java.util.concurrent.ConcurrentHashMap;
+ import net.advancedplugins.ae.impl.effects.effects.EffectsHandler;
+ import net.advancedplugins.ae.impl.effects.effects.actions.execution.ExecutionTask;
+ import net.advancedplugins.ae.impl.effects.effects.effects.AdvancedEffect;
+ import net.advancedplugins.ae.impl.utils.ASManager;
+ import net.advancedplugins.ae.impl.utils.MathUtils;
+-import net.advancedplugins.ae.impl.utils.Pair;
+ import net.advancedplugins.ae.impl.utils.ReallyFastBlockHandler;
+ import net.advancedplugins.ae.impl.utils.hooks.HookPlugin;
+ import net.advancedplugins.ae.impl.utils.hooks.HooksHandler;
+@@ -30,119 +30,96 @@
+ import org.bukkit.plugin.java.JavaPlugin;
+ 
+ public class WaterWalkerEffect extends AdvancedEffect {
+-   public static final HashMap<UUID, Integer> ACTIVATED_USERS = new HashMap<>();
+-   private static final Map<Integer, Pair<Block[], Material>> removalTasks = new HashMap<>();
++   public static final Map<UUID, Integer> ACTIVATED_USERS = new ConcurrentHashMap<>();
+ 
+-   public WaterWalkerEffect(JavaPlugin var1) {
+-      super(var1, "WATER_WALKER", "Walk on water", "%e:<RADIUS>");
++   public WaterWalkerEffect(JavaPlugin plugin) {
++      super(plugin, "WATER_WALKER", "Walk on water", "%e:<RADIUS>");
+       this.addArgument(0, Integer.class);
+    }
+ 
+    @Override
+-   public boolean executeEffect(ExecutionTask var1, LivingEntity var2, String[] var3) {
+-      if (!var1.getBuilder().isPermanent()) {
++   public boolean executeEffect(ExecutionTask task, LivingEntity target, String[] args) {
++      if (!task.getBuilder().isPermanent()) {
+          this.warn(this.getName() + " can only be used as permanent effect.");
+          return false;
+-      } else if (var1.getBuilder().isRemoved()) {
+-         ACTIVATED_USERS.remove(var2.getUniqueId());
++      } else if (task.getBuilder().isRemoved()) {
++         ACTIVATED_USERS.remove(target.getUniqueId());
+          return true;
+       } else {
+-         int var4 = var3.length > 0 ? ASManager.parseInt(var3[0], 2) : 2;
+-         var4 = MathUtils.clamp(var4, 2, 10);
+-         ACTIVATED_USERS.put(var2.getUniqueId(), var4);
++         int radius = args.length > 0 ? ASManager.parseInt(args[0], 2) : 2;
++         radius = MathUtils.clamp(radius, 2, 10);
++         ACTIVATED_USERS.put(target.getUniqueId(), radius);
+          return true;
+       }
+    }
+ 
+    @EventHandler
+-   public void onMove(PlayerMoveEvent var1) {
+-      if (!ACTIVATED_USERS.isEmpty()) {
+-         if (var1.getPlayer().getGameMode() != GameMode.SPECTATOR) {
+-            if (!var1.getPlayer().isFlying()) {
+-               if (!var1.getFrom().getBlock().equals(var1.getTo().getBlock())) {
+-                  if (!ASManager.sameBlock(var1.getFrom(), var1.getTo())) {
+-                     if (ACTIVATED_USERS.containsKey(var1.getPlayer().getUniqueId())) {
+-                        int var2 = ACTIVATED_USERS.get(var1.getPlayer().getUniqueId());
+-                        this.scanBlocks(var1.getPlayer(), var1.getTo(), var2);
+-                     }
+-                  }
+-               }
+-            }
+-         }
+-      }
+-   }
+-
+-   private void scanBlocks(Player var1, Location var2, int var3) {
+-      Location var4 = var2.clone().subtract(0.0, 1.0, 0.0);
+-      Block var5 = var4.getBlock();
+-      ArrayList var6 = new ArrayList();
+-      if (var3 <= 2) {
+-         var6.add(var5);
+-         var6.add(var5.getRelative(BlockFace.NORTH));
+-         var6.add(var5.getRelative(BlockFace.EAST));
+-         var6.add(var5.getRelative(BlockFace.SOUTH));
+-         var6.add(var5.getRelative(BlockFace.WEST));
++   public void onMove(PlayerMoveEvent event) {
++      if (ACTIVATED_USERS.isEmpty()) return;
++      Player player = event.getPlayer();
++      if (player.getGameMode() == GameMode.SPECTATOR || player.isFlying()) return;
++      if (event.getFrom().getBlock().equals(event.getTo().getBlock())) return;
++      if (ASManager.sameBlock(event.getFrom(), event.getTo())) return;
++      if (!ACTIVATED_USERS.containsKey(player.getUniqueId())) return;
++
++      int radius = ACTIVATED_USERS.get(player.getUniqueId());
++      scanBlocks(player, event.getTo(), radius);
++   }
++
++   private void scanBlocks(Player player, Location to, int radius) {
++      Location below = to.clone().subtract(0.0, 1.0, 0.0);
++      Block center = below.getBlock();
++      List<Block> candidates = new ArrayList<>();
++      if (radius <= 2) {
++         candidates.add(center);
++         candidates.add(center.getRelative(BlockFace.NORTH));
++         candidates.add(center.getRelative(BlockFace.EAST));
++         candidates.add(center.getRelative(BlockFace.SOUTH));
++         candidates.add(center.getRelative(BlockFace.WEST));
+       } else {
+-         int var7 = var4.getBlockX();
+-         int var8 = var4.getBlockY();
+-         int var9 = var4.getBlockZ();
+-         World var10 = var4.getWorld();
+-         int var11 = var3 * var3;
+-
+-         for (int var12 = var7 - var3; var12 <= var7 + var3; var12++) {
+-            for (int var13 = var9 - var3; var13 <= var9 + var3; var13++) {
+-               if ((var7 - var12) * (var7 - var12) + (var9 - var13) * (var9 - var13) <= var11) {
+-                  var6.add(var10.getBlockAt(var12, var8, var13));
++         int bx = below.getBlockX();
++         int by = below.getBlockY();
++         int bz = below.getBlockZ();
++         World world = below.getWorld();
++         int radiusSq = radius * radius;
++         for (int x = bx - radius; x <= bx + radius; x++) {
++            for (int z = bz - radius; z <= bz + radius; z++) {
++               if ((bx - x) * (bx - x) + (bz - z) * (bz - z) <= radiusSq) {
++                  candidates.add(world.getBlockAt(x, by, z));
+                }
+             }
+          }
+       }
+-
+-      this.checkAndSet(var1, var6, "WATER");
++      checkAndSet(player, candidates, "WATER");
+    }
+ 
+-   private void checkAndSet(Player var1, List<Block> var2, String var3) {
++   private void checkAndSet(Player player, List<Block> candidates, String typeSuffix) {
+       if (HooksHandler.isEnabled(HookPlugin.FACTIONS)) {
+-         String var4 = ((FactionsPluginHook)HooksHandler.getHook(HookPlugin.FACTIONS)).getRelationOfLand(var1);
+-         if (!var4.equalsIgnoreCase("Wilderness") && !var4.equalsIgnoreCase("null") && !var4.equalsIgnoreCase("neutral")) {
++         String relation = ((FactionsPluginHook)HooksHandler.getHook(HookPlugin.FACTIONS)).getRelationOfLand(player);
++         if (!relation.equalsIgnoreCase("Wilderness") && !relation.equalsIgnoreCase("null") && !relation.equalsIgnoreCase("neutral")) {
+             return;
+          }
+       }
+-
+-      var2.removeIf(
+-         var2x -> !var2x.isLiquid()
+-               || !var2x.getType().name().endsWith(var3)
+-               || var2x.getData() != 0
+-               || !EffectsHandler.getProtection().canBreak(var2x.getLocation(), var1)
+-               || var2x.getRelative(BlockFace.UP).getType().name().equals("LILY_PAD")
++      candidates.removeIf(block ->
++         !block.isLiquid()
++         || !block.getType().name().endsWith(typeSuffix)
++         || block.getData() != 0
++         || !EffectsHandler.getProtection().canBreak(block.getLocation(), player)
++         || block.getRelative(BlockFace.UP).getType().name().equals("LILY_PAD")
+       );
+-      if (!var2.isEmpty()) {
+-         for (Block var5 : var2) {
+-            var5.setMetadata("cancelBreak", new FixedMetadataValue(EffectsHandler.getInstance(), true));
+-         }
+-
+-         Block[] var7 = var2.toArray(new Block[0]);
+-         this.removeBlockLater(var7, ((Block)var2.get(0)).getType());
+-         ReallyFastBlockHandler.getForWorld(var1.getWorld()).setType(Material.OBSIDIAN, var7);
++      if (candidates.isEmpty()) return;
++      for (Block block : candidates) {
++         block.setMetadata("cancelBreak", new FixedMetadataValue(EffectsHandler.getInstance(), true));
+       }
+-   }
+-
+-   private void removeBlockLater(Block[] var1, Material var2) {
+-      int var3 = Bukkit.getScheduler().runTaskLater(EffectsHandler.getInstance(), () -> {
+-         ReallyFastBlockHandler.getForWorld(var1[0].getWorld()).setType(var2, var1);
+-
+-         for (Block var5 : var1) {
+-            var5.getChunk().load(true);
+-            var5.removeMetadata("cancelBreak", EffectsHandler.getInstance());
++      Block[] targetBlocks = candidates.toArray(new Block[0]);
++      Material originalType = candidates.get(0).getType();
++      Location loc = candidates.get(0).getLocation();
++      Bukkit.getRegionScheduler().runDelayed(EffectsHandler.getInstance(), loc, scheduledTask -> {
++         ReallyFastBlockHandler.getForWorld(player.getWorld()).setType(originalType, targetBlocks);
++         for (Block block : targetBlocks) {
++            block.removeMetadata("cancelBreak", EffectsHandler.getInstance());
+          }
+-      }, 100L).getTaskId();
+-      removalTasks.remove(var3);
+-   }
+-
+-   public static void clearQueue() {
+-      removalTasks.forEach((var0, var1) -> {
+-         Bukkit.getScheduler().cancelTask(var0);
+-         ReallyFastBlockHandler.getForWorld(var1.getKey()[0].getWorld()).setType(var1.getValue(), var1.getKey());
+-      });
++      }, 100L);
++      ReallyFastBlockHandler.getForWorld(player.getWorld()).setType(Material.OBSIDIAN, targetBlocks);
+    }
+ }

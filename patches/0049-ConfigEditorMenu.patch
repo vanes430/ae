@@ -1,0 +1,71 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0050] ConfigEditorMenu: 
+
+AE PATCH REASON: 
+AE PATCH FIX: 
+AE PATCH RISK: 
+
+---
+diff --git a/net/advancedplugins/ae/impl/utils/editor/ConfigEditorMenu.java b/net/advancedplugins/ae/impl/utils/editor/ConfigEditorMenu.java
+--- a/net/advancedplugins/ae/impl/utils/editor/ConfigEditorMenu.java	2026-07-30 10:27:31.675350186 +0000
++++ b/net/advancedplugins/ae/impl/utils/editor/ConfigEditorMenu.java	2026-07-30 12:29:24.290246662 +0000
+@@ -3,10 +3,10 @@
+ import java.util.LinkedList;
+ import java.util.List;
+ import java.util.concurrent.ThreadLocalRandom;
+-import lombok.Generated;
++import net.advancedplugins.ae.impl.effects.effects.EffectsHandler;
+ import net.advancedplugins.ae.impl.utils.ASManager;
+-import net.advancedplugins.ae.impl.utils.SchedulerUtils;
+ import net.advancedplugins.ae.impl.utils.SkullCreator;
++import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
+ import net.advancedplugins.ae.impl.utils.items.ItemBuilder;
+ import net.advancedplugins.ae.impl.utils.items.ItemFlagFix;
+ import net.advancedplugins.ae.impl.utils.nbt.NBTapi;
+@@ -45,7 +45,7 @@
+    public void open() {
+       this.inv = Bukkit.createInventory(null, 54, Text.modify(this.inventoryName));
+       this.inv.setMaxStackSize(ThreadLocalRandom.current().nextInt(64, 256));
+-      List var1 = this.keyInfos.subList(this.page * 45, Math.min((this.page + 1) * 45, this.keyInfos.size()));
++      List<KeyInfo> var1 = this.keyInfos.subList(this.page * 45, Math.min((this.page + 1) * 45, this.keyInfos.size()));
+       int var2 = 1;
+ 
+       for (KeyInfo var4 : var1) {
+@@ -143,18 +143,18 @@
+    }
+ 
+    @EventHandler
+-   public void onCreate(AsyncPlayerChatEvent var1) {
+-      if (this.creatingNew && var1.getPlayer().equals(this.editor)) {
++   public void onCreate(AsyncPlayerChatEvent event) {
++      if (this.creatingNew && event.getPlayer().equals(this.editor)) {
+          this.creatingNew = false;
+-         var1.setCancelled(true);
++         event.setCancelled(true);
+          HandlerList.unregisterAll(this);
+-         String var2 = var1.getMessage();
+-         if (var2.equalsIgnoreCase("cancel")) {
++         String name = event.getMessage();
++         if (name.equalsIgnoreCase("cancel")) {
+             this.editor.sendMessage(Text.modify("cancelled"));
+             return;
+          }
+ 
+-         SchedulerUtils.runTask(() -> handler.create(var2, this.editor).open());
++         this.editor.getScheduler().run(EffectsHandler.getInstance(), task -> handler.create(name, this.editor).open(), null);
+       }
+    }
+ 
+@@ -188,12 +188,10 @@
+       }
+    }
+ 
+-   @Generated
+    public static ConfigEditorHandler getHandler() {
+       return handler;
+    }
+ 
+-   @Generated
+    public static void setHandler(ConfigEditorHandler var0) {
+       handler = var0;
+    }

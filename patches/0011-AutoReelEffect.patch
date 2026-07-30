@@ -1,0 +1,57 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0011] AutoReelEffect: 
+
+AE PATCH REASON: 
+AE PATCH FIX: 
+AE PATCH RISK: 
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/AutoReelEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/AutoReelEffect.java
+--- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/AutoReelEffect.java	2026-07-30 10:27:31.664350087 +0000
++++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/AutoReelEffect.java	2026-07-30 12:20:09.415331044 +0000
+@@ -5,9 +5,9 @@
+ import java.lang.reflect.Method;
+ import java.util.UUID;
+ import java.util.concurrent.TimeUnit;
++import net.advancedplugins.ae.impl.effects.effects.EffectsHandler;
+ import net.advancedplugins.ae.impl.effects.effects.actions.execution.ExecutionTask;
+ import net.advancedplugins.ae.impl.effects.effects.effects.AdvancedEffect;
+-import net.advancedplugins.ae.impl.utils.SchedulerUtils;
+ import org.bukkit.Bukkit;
+ import org.bukkit.Location;
+ import org.bukkit.Material;
+@@ -56,20 +56,20 @@
+       }
+    }
+ 
+-   private void anchorHook(PlayerFishEvent var1) {
+-      if (var1.getState() == State.BITE) {
+-         Player var2 = var1.getPlayer();
+-         UUID var3 = var1.getPlayer().getUniqueId();
+-         this.cache.put(var3, true);
+-         FishHook var4 = var1.getHook();
+-         SchedulerUtils.runTask(() -> {
+-            this.cache.invalidate(var3);
+-            this.retrieveHook(var2, var4, var1.getHand());
+-            Entity var5 = var4.getHookedEntity();
+-            State var6 = var5 instanceof Fish ? State.CAUGHT_FISH : State.CAUGHT_ENTITY;
+-            PlayerFishEvent var7 = new PlayerFishEvent(var2, var5, var4, var6);
+-            Bukkit.getPluginManager().callEvent(var7);
+-         });
++   private void anchorHook(PlayerFishEvent event) {
++      if (event.getState() == State.BITE) {
++         Player player = event.getPlayer();
++         UUID playerUuid = player.getUniqueId();
++         this.cache.put(playerUuid, true);
++         FishHook hook = event.getHook();
++         player.getScheduler().run(EffectsHandler.getInstance(), scheduledTask -> {
++            this.cache.invalidate(playerUuid);
++            this.retrieveHook(player, hook, event.getHand());
++            Entity hookedEntity = hook.getHookedEntity();
++            State catchState = hookedEntity instanceof Fish ? State.CAUGHT_FISH : State.CAUGHT_ENTITY;
++            PlayerFishEvent catchEvent = new PlayerFishEvent(player, hookedEntity, hook, catchState);
++            Bukkit.getPluginManager().callEvent(catchEvent);
++         }, null);
+       }
+    }
+ 

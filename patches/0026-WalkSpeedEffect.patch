@@ -1,0 +1,91 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0026] WalkSpeedEffect: 
+
+AE PATCH REASON: 
+AE PATCH FIX: 
+AE PATCH RISK: 
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/WalkSpeedEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/WalkSpeedEffect.java
+--- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/WalkSpeedEffect.java	2026-07-30 10:27:31.664350087 +0000
++++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/WalkSpeedEffect.java	2026-07-30 12:20:21.854440827 +0000
+@@ -5,8 +5,8 @@
+ import java.util.UUID;
+ import net.advancedplugins.ae.impl.effects.effects.actions.execution.ExecutionTask;
+ import net.advancedplugins.ae.impl.effects.effects.effects.AdvancedEffect;
++import net.advancedplugins.ae.impl.effects.effects.EffectsHandler;
+ import net.advancedplugins.ae.impl.utils.ASManager;
+-import net.advancedplugins.ae.impl.utils.SchedulerUtils;
+ import org.bukkit.entity.LivingEntity;
+ import org.bukkit.entity.Player;
+ import org.bukkit.event.EventHandler;
+@@ -24,46 +24,46 @@
+    }
+ 
+    @Override
+-   public boolean executeEffect(ExecutionTask var1, LivingEntity var2, String[] var3) {
+-      if (!(var2 instanceof Player)) {
++   public boolean executeEffect(ExecutionTask task, LivingEntity entity, String[] args) {
++      if (!(entity instanceof Player)) {
+          return false;
+-      } else if (var3.length < 1) {
++      } else if (args.length < 1) {
+          return false;
+       } else {
+-         Player var4 = (Player)var2;
+-         float var5 = Float.parseFloat(var3[0]);
+-         if (var1.getBuilder().isPermanent() && var3.length == 1) {
+-            if (var1.getBuilder().isRemoved()) {
+-               var4.setWalkSpeed(0.2F);
++         Player player = (Player)entity;
++         float speed = Float.parseFloat(args[0]);
++         if (task.getBuilder().isPermanent() && args.length == 1) {
++            if (task.getBuilder().isRemoved()) {
++               player.setWalkSpeed(0.2F);
+             } else {
+-               var4.setWalkSpeed(var5);
++               player.setWalkSpeed(speed);
+             }
+ 
+             return true;
+-         } else if (var3.length >= 2) {
+-            if (var1.getBuilder().isPermanent() && var1.getBuilder().isRemoved()) {
+-               var4.setWalkSpeed(0.2F);
++         } else if (args.length >= 2) {
++            if (task.getBuilder().isPermanent() && task.getBuilder().isRemoved()) {
++               player.setWalkSpeed(0.2F);
+                return true;
+             } else {
+-               long var6 = (long)ASManager.parseInt(var3[1]) / 20L * 1000L;
+-               if (var4.isFlying()) {
+-                  long var8 = this.speedDuration.getOrDefault(var4.getUniqueId(), 0L);
+-                  if (var8 > System.currentTimeMillis()) {
++               long durationMs = (long)ASManager.parseInt(args[1]) / 20L * 1000L;
++               if (player.isFlying()) {
++                  long endTime = this.speedDuration.getOrDefault(player.getUniqueId(), 0L);
++                  if (endTime > System.currentTimeMillis()) {
+                      return true;
+                   }
+                } else {
+-                  this.speedDuration.put(var4.getUniqueId(), System.currentTimeMillis() + var6);
++                  this.speedDuration.put(player.getUniqueId(), System.currentTimeMillis() + durationMs);
+                }
+ 
+-               SchedulerUtils.runTaskLater(() -> {
+-                  this.speedDuration.remove(var4.getUniqueId());
+-                  var4.setWalkSpeed(0.2F);
+-               }, var6 / 50L);
+-               var4.setWalkSpeed(var5);
++               player.getScheduler().runDelayed(EffectsHandler.getInstance(), schedulerTask -> {
++                  this.speedDuration.remove(player.getUniqueId());
++                  player.setWalkSpeed(0.2F);
++               }, null, durationMs / 50L);
++               player.setWalkSpeed(speed);
+                return true;
+             }
+          } else {
+-            var4.setWalkSpeed(var5);
++            player.setWalkSpeed(speed);
+             return true;
+          }
+       }

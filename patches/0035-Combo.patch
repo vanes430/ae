@@ -1,0 +1,86 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0035] Combo: 
+
+AE PATCH REASON: 
+AE PATCH FIX: 
+AE PATCH RISK: 
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/effects/utils/Combo.java b/net/advancedplugins/ae/impl/effects/effects/utils/Combo.java
+--- a/net/advancedplugins/ae/impl/effects/effects/utils/Combo.java	2026-07-30 10:27:31.669350132 +0000
++++ b/net/advancedplugins/ae/impl/effects/effects/utils/Combo.java	2026-07-30 12:27:56.994471457 +0000
+@@ -2,41 +2,41 @@
+ 
+ import java.util.HashMap;
+ import java.util.UUID;
+-import lombok.Generated;
+-import net.advancedplugins.ae.impl.utils.SchedulerUtils;
++import java.util.concurrent.TimeUnit;
++import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
++import net.advancedplugins.ae.impl.effects.effects.EffectsHandler;
++import org.bukkit.Bukkit;
+ 
+ public final class Combo {
+    private static final HashMap<UUID, Combo.ComboEntry> combos = new HashMap<>();
+ 
+-   public static void add(UUID var0) {
+-      combos.computeIfAbsent(var0, var0x -> new Combo.ComboEntry(0, System.currentTimeMillis())).combo++;
+-   }
+-
+-   public static int getCombos(UUID var0) {
+-      return !combos.containsKey(var0) ? 0 : combos.get(var0).combo;
+-   }
+-
+-   public static void endCombos(UUID var0) {
+-      combos.remove(var0);
+-   }
+-
+-   @Generated
+-   private Combo() {
+-      throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+-   }
+-
+-   static {
+-      SchedulerUtils.runTaskTimerAsync(() -> combos.entrySet().removeIf(var0 -> System.currentTimeMillis() - var0.getValue().insertTime > 2000L), 20L, 20L);
+-   }
+-
+-   private static class ComboEntry {
+-      private int combo;
+-      private final long insertTime;
+-
+-      @Generated
+-      public ComboEntry(int var1, long var2) {
+-         this.combo = var1;
+-         this.insertTime = var2;
+-      }
+-   }
++    public static void add(UUID uuid) {
++       combos.computeIfAbsent(uuid, key -> new Combo.ComboEntry(0, System.currentTimeMillis())).combo++;
++    }
++
++    public static int getCombos(UUID uuid) {
++       return !combos.containsKey(uuid) ? 0 : combos.get(uuid).combo;
++    }
++
++    public static void endCombos(UUID uuid) {
++       combos.remove(uuid);
++    }
++
++    private Combo() {
++       throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
++    }
++
++    static {
++       Bukkit.getAsyncScheduler().runAtFixedRate(EffectsHandler.getInstance(), task -> combos.entrySet().removeIf(entry -> System.currentTimeMillis() - entry.getValue().insertTime > 2000L), 1000L, 1000L, TimeUnit.MILLISECONDS);
++    }
++
++    private static class ComboEntry {
++       private int combo;
++       private final long insertTime;
++
++       public ComboEntry(int combo, long insertTime) {
++          this.combo = combo;
++          this.insertTime = insertTime;
++       }
++    }
+ }

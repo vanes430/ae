@@ -1,0 +1,79 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0049] ConfigEditorGui: 
+
+AE PATCH REASON: 
+AE PATCH FIX: 
+AE PATCH RISK: 
+
+---
+diff --git a/net/advancedplugins/ae/impl/utils/editor/ConfigEditorGui.java b/net/advancedplugins/ae/impl/utils/editor/ConfigEditorGui.java
+--- a/net/advancedplugins/ae/impl/utils/editor/ConfigEditorGui.java	2026-07-30 10:27:31.675350186 +0000
++++ b/net/advancedplugins/ae/impl/utils/editor/ConfigEditorGui.java	2026-07-30 12:30:58.493083700 +0000
+@@ -8,10 +8,11 @@
+ import java.util.UUID;
+ import java.util.regex.Pattern;
+ import java.util.stream.Collectors;
++import net.advancedplugins.ae.impl.effects.effects.EffectsHandler;
+ import net.advancedplugins.ae.impl.utils.ASManager;
+ import net.advancedplugins.ae.impl.utils.ColorUtils;
+-import net.advancedplugins.ae.impl.utils.SchedulerUtils;
+ import net.advancedplugins.ae.impl.utils.items.ItemBuilder;
++import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
+ import net.advancedplugins.ae.impl.utils.items.ItemFlagFix;
+ import net.advancedplugins.ae.impl.utils.nbt.NBTapi;
+ import net.advancedplugins.ae.impl.utils.text.Text;
+@@ -73,7 +74,7 @@
+       this.inventory.clear();
+       int var1 = this.page * 27;
+       int var2 = Math.min(var1 + 27, this.config.getConfigurationSection(this.currentSection).getKeys(false).size());
+-      List var3 = new ArrayList(this.config.getConfigurationSection(this.currentSection).getKeys(false)).subList(var1, var2);
++      List<String> var3 = new ArrayList<String>(this.config.getConfigurationSection(this.currentSection).getKeys(false)).subList(var1, var2);
+ 
+       for (int var4 = this.inventory.getSize() - 9; var4 < this.inventory.getSize(); var4++) {
+          this.inventory
+@@ -200,7 +201,7 @@
+    }
+ 
+    private void addListValues(ItemBuilder var1, String var2) {
+-      List var3 = (List)this.config.get(var2);
++      List<String> var3 = (List<String>)this.config.get(var2);
+       var1.addLoreLine(Text.modify("&eCurrent values: "));
+ 
+       for (String var5 : var3) {
+@@ -225,7 +226,7 @@
+    }
+ 
+    private void addSectionValues(ItemBuilder var1, String var2) {
+-      for (String var4 : (List)this.config.getConfigurationSection(var2).getKeys(false).stream().limit(8L).collect(Collectors.toList())) {
++      for (String var4 : (List<String>)this.config.getConfigurationSection(var2).getKeys(false).stream().limit(8L).collect(Collectors.toList())) {
+          Object var5 = this.config.get(var2 + "." + var4);
+          KeyType var6 = KeyType.getKeyType(var5);
+          if (var6 != null) {
+@@ -439,19 +440,19 @@
+    }
+ 
+    @EventHandler
+-   public void onPlayerChat(AsyncPlayerChatEvent var1) {
+-      if (var1.getPlayer().equals(this.editor) && this.editingKey != null) {
+-         SchedulerUtils.runTaskLater(() -> {
+-            if (this.validateInput(var1.getMessage())) {
+-               this.processInput(var1.getMessage());
++   public void onPlayerChat(AsyncPlayerChatEvent event) {
++      if (event.getPlayer().equals(this.editor) && this.editingKey != null) {
++         this.editor.getScheduler().runDelayed(EffectsHandler.getInstance(), task -> {
++            if (this.validateInput(event.getMessage())) {
++               this.processInput(event.getMessage());
+                if (this.enabled) {
+                   this.open();
+                }
+             } else {
+-               this.editor.sendMessage("Invalid input: " + var1.getMessage());
++               this.editor.sendMessage("Invalid input: " + event.getMessage());
+             }
+-         });
+-         var1.setCancelled(true);
++         }, null, 1L);
++         event.setCancelled(true);
+       }
+    }
+ 

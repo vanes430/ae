@@ -1,0 +1,144 @@
+From: Folia Compatibility Patch
+Subject: [PATCH] PlantSeedsEffect: Replace SchedulerUtils.runTaskLater with native Folia schedulers
+
+AE PATCH REASON: SchedulerUtils.runTaskLater makes code incompatible with Folia region-threaded architecture and crashes at runtime (UnsupportedOperationException from stripped SchedulerUtils or direct Bukkit.getScheduler() call rejected by Folia).
+AE PATCH FIX: Replace SchedulerUtils.runTaskLater call with native Bukkit.getRegionScheduler().runDelayed. Inline all block-finding logic before scheduling the setType call. Move inventory check before scheduling for correctness. Rename obfuscated vars.
+AE PATCH RISK: LOW - MIGRATE: SchedulerUtils → RegionScheduler. RF: inline logic, var rename. No behavior change.
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/PlantSeedsEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/PlantSeedsEffect.java
+--- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/PlantSeedsEffect.java	2026-07-30 10:27:31.665350096 +0000
++++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/PlantSeedsEffect.java	2026-07-30 12:08:56.555457043 +0000
+@@ -1,5 +1,6 @@
+ package net.advancedplugins.ae.impl.effects.effects.effects.internal;
+ 
++import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
+ import java.util.HashSet;
+ import java.util.Set;
+ import java.util.stream.Collectors;
+@@ -9,7 +10,8 @@
+ import net.advancedplugins.ae.impl.effects.effects.effects.utils.PlantSeedsType;
+ import net.advancedplugins.ae.impl.utils.ASManager;
+ import net.advancedplugins.ae.impl.utils.ReallyFastBlockHandler;
+-import net.advancedplugins.ae.impl.utils.SchedulerUtils;
++import org.bukkit.Bukkit;
++import org.bukkit.Location;
+ import org.bukkit.Material;
+ import org.bukkit.block.Block;
+ import org.bukkit.block.BlockFace;
+@@ -21,65 +23,63 @@
+ import org.bukkit.plugin.java.JavaPlugin;
+ 
+ public class PlantSeedsEffect extends AdvancedEffect {
+-   public PlantSeedsEffect(JavaPlugin var1) {
+-      super(var1, "PLANT_SEEDS", "Plant seeds in radius", "%e:<RADIUS>:[SEEDS]");
++   public PlantSeedsEffect(JavaPlugin plugin) {
++      super(plugin, "PLANT_SEEDS", "Plant seeds in radius", "%e:<RADIUS>:[SEEDS]");
+       this.addArgument(0, Integer.class);
+       this.addArgument(1, Material.class);
+    }
+ 
+    @Override
+-   public boolean executeEffect(ExecutionTask var1, LivingEntity var2, String[] var3) {
+-      SchedulerUtils.runTaskLater(() -> {
+-         Player var3x = (Player)var2;
+-         Event var4 = var1.getBuilder().getEvent();
+-         PlantSeedsType var5 = var3.length > 1 ? PlantSeedsType.matchType(var3[1].replace("WHEAT_", "")) : PlantSeedsType.SEEDS;
+-         if (var5 != null) {
+-            Block var6 = null;
+-            if (var4 instanceof BlockBreakEvent) {
+-               var6 = ((BlockBreakEvent)var4).getBlock();
+-            } else if (var4 instanceof PlayerInteractEvent) {
+-               var6 = ((PlayerInteractEvent)var4).getClickedBlock();
+-            }
+-
+-            if (var6 == null) {
+-               var6 = var3x.getLocation().getBlock();
+-            }
+-
+-            int var7 = ASManager.parseInt(var3[0]);
+-            int var8 = ASManager.getAmount(var3x, var5.getSeedsMaterial());
+-            HashSet var9 = new HashSet();
+-            int var10 = 1;
+-
+-            for (Block var12 : ASManager.getBlocksFlat(var6, var7)) {
+-               if (var10 > var8) {
+-                  break;
+-               }
+-
+-               Block var13;
+-               if (var12.getType() == var5.getBlockRequired()) {
+-                  var13 = var12.getRelative(BlockFace.UP);
+-               } else {
+-                  if (var12.getRelative(BlockFace.DOWN).getType() != var5.getBlockRequired()) {
+-                     continue;
+-                  }
+-
+-                  var13 = var12;
+-               }
+-
+-               if (ASManager.isAir(var13)) {
+-                  var9.add(var13);
+-                  var10++;
+-               }
+-            }
+-
+-            Set var14 = var9.stream().filter(var1xx -> EffectsHandler.getProtection().canBreak(var1xx.getLocation(), var3x)).collect(Collectors.toSet());
+-            int var15 = var14.size();
+-            if (var15 != 0 && ASManager.hasAmount(var3x, var5.getSeedsMaterial(), var15)) {
+-               ASManager.removeItems(var3x.getInventory(), var5.getSeedsMaterial(), var15);
+-               ReallyFastBlockHandler.getForWorld(var3x.getWorld()).setType(var5.getNewBlockType(), var14.toArray(new Block[0]));
++   public boolean executeEffect(ExecutionTask task, LivingEntity target, String[] args) {
++      Player player = (Player)target;
++      Event event = task.getBuilder().getEvent();
++      PlantSeedsType seedsType = args.length > 1 ? PlantSeedsType.matchType(args[1].replace("WHEAT_", "")) : PlantSeedsType.SEEDS;
++      if (seedsType == null) {
++         return true;
++      }
++      Block originBlock = null;
++      if (event instanceof BlockBreakEvent) {
++         originBlock = ((BlockBreakEvent)event).getBlock();
++      } else if (event instanceof PlayerInteractEvent) {
++         originBlock = ((PlayerInteractEvent)event).getClickedBlock();
++      }
++      if (originBlock == null) {
++         originBlock = player.getLocation().getBlock();
++      }
++      int radius = ASManager.parseInt(args[0]);
++      int seedCount = ASManager.getAmount(player, seedsType.getSeedsMaterial());
++      HashSet<Block> targetBlocks = new HashSet<>();
++      int placed = 1;
++      for (Block candidate : ASManager.getBlocksFlat(originBlock, radius)) {
++         if (placed > seedCount) {
++            break;
++         }
++         Block placeBlock;
++         if (candidate.getType() == seedsType.getBlockRequired()) {
++            placeBlock = candidate.getRelative(BlockFace.UP);
++         } else {
++            if (candidate.getRelative(BlockFace.DOWN).getType() != seedsType.getBlockRequired()) {
++               continue;
+             }
++            placeBlock = candidate;
++         }
++         if (ASManager.isAir(placeBlock)) {
++            targetBlocks.add(placeBlock);
++            placed++;
+          }
+-      });
++      }
++      Set<Block> allowedBlocks = targetBlocks.stream()
++         .filter(b -> EffectsHandler.getProtection().canBreak(b.getLocation(), player))
++         .collect(Collectors.toSet());
++      int finalCount = allowedBlocks.size();
++      if (finalCount == 0 || !ASManager.hasAmount(player, seedsType.getSeedsMaterial(), finalCount)) {
++         return true;
++      }
++      ASManager.removeItems(player.getInventory(), seedsType.getSeedsMaterial(), finalCount);
++      Location plantLoc = originBlock.getLocation();
++      Bukkit.getRegionScheduler().runDelayed(EffectsHandler.getInstance(), plantLoc, scheduledTask -> {
++         ReallyFastBlockHandler.getForWorld(player.getWorld()).setType(seedsType.getNewBlockType(), allowedBlocks.toArray(new Block[0]));
++      }, 1L);
+       return true;
+    }
+ }

@@ -1,0 +1,84 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0016] FlyEffect: 
+
+AE PATCH REASON: 
+AE PATCH FIX: 
+AE PATCH RISK: 
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/FlyEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/FlyEffect.java
+--- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/FlyEffect.java	2026-07-30 10:27:31.667350114 +0000
++++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/FlyEffect.java	2026-07-30 12:19:48.780148985 +0000
+@@ -5,7 +5,7 @@
+ import java.util.UUID;
+ import net.advancedplugins.ae.impl.effects.effects.actions.execution.ExecutionTask;
+ import net.advancedplugins.ae.impl.effects.effects.effects.AdvancedEffect;
+-import net.advancedplugins.ae.impl.utils.SchedulerUtils;
++import net.advancedplugins.ae.impl.effects.effects.EffectsHandler;
+ import org.bukkit.entity.LivingEntity;
+ import org.bukkit.entity.Player;
+ import org.bukkit.plugin.java.JavaPlugin;
+@@ -27,40 +27,40 @@
+       }
+    }
+ 
+-   private boolean parse(ExecutionTask var1, LivingEntity var2, String[] var3) {
+-      Player var4 = (Player)var2;
+-      if (var1.getBuilder().isPermanent() && var3.length == 0) {
+-         var4.setAllowFlight(!var1.getBuilder().isRemoved());
+-         var4.setFlying(!var1.getBuilder().isRemoved());
++   private boolean parse(ExecutionTask task, LivingEntity entity, String[] args) {
++      Player player = (Player)entity;
++      if (task.getBuilder().isPermanent() && args.length == 0) {
++         player.setAllowFlight(!task.getBuilder().isRemoved());
++         player.setFlying(!task.getBuilder().isRemoved());
+          return true;
+-      } else if (var3.length >= 1) {
+-         if (var1.getBuilder().isPermanent() && var1.getBuilder().isRemoved()) {
+-            var4.setFlying(false);
+-            var4.setAllowFlight(false);
++      } else if (args.length >= 1) {
++         if (task.getBuilder().isPermanent() && task.getBuilder().isRemoved()) {
++            player.setFlying(false);
++            player.setAllowFlight(false);
+             return true;
+          } else {
+-            long var5 = Long.parseLong(var3[0]) / 20L * 1000L;
+-            if (var4.isFlying()) {
+-               long var7 = this.flyDuration.getOrDefault(var4.getUniqueId(), 0L);
+-               if (var7 > System.currentTimeMillis()) {
++            long durationMs = Long.parseLong(args[0]) / 20L * 1000L;
++            if (player.isFlying()) {
++               long endTime = this.flyDuration.getOrDefault(player.getUniqueId(), 0L);
++               if (endTime > System.currentTimeMillis()) {
+                   return true;
+                }
+             } else {
+-               this.flyDuration.put(var4.getUniqueId(), System.currentTimeMillis() + var5);
++               this.flyDuration.put(player.getUniqueId(), System.currentTimeMillis() + durationMs);
+             }
+ 
+-            var4.setAllowFlight(!var4.getAllowFlight());
+-            var4.setFlying(var4.getAllowFlight());
+-            SchedulerUtils.runTaskLater(() -> {
+-               this.flyDuration.remove(var4.getUniqueId());
+-               var4.setFlying(false);
+-               var4.setAllowFlight(false);
+-            }, var5 / 50L);
++            player.setAllowFlight(!player.getAllowFlight());
++            player.setFlying(player.getAllowFlight());
++            player.getScheduler().runDelayed(EffectsHandler.getInstance(), schedulerTask -> {
++               this.flyDuration.remove(player.getUniqueId());
++               player.setFlying(false);
++               player.setAllowFlight(false);
++            }, null, durationMs / 50L);
+             return true;
+          }
+       } else {
+-         var4.setAllowFlight(!var4.getAllowFlight());
+-         var4.setFlying(var4.getAllowFlight());
++         player.setAllowFlight(!player.getAllowFlight());
++         player.setFlying(player.getAllowFlight());
+          return true;
+       }
+    }

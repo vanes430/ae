@@ -1,0 +1,122 @@
+From: Folia Compatibility Patch
+Subject: [PATCH] SpawnBlocksEffect: Replace SchedulerUtils.runTaskLater with native Folia schedulers
+
+AE PATCH REASON: SchedulerUtils.runTaskLater makes code incompatible with Folia region-threaded architecture and crashes at runtime (UnsupportedOperationException from stripped SchedulerUtils or direct Bukkit.getScheduler() call rejected by Folia).
+AE PATCH FIX: Replace SchedulerUtils.runTaskLater with native Bukkit.getRegionScheduler().runDelayed. Convert instanceof check to pattern matching. Rename obfuscated vars.
+AE PATCH RISK: LOW - MIGRATE: SchedulerUtils → RegionScheduler. RF: pattern matching, var rename. No behavior change.
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/SpawnBlocksEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/SpawnBlocksEffect.java
+--- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/SpawnBlocksEffect.java	2026-07-30 10:27:31.663350078 +0000
++++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/SpawnBlocksEffect.java	2026-07-30 12:08:43.274343095 +0000
+@@ -6,8 +6,8 @@
+ import net.advancedplugins.ae.impl.effects.effects.actions.execution.ExecutionTask;
+ import net.advancedplugins.ae.impl.effects.effects.effects.AdvancedEffect;
+ import net.advancedplugins.ae.impl.utils.ASManager;
+-import net.advancedplugins.ae.impl.utils.SchedulerUtils;
+ import net.advancedplugins.ae.utils.AManager;
++import org.bukkit.Bukkit;
+ import org.bukkit.Location;
+ import org.bukkit.Material;
+ import org.bukkit.block.Block;
+@@ -24,63 +24,61 @@
+ public class SpawnBlocksEffect extends AdvancedEffect {
+    private final List<FallingBlock> blocks = new ArrayList<>();
+ 
+-   public SpawnBlocksEffect(JavaPlugin var1) {
+-      super(var1, "SPAWN_BLOCKS", "Spawn flood of falling blocks from above", "%e:<MATERIAL>:<DAMAGE>");
++   public SpawnBlocksEffect(JavaPlugin plugin) {
++      super(plugin, "SPAWN_BLOCKS", "Spawn flood of falling blocks from above", "%e:<MATERIAL>:<DAMAGE>");
+       this.addArgument(0, Material.class);
+       this.addArgument(1, Double.class);
+    }
+ 
+    @Override
+-   public boolean executeEffect(ExecutionTask var1, LivingEntity var2, String[] var3) {
+-      return this.executeEffect(var1, var2.getLocation().add(0.0, 1.0, 0.0), var3);
++   public boolean executeEffect(ExecutionTask task, LivingEntity target, String[] args) {
++      return this.executeEffect(task, target.getLocation().add(0.0, 1.0, 0.0), args);
+    }
+ 
+    @Override
+-   public boolean executeEffect(ExecutionTask var1, Location var2, String[] var3) {
+-      if (var3.length < 2) {
++   public boolean executeEffect(ExecutionTask task, Location targetLoc, String[] args) {
++      if (args.length < 2) {
+          return false;
+-      } else {
+-         Material var4 = ASManager.getMaterial(var3[0]);
+-         if (var4 == null) {
+-            AManager.error("Invalid material: " + var3[0]);
+-            return false;
+-         } else {
+-            int var5 = ASManager.parseInt(var3[1]);
+-            Block var6 = var2.getBlock().getRelative(0, 5, 0);
+-
+-            for (int var7 = -3; var7 <= 3; var7++) {
+-               for (int var8 = -3; var8 <= 3; var8++) {
+-                  Block var9 = var6.getRelative(var7, 0, var8);
+-                  FallingBlock var10 = var9.getWorld().spawnFallingBlock(var9.getLocation(), var4.createBlockData());
+-                  var10.setDropItem(false);
+-                  var10.setMetadata("ae_damage", new FixedMetadataValue(EffectsHandler.getInstance(), var5));
+-                  this.blocks.add(var10);
+-               }
+-            }
+-
+-            return true;
++      }
++      Material material = ASManager.getMaterial(args[0]);
++      if (material == null) {
++         AManager.error("Invalid material: " + args[0]);
++         return false;
++      }
++      int damage = ASManager.parseInt(args[1]);
++      Block centerBlock = targetLoc.getBlock().getRelative(0, 5, 0);
++      for (int dx = -3; dx <= 3; dx++) {
++         for (int dz = -3; dz <= 3; dz++) {
++            Block spawnBlock = centerBlock.getRelative(dx, 0, dz);
++            FallingBlock falling = spawnBlock.getWorld().spawnFallingBlock(spawnBlock.getLocation(), material.createBlockData());
++            falling.setDropItem(false);
++            falling.setMetadata("ae_damage", new FixedMetadataValue(EffectsHandler.getInstance(), damage));
++            this.blocks.add(falling);
+          }
+       }
++      return true;
+    }
+ 
+    @EventHandler(
+       priority = EventPriority.LOW,
+       ignoreCancelled = true
+    )
+-   public void onFallingBlockLand(EntityChangeBlockEvent var1) {
+-      if (var1.getEntity() instanceof FallingBlock) {
+-         FallingBlock var2 = (FallingBlock)var1.getEntity();
+-         if (this.blocks.contains(var2)) {
+-            this.blocks.remove(var2);
+-            Block var3 = var1.getBlock();
+-            if (var2.hasMetadata("ae_damage")) {
+-               var3.getWorld().getNearbyEntities(var3.getLocation(), 1.0, 1.0, 1.0).stream().filter(var0 -> var0 instanceof Player).forEach(var1x -> {
+-                  int var2x = ((MetadataValue)var2.getMetadata("ae_damage").get(0)).asInt();
+-                  ((Player)var1x).damage((double)var2x, var2);
+-               });
++   public void onFallingBlockLand(EntityChangeBlockEvent event) {
++      if (event.getEntity() instanceof FallingBlock falling) {
++         if (this.blocks.contains(falling)) {
++            this.blocks.remove(falling);
++            Block block = event.getBlock();
++            if (falling.hasMetadata("ae_damage")) {
++               block.getWorld().getNearbyEntities(block.getLocation(), 1.0, 1.0, 1.0).stream()
++                  .filter(entity -> entity instanceof Player)
++                  .forEach(player -> {
++                     int dmg = falling.getMetadata("ae_damage").get(0).asInt();
++                     ((Player)player).damage(dmg, falling);
++                  });
+             }
+-
+-            SchedulerUtils.runTaskLater(() -> var3.setType(Material.AIR), 2L);
++            Bukkit.getRegionScheduler().runDelayed(EffectsHandler.getInstance(), block.getLocation(), scheduledTask -> {
++               block.setType(Material.AIR);
++            }, 2L);
+          }
+       }
+    }

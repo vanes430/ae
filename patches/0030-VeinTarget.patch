@@ -1,0 +1,92 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0014] VeinTarget: Rename obfuscated variables and extract BFS methods
+
+AE PATCH REASON: Decompiled variable names (var1-var10) and monolithic method structure hinder maintainability and Folia debugging.
+AE PATCH FIX: Rename all obfuscated variables to descriptive names: var1-var3->effect/targetStr/task, var4->depth, var5->results, var6->origin, etc. Extract recursive BFS block-finding into named findConnectedBlocks/floodFill methods for clarity.
+AE PATCH RISK: LOW - Refactor only, no behavioral or API changes.
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/effects/mechanics/targets/internal/VeinTarget.java b/net/advancedplugins/ae/impl/effects/effects/mechanics/targets/internal/VeinTarget.java
+--- a/net/advancedplugins/ae/impl/effects/effects/mechanics/targets/internal/VeinTarget.java	2026-07-30 10:27:31.658350033 +0000
++++ b/net/advancedplugins/ae/impl/effects/effects/mechanics/targets/internal/VeinTarget.java	2026-07-30 11:33:29.037962813 +0000
+@@ -21,10 +21,10 @@
+    }
+ 
+    @Override
+-   public TargetResults getTargets(String var1, String var2, ExecutionTask var3) {
+-      int var4 = ASManager.parseInt(this.classifyTarget(var2).getOrDefault(TargetArgument.DEPTH, "75"));
+-      if (var3.getAbility().getWhitelist().isEmpty()) {
+-         var3.getBuilder()
++   public TargetResults getTargets(String effect, String targetStr, ExecutionTask task) {
++      int depth = ASManager.parseInt(this.classifyTarget(targetStr).getOrDefault(TargetArgument.DEPTH, "75"));
++      if (task.getAbility().getWhitelist().isEmpty()) {
++         task.getBuilder()
+             .getMain()
+             .sendMessage(
+                Text.modify(
+@@ -37,41 +37,41 @@
+             )
+          );
+          return this.noTarget();
+-      } else if (!var3.getAbility().getWhitelist().contains(var3.getBuilder().getBlock().getType().name())) {
++      } else if (!task.getAbility().getWhitelist().contains(task.getBuilder().getBlock().getType().name())) {
+          return this.noTarget();
+       } else {
+-         Object var5 = new ArrayList();
+-         Block var6 = var3.getBuilder().getBlock();
+-         if (!var6.hasMetadata("non-natural")) {
+-            var5.addAll(this.findBlocks(var6, var4));
+-            var5.remove(var3.getBuilder().getBlock().getLocation());
+-            var5 = var5.stream().filter(var0 -> !var0.getBlock().hasMetadata("non-natural")).collect(Collectors.toList());
++         List<Location> results = new ArrayList<>();
++         Block origin = task.getBuilder().getBlock();
++         if (!origin.hasMetadata("non-natural")) {
++            results.addAll(this.findConnectedBlocks(origin, depth));
++            results.remove(task.getBuilder().getBlock().getLocation());
++            results = results.stream().filter(loc -> !loc.getBlock().hasMetadata("non-natural")).collect(Collectors.toList());
+          }
+ 
+-         return TargetResults.builder().targetLocations((List<Location>)var5).build();
++         return TargetResults.builder().targetLocations(results).build();
+       }
+    }
+ 
+-   private List<Location> findBlocks(Block var1, int var2) {
+-      HashSet var3 = new HashSet();
+-      HashSet var4 = new HashSet();
+-      this.findBlock(var1, var1.getType(), var3, var2, var4);
+-      var3.remove(var1.getLocation());
+-      return new ArrayList<>(var3);
++   private List<Location> findConnectedBlocks(Block block, int maxDepth) {
++      HashSet<Location> found = new HashSet<>();
++      HashSet<Location> visited = new HashSet<>();
++      this.floodFill(block, block.getType(), found, maxDepth, visited);
++      found.remove(block.getLocation());
++      return new ArrayList<>(found);
+    }
+ 
+-   private void findBlock(Block var1, Material var2, HashSet<Location> var3, int var4, HashSet<Location> var5) {
+-      if (!var3.contains(var1.getLocation()) && var3.size() < var4 && var1.getType() == var2) {
+-         if (var1.getType().equals(var2)) {
+-            var3.add(var1.getLocation());
++   private void floodFill(Block block, Material targetType, HashSet<Location> results, int maxDepth, HashSet<Location> visited) {
++      if (!results.contains(block.getLocation()) && results.size() < maxDepth && block.getType() == targetType) {
++         if (block.getType().equals(targetType)) {
++            results.add(block.getLocation());
+          }
+ 
+-         for (BlockFace var9 : BlockFace.values()) {
+-            if (!var9.equals(BlockFace.SELF)) {
+-               Block var10 = var1.getRelative(var9);
+-               if (!var5.contains(var10.getLocation())) {
+-                  var5.add(var10.getLocation());
+-                  this.findBlock(var10, var2, var3, var4, var5);
++         for (BlockFace face : BlockFace.values()) {
++            if (!face.equals(BlockFace.SELF)) {
++               Block neighbor = block.getRelative(face);
++               if (!visited.contains(neighbor.getLocation())) {
++                  visited.add(neighbor.getLocation());
++                  this.floodFill(neighbor, targetType, results, maxDepth, visited);
+                }
+             }
+          }

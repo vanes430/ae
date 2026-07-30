@@ -1,0 +1,75 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0036] HealCommandEvent: 
+
+AE PATCH REASON: 
+AE PATCH FIX: 
+AE PATCH RISK: 
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/patches/HealCommandEvent.java b/net/advancedplugins/ae/impl/effects/patches/HealCommandEvent.java
+--- a/net/advancedplugins/ae/impl/effects/patches/HealCommandEvent.java	2026-07-30 10:27:31.670350141 +0000
++++ b/net/advancedplugins/ae/impl/effects/patches/HealCommandEvent.java	2026-07-30 12:21:17.038928173 +0000
+@@ -1,10 +1,11 @@
+ package net.advancedplugins.ae.impl.effects.patches;
+ 
+ import java.util.Locale;
++import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
+ import net.advancedplugins.ae.impl.effects.armorutils.ArmorType;
++import net.advancedplugins.ae.impl.effects.effects.EffectsHandler;
+ import net.advancedplugins.ae.impl.effects.effects.mechanics.triggers.internal.ArmorWearTrigger;
+ import net.advancedplugins.ae.impl.effects.effects.mechanics.triggers.internal.HoldItemTrigger;
+-import net.advancedplugins.ae.impl.utils.SchedulerUtils;
+ import net.advancedplugins.ae.impl.utils.hooks.HookPlugin;
+ import net.advancedplugins.ae.impl.utils.hooks.HooksHandler;
+ import org.bukkit.Bukkit;
+@@ -19,27 +20,27 @@
+       priority = EventPriority.MONITOR,
+       ignoreCancelled = true
+    )
+-   public void onHeal(PlayerCommandPreprocessEvent var1) {
+-      String var2 = var1.getMessage().toLowerCase(Locale.ROOT);
+-      if (var2.startsWith("/heal")) {
+-         if (!HooksHandler.isEnabled(HookPlugin.ESSENTIALS) || var1.getPlayer().hasPermission("essentials.heal")) {
+-            if (!HooksHandler.isEnabled(HookPlugin.CMI) || var1.getPlayer().hasPermission("cmi.command.heal")) {
+-               String[] var3 = var2.split("\\s+");
+-               if (!HooksHandler.isEnabled(HookPlugin.CMI) || var3.length <= 1 || var1.getPlayer().hasPermission("cmi.command.heal.others")) {
+-                  Player var4 = var3.length > 1 ? Bukkit.getPlayer(var3[1]) : var1.getPlayer();
+-                  if (var4 != null) {
+-                     SchedulerUtils.runTaskLater(() -> {
+-                        ArmorType.getArmorContents(var4).forEach((var1x, var2x) -> {
+-                           ArmorWearTrigger.getArmorWearTrigger().updateWornArmor(var4, var2x, null, var1x);
+-                           ArmorWearTrigger.getArmorWearTrigger().updateWornArmor(var4, null, var2x, var1x);
+-                        });
+-                        HoldItemTrigger.getHoldItemTrigger().executeCheck(var4, null, var4.getItemInHand());
+-                        HoldItemTrigger.getHoldItemTrigger().executeOffhandCheck(var4, null, var4.getInventory().getItemInOffHand());
+-                     });
+-                  }
+-               }
+-            }
+-         }
+-      }
+-   }
++    public void onHeal(PlayerCommandPreprocessEvent event) {
++       String message = event.getMessage().toLowerCase(Locale.ROOT);
++       if (message.startsWith("/heal")) {
++          if (!HooksHandler.isEnabled(HookPlugin.ESSENTIALS) || event.getPlayer().hasPermission("essentials.heal")) {
++             if (!HooksHandler.isEnabled(HookPlugin.CMI) || event.getPlayer().hasPermission("cmi.command.heal")) {
++                String[] args = message.split("\\s+");
++                if (!HooksHandler.isEnabled(HookPlugin.CMI) || args.length <= 1 || event.getPlayer().hasPermission("cmi.command.heal.others")) {
++                   Player target = args.length > 1 ? Bukkit.getPlayer(args[1]) : event.getPlayer();
++                   if (target != null) {
++                      target.getScheduler().runDelayed(EffectsHandler.getInstance(), task -> {
++                         ArmorType.getArmorContents(target).forEach((slot, item) -> {
++                            ArmorWearTrigger.getArmorWearTrigger().updateWornArmor(target, item, null, slot);
++                            ArmorWearTrigger.getArmorWearTrigger().updateWornArmor(target, null, item, slot);
++                         });
++                         HoldItemTrigger.getHoldItemTrigger().executeCheck(target, null, target.getItemInHand());
++                         HoldItemTrigger.getHoldItemTrigger().executeOffhandCheck(target, null, target.getInventory().getItemInOffHand());
++                      }, null, 1L);
++                   }
++                }
++             }
++          }
++       }
++    }
+ }

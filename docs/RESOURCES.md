@@ -47,6 +47,20 @@ Source defines all enchantments, their max levels, and which items they apply to
 | ELYTRA | 3 | momentum, rush, slingshot |
 | FISHING_ROD | 7 | allure, bait, autoreel, hook, lucky |
 
+### Blacklisted Enchantments
+
+Enchantments present in original AE 9.24.2 JAR but intentionally **excluded** from our override:
+
+| Enchant | Group | Reason |
+|---------|-------|--------|
+| disarm | FABLED | — |
+| disarmor | LEGENDARY | — |
+| gemify | FABLED | — |
+| fuddle | ULTIMATE | — |
+| lavawalker | LEGENDARY | — |
+| waterwalker | LEGENDARY | — |
+| scare | FABLED | — |
+
 ### Slot Mapping
 
 | Equipment Slot | Available Enchant Pools |

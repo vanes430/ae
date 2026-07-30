@@ -1,93 +1,3 @@
-# << Example configuration >>
-# lastchance:    <-- Enchantment name
-#  display: "%group-color%Last Chance"    <-- Display in item lore
-#  description: "Has a chance to heal when on low hearts"    <-- Enchantment Description
-#  applies-to: "Chestplate"    <-- What applies to (display purposes)
-#  type: "DEFENSE"    <-- Enchantment type (controls when enchantment activates)
-#  group: "COMMON"    <-- Enchantment group (For enchanter and right-click random books)
-#  settings:
-#    required-enchants:
-#      - "springs:1" # Can require specific level
-#      - "gears"
-#    not-applyable-with:
-#      - "frozen"
-#  applies:    <-- List of items that it applies
-#    - ALL_CHESTPLATE    <-- Item(s) list
-#  levels:    < -- All Levels are under here
-#    1:     <-- Level indicator
-#      item:  <-- Item settings (optional). Used to set custom model data, force glow.
-#                       If any value is not present, it will be taken from the config.yml
-#        type: ENCHANTED_BOOK
-#        id: 6
-#        custom-model-data: 0
-#        force-glow: false
-#        name: Frozen Enchantment
-#        lore:
-#          - "&cCustom lore for the enchantment book on level 1"
-#      chance: 30    <-- Chance for enchantment to activate
-#      conditions: "%victim health% > 5 : %stop%"    <-- Condition (read more about it at Conditions)
-#      description: "Has the lowest chance to heal when on low hearts"    <-- Per level description (different description for each level - optional)
-#      effects:    <-- All enchantment effects
-#        - "ADD_HEALTH:2 %victim%"    <-- Effect(s) list
-
-#  Display (String) (No spaces or enchantment will break)
-#    Determines how will enchantment look in item lore
-
-#  Applies-to (String)
-#    Display used in Custom Enchantment books for %description% variable
-
-#  Group (Setting)
-#    INFO: Create enchantment groups in config.yml under enchanter configuration.
-#   Enchantment groups are used for enchanter, to sell specific type books. You can group them
-#   and add a group-wide color, then obtain it with variable %group-color% (shown in example enchantments below).
-
-#  Enchantment Types List: https://ae.advancedplugins.net/enchantments/creating-enchantments/type-list
-
-#  Applies (Material)
-#    Determines which items will have the effects
-#    The Latest Materials list: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
-#    NOTICE: You can use "LEATHER_ARMOR, IRON_ARMOR, CHAIN_ARMOR, GOLD_ARMOR or DIAMOND_ARMOR" to
-#    instantly add availability for all specific armor type pieces.
-#    Use "ALL_ARMOR" to add all armor pieces.
-#    Use "ALL_HELMET" to add all helmets.
-#    Use "ALL_CHESTPLATE" to add all chestplates.
-#    Use "ALL_BOOTS" to add all boots.
-#    Use "ALL_SWORD" to add all swords.
-#    Use "ALL_PICKAXE" to add all pickaxes.
-#    Use "ALL_AXE" to add all axes.
-#    Use "ALL_EDIBLE" to add all foods.
-#    And so on, but make sure to use non-plural names of items!
-
-#  Levels (Numbers)
-#    Effects for each level, use as display in examples.
-
-#  Enchantment Effect List: https://ae.advancedplugins.net/enchantments/creating-enchantments/effect-list
-
-#        # You can use tags <random word>word1,word2,word3</random word>, it will get a random word from listed words.
-#        # You can use tags <random number>x-y</random number> while x < y, it will generate a random number between two given integers.
-#        # e.g.: "STEAL_MONEY:<random number>10000-50000</random number>"
-#        # Use <chance>x</chance> to set per-effect chance, x being a chance percentage.
-#        # e.g.: "POTION:SPEED:1:100 %attacker% <chance>25</chance>"
-
-#        # You also may use %victim% or %attacker% flag to give effects to different players (in ATTACK, BOW, DEATH, KILL_PLAYER and DEFENSE types).
-#        # Example usage: - "POTION:POISON:1:50 %attacker%', this will give Level 2 POISON potion effect to the player who attacked.
-#        # If none is provided, effects will be given to the player who had custom enchanted item.
-#        # You can add %combo% instead of numbers, to use number of combo's player has (eg. to limit combo number: "%combo% > 0 && %combo% < 5 : %continue%')
-#        # You can add %damage% instead of numbers, to use number of damage has been done (for ATTACK and DEFENSE)
-
-#  Area of effect: https://ae.advancedplugins.net/enchantments/radius-of-effect-enchantments
-#  Conditions:  https://ae.advancedplugins.net/enchantments/enchantment-conditions
-
-# Settings for enchantments
-# *** This is not a required configuration section and each enchantment doesn't need to have it ***
-#  settings:
-#    required-enchants:
-#      - "springs"
-#    not-applyable-with:
-#      - "frozen"
-#    removeable: false # Makes enchantment non-removeable with blackscrolls
-#    disable-in-enchanter: true # Players can no longer obtain enchantment from Enchanter
-
 harvest:
   display: '%group-color%Harvest'
   description: Chance to harvest in 3x3 area.
@@ -270,12 +180,11 @@ harvest:
       chance: 100
       effects:
         - BREAK_BLOCK @Trench{r=3,it=true}
-
 strike:
   display: '%group-color%Strike'
-  description: |-
-    Chance to strike lightning
-    at the opponent.
+  description: 'Chance to strike lightning
+
+    at the opponent.'
   applies-to: Swords, Bow, Crossbow, Trident
   type: ATTACK;ATTACK_MOB;SHOOT;SHOOT_MOB
   settings:
@@ -335,9 +244,9 @@ impact:
         - DOUBLE_DAMAGE @Victim
 twinge:
   display: '%group-color%Twinge'
-  description: |-
-    Make your enemy bleed, if
-    hit using melee attack.
+  description: 'Make your enemy bleed, if
+
+    hit using melee attack.'
   applies-to: Trident
   type: ATTACK
   group: LEGENDARY
@@ -540,9 +449,9 @@ haste:
         - POTION:FAST_DIGGING:2
 rebreather:
   display: '%group-color%Rebreather'
-  description: |-
-    Chance to regain air
-    when mining under water.
+  description: 'Chance to regain air
+
+    when mining under water.'
   applies-to: Pickaxe
   type: MINING
   group: SIMPLE
@@ -573,9 +482,9 @@ glowing:
         - POTION:NIGHT_VISION:0
 decapitation:
   display: '%group-color%Decapitation'
-  description: |-
-    Chance to have opponents
-    head drop on death.
+  description: 'Chance to have opponents
+
+    head drop on death.'
   applies-to: Swords, Axes
   type: KILL_PLAYER
   settings:
@@ -695,9 +604,9 @@ famine:
         - POTION:HUNGER:1:120 @Victim
 berserk:
   display: '%group-color%Berserk'
-  description: |-
-    Chance of strength
-    and mining fatigue.
+  description: 'Chance of strength
+
+    and mining fatigue.'
   applies-to: Swords, Axes
   type: ATTACK;ATTACK_MOB
   group: UNIQUE
@@ -737,9 +646,9 @@ berserk:
         - POTION:INCREASE_DAMAGE:1:100 @Attacker
 reflect:
   display: '%group-color%Reflect'
-  description: |-
-    Absorb enemy damage and
-    reflect it back.
+  description: 'Absorb enemy damage and
+
+    reflect it back.'
   applies-to: Armor
   type: DEFENSE;DEFENSE_MOB
   group: UNIQUE
@@ -1022,9 +931,9 @@ molten:
         - BURN:8 @Attacker
 ravenous:
   display: '%group-color%Ravenous'
-  description: |-
-    Chance to regain hunger
-    while fighting.
+  description: 'Chance to regain hunger
+
+    while fighting.'
   applies-to: Swords, Axes
   type: ATTACK;ATTACK_MOB
   group: UNIQUE
@@ -1066,25 +975,25 @@ veinminer:
       cooldown: 4
       settings:
         whitelist:
-          - "COAL_ORE"
-          - "COPPER_ORE"
-          - "IRON_ORE"
-          - "GOLD_ORE"
-          - "LAPIS_ORE"
-          - "REDSTONE_ORE"
-          - "DIAMOND_ORE"
-          - "EMERALD_ORE"
-          - "NETHER_QUARTZ_ORE"
-          - "NETHER_GOLD_ORE"
-          - "ANCIENT_DEBRIS"
-          - "DEEPSLATE_COAL_ORE"
-          - "DEEPSLATE_COPPER_ORE"
-          - "DEEPSLATE_IRON_ORE"
-          - "DEEPSLATE_GOLD_ORE"
-          - "DEEPSLATE_LAPIS_ORE"
-          - "DEEPSLATE_REDSTONE_ORE"
-          - "DEEPSLATE_DIAMOND_ORE"
-          - "DEEPSLATE_EMERALD_ORE"
+          - COAL_ORE
+          - COPPER_ORE
+          - IRON_ORE
+          - GOLD_ORE
+          - LAPIS_ORE
+          - REDSTONE_ORE
+          - DIAMOND_ORE
+          - EMERALD_ORE
+          - NETHER_QUARTZ_ORE
+          - NETHER_GOLD_ORE
+          - ANCIENT_DEBRIS
+          - DEEPSLATE_COAL_ORE
+          - DEEPSLATE_COPPER_ORE
+          - DEEPSLATE_IRON_ORE
+          - DEEPSLATE_GOLD_ORE
+          - DEEPSLATE_LAPIS_ORE
+          - DEEPSLATE_REDSTONE_ORE
+          - DEEPSLATE_DIAMOND_ORE
+          - DEEPSLATE_EMERALD_ORE
       effects:
         - BREAK_BLOCK @Veinmine
     '2':
@@ -1092,56 +1001,56 @@ veinminer:
       cooldown: 3
       settings:
         whitelist:
-          - "COAL_ORE"
-          - "COPPER_ORE"
-          - "IRON_ORE"
-          - "GOLD_ORE"
-          - "LAPIS_ORE"
-          - "REDSTONE_ORE"
-          - "DIAMOND_ORE"
-          - "EMERALD_ORE"
-          - "NETHER_QUARTZ_ORE"
-          - "NETHER_GOLD_ORE"
-          - "ANCIENT_DEBRIS"
-          - "DEEPSLATE_COAL_ORE"
-          - "DEEPSLATE_COPPER_ORE"
-          - "DEEPSLATE_IRON_ORE"
-          - "DEEPSLATE_GOLD_ORE"
-          - "DEEPSLATE_LAPIS_ORE"
-          - "DEEPSLATE_REDSTONE_ORE"
-          - "DEEPSLATE_DIAMOND_ORE"
-          - "DEEPSLATE_EMERALD_ORE"
+          - COAL_ORE
+          - COPPER_ORE
+          - IRON_ORE
+          - GOLD_ORE
+          - LAPIS_ORE
+          - REDSTONE_ORE
+          - DIAMOND_ORE
+          - EMERALD_ORE
+          - NETHER_QUARTZ_ORE
+          - NETHER_GOLD_ORE
+          - ANCIENT_DEBRIS
+          - DEEPSLATE_COAL_ORE
+          - DEEPSLATE_COPPER_ORE
+          - DEEPSLATE_IRON_ORE
+          - DEEPSLATE_GOLD_ORE
+          - DEEPSLATE_LAPIS_ORE
+          - DEEPSLATE_REDSTONE_ORE
+          - DEEPSLATE_DIAMOND_ORE
+          - DEEPSLATE_EMERALD_ORE
       effects:
         - BREAK_BLOCK @Veinmine
     '3':
       settings:
         whitelist:
-          - "COAL_ORE"
-          - "COPPER_ORE"
-          - "IRON_ORE"
-          - "GOLD_ORE"
-          - "LAPIS_ORE"
-          - "REDSTONE_ORE"
-          - "DIAMOND_ORE"
-          - "EMERALD_ORE"
-          - "NETHER_QUARTZ_ORE"
-          - "NETHER_GOLD_ORE"
-          - "ANCIENT_DEBRIS"
-          - "DEEPSLATE_COAL_ORE"
-          - "DEEPSLATE_COPPER_ORE"
-          - "DEEPSLATE_IRON_ORE"
-          - "DEEPSLATE_GOLD_ORE"
-          - "DEEPSLATE_LAPIS_ORE"
-          - "DEEPSLATE_REDSTONE_ORE"
-          - "DEEPSLATE_DIAMOND_ORE"
-          - "DEEPSLATE_EMERALD_ORE"
+          - COAL_ORE
+          - COPPER_ORE
+          - IRON_ORE
+          - GOLD_ORE
+          - LAPIS_ORE
+          - REDSTONE_ORE
+          - DIAMOND_ORE
+          - EMERALD_ORE
+          - NETHER_QUARTZ_ORE
+          - NETHER_GOLD_ORE
+          - ANCIENT_DEBRIS
+          - DEEPSLATE_COAL_ORE
+          - DEEPSLATE_COPPER_ORE
+          - DEEPSLATE_IRON_ORE
+          - DEEPSLATE_GOLD_ORE
+          - DEEPSLATE_LAPIS_ORE
+          - DEEPSLATE_REDSTONE_ORE
+          - DEEPSLATE_DIAMOND_ORE
+          - DEEPSLATE_EMERALD_ORE
       effects:
         - BREAK_BLOCK @Veinmine
 telepathy:
   display: '%group-color%Telepathy'
-  description: |-
-    Automatically places blocks broken
-    by tools in your inventory.
+  description: 'Automatically places blocks broken
+
+    by tools in your inventory.'
   applies-to: Tools
   type: MINING
   group: UNIQUE
@@ -1633,10 +1542,11 @@ soulless:
         - INCREASE_DAMAGE:<random number>10-40</random number> @Attacker
 reaper:
   display: '%group-color%Reaper'
-  description: |-
-    A chance to give your opponent the
+  description: 'A chance to give your opponent the
+
     Wither and Blindness effects
-    while dealing damage
+
+    while dealing damage'
   applies-to: Axe
   settings:
     showActionBar: true
@@ -1716,9 +1626,9 @@ netherslayer:
         - INCREASE_DAMAGE:<random number>10-40</random number> @Attacker
 blind:
   display: '%group-color%Blind'
-  description: |-
-    A chance of causing blindness
-    when attacking.
+  description: 'A chance of causing blindness
+
+    when attacking.'
   applies-to: Swords
   type: ATTACK
   group: ELITE
@@ -1762,9 +1672,9 @@ allure:
         - PULL_CLOSER:2 @Victim
 frozen:
   display: '%group-color%Frozen'
-  description: |-
-    Can cause slowness to attacker
-    when defending.
+  description: 'Can cause slowness to attacker
+
+    when defending.'
   applies-to: Armor
   type: DEFENSE;DEFENSE_MOB
   group: ELITE
@@ -1870,9 +1780,9 @@ poisoned:
         - POTION:POISON:1:120 @Attacker
 reforged:
   display: '%group-color%Reforged'
-  description: |-
-    Protects weapons and tools durability, items will be take
-    longer to break.
+  description: 'Protects weapons and tools durability, items will be take
+
+    longer to break.'
   applies-to: Weapons and tools
   type: ATTACK_MOB;MINING
   group: ELITE
@@ -1923,9 +1833,9 @@ reforged:
         - ADD_DURABILITY_ITEM:1
 snare:
   display: '%group-color%Snare'
-  description: |-
-    Chance to slow and fatigue
-    enemies with projectiles.
+  description: 'Chance to slow and fatigue
+
+    enemies with projectiles.'
   applies-to: Bows
   type: SHOOT;SHOOT_MOB
   settings:
@@ -2090,10 +2000,11 @@ perish:
         - POTION:WITHER:1:100 @Victim
 smokebomb:
   display: '%group-color%Smoke Bomb'
-  description: |-
-    When you are near death, you
+  description: 'When you are near death, you
+
     will spawn a smoke bomb to
-    distract your enemies.
+
+    distract your enemies.'
   applies-to: Helmet
   type: DEFENSE;DEFENSE_MOB
   settings:
@@ -2196,9 +2107,9 @@ infernal:
         - BURN:6 @Victim
 shockwave:
   display: '%group-color%Shockwave'
-  description: |-
-    Chance to push back your attacker
-    when your health is low.
+  description: 'Chance to push back your attacker
+
+    when your health is low.'
   applies-to: Chestplates
   type: DEFENSE;DEFENSE_MOB
   settings:
@@ -2244,9 +2155,9 @@ shockwave:
         - PULL_AWAY:2.5 @Attacker
 vampire:
   display: '%group-color%Vampire'
-  description: |-
-    A chance to heal you for up to
-    3hp a few seconds after you strike.
+  description: 'A chance to heal you for up to
+
+    3hp a few seconds after you strike.'
   applies-to: Swords
   type: ATTACK;ATTACK_MOB
   group: ELITE
@@ -2273,9 +2184,9 @@ vampire:
         - ADD_HEALTH:<random number>1-6</random number>
 greatsword:
   display: '%group-color%Greatsword'
-  description: |-
-    Multiplies damage against players who are
-    wielding a Bow at the time they are hit.
+  description: 'Multiplies damage against players who are
+
+    wielding a Bow at the time they are hit.'
   applies-to: Sword
   type: ATTACK
   group: ELITE
@@ -2321,9 +2232,9 @@ greatsword:
         - INCREASE_DAMAGE:<random number>105-205</random number>
 bowmaster:
   display: '%group-color%Bowmaster'
-  description: |-
-    Multiplies damage against players who are
-    wielding a Sword at the time they are hit.
+  description: 'Multiplies damage against players who are
+
+    wielding a Sword at the time they are hit.'
   applies-to: Bow, Crossbow, Trident
   type: SHOOT
   group: ELITE
@@ -2417,10 +2328,11 @@ patch:
         - ADD_DURABILITY_CURRENT_ITEM:2 @Victim
 trickster:
   display: '%group-color%Trickster'
-  description: |-
-    When hit you have a
+  description: 'When hit you have a
+
     chance to teleport directly
-    behind you opponent.
+
+    behind you opponent.'
   applies-to: Armor
   type: DEFENSE;DEFENSE_MOB
   settings:
@@ -2497,9 +2409,9 @@ timber:
         - BREAK_TREE @Block
 distance:
   display: '%group-color%Distance'
-  description: |-
-    Chance to distance yourself from your enemies
-    and gain regeneration.
+  description: 'Chance to distance yourself from your enemies
+
+    and gain regeneration.'
   applies-to: Weapons
   type: ATTACK
   group: ULTIMATE
@@ -2533,9 +2445,9 @@ distance:
         - POTION:REGENERATION:1:40 @Attacker
 cleave:
   display: '%group-color%Cleave'
-  description: |-
-    Damages players within a radius
-    that increases with the level of enchant.
+  description: 'Damages players within a radius
+
+    that increases with the level of enchant.'
   applies-to: Axes
   type: ATTACK
   settings:
@@ -2581,7 +2493,9 @@ cleave:
         - DO_HARM:<random number>2-3</random number> @Aoe{radius=7,target=damageable}
 ambit:
   display: '%group-color%Ambit'
-  description: "Damages mobs within a radius\nthat increases with the level of enchant."
+  description: 'Damages mobs within a radius
+
+    that increases with the level of enchant.'
   applies-to: Swords, Axes
   type: ATTACK_MOB
   settings:
@@ -2691,7 +2605,9 @@ arrowdeflect:
         - CANCEL_EVENT
 arrowbreak:
   display: '%group-color%Arrow Break'
-  description: "Chance for arrows to bounce off you\nwhile holding item with this enchant."
+  description: 'Chance for arrows to bounce off you
+
+    while holding item with this enchant.'
   applies-to: Axe
   type: DEFENSE_PROJECTILE
   group: ULTIMATE
@@ -2785,9 +2701,9 @@ interrupt:
         - POTION:SLOW_DIGGING:1:100 @Victim
 exalted:
   display: '%group-color%Exalted'
-  description: |-
-    A chance of removing
-    bad potion effects.
+  description: 'A chance of removing
+
+    bad potion effects.'
   applies-to: Swords
   type: ATTACK
   group: ULTIMATE
@@ -2844,9 +2760,9 @@ exalted:
         - CURE:SLOW_DIGGING @Attacker
 ragdoll:
   display: '%group-color%Ragdoll'
-  description: |-
-    Chance to be pushed
-    back when getting hit.
+  description: 'Chance to be pushed
+
+    back when getting hit.'
   applies-to: Armor
   type: DEFENSE;DEFENSE_MOB
   group: ULTIMATE
@@ -2875,9 +2791,9 @@ ragdoll:
         - PULL_AWAY:0.4 @Victim
 block:
   display: '%group-color%Block'
-  description: |-
-    A chance to negate an attack
-    and deal up to 4 damage back.
+  description: 'A chance to negate an attack
+
+    and deal up to 4 damage back.'
   applies-to: Swords
   type: DEFENSE;DEFENSE_MOB
   group: ULTIMATE
@@ -2948,12 +2864,9 @@ trench:
       chance: 100
       effects:
         - BREAK_BLOCK @Trench{r=3}
-
 tunnel:
   display: '%group-color%Tunnel'
-  description: |- 
-    Chance to dig tunnels and staircases 
-    in the direction you're facing.
+  description: "Chance to dig tunnels and staircases \nin the direction you're facing."
   applies-to: Pickaxes, Shovels
   type: MINING
   group: ULTIMATE
@@ -2967,69 +2880,59 @@ tunnel:
         - 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=UP} <condition>%pitch% <= -30 : %allow%</condition>'
         - 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=DOWN} <condition>%pitch% >= 30 : %allow%</condition>'
         - 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=STRAIGHT} <condition>%pitch% >= -10 && %pitch% <= 10 : %allow%</condition>'
-        #- 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=AUTO}'
     '2':
       chance: 20
       effects:
         - 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=UP} <condition>%pitch% <= -30 : %allow%</condition>'
         - 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=DOWN} <condition>%pitch% >= 30 : %allow%</condition>'
         - 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=STRAIGHT} <condition>%pitch% >= -10 && %pitch% <= 10 : %allow%</condition>'
-        #- 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=AUTO}'
     '3':
       chance: 30
       effects:
         - 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=UP} <condition>%pitch% <= -30 : %allow%</condition>'
         - 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=DOWN} <condition>%pitch% >= 30 : %allow%</condition>'
         - 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=STRAIGHT} <condition>%pitch% >= -10 && %pitch% <= 10 : %allow%</condition>'
-        #- 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=AUTO}'
     '4':
       chance: 40
       effects:
         - 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=UP} <condition>%pitch% <= -30 : %allow%</condition>'
         - 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=DOWN} <condition>%pitch% >= 30 : %allow%</condition>'
         - 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=STRAIGHT} <condition>%pitch% >= -10 && %pitch% <= 10 : %allow%</condition>'
-        #- 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=AUTO}'
     '5':
       chance: 50
       effects:
         - 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=UP} <condition>%pitch% <= -30 : %allow%</condition>'
         - 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=DOWN} <condition>%pitch% >= 30 : %allow%</condition>'
         - 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=STRAIGHT} <condition>%pitch% >= -10 && %pitch% <= 10 : %allow%</condition>'
-        #- 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=AUTO}'
     '6':
       chance: 60
       effects:
         - 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=UP} <condition>%pitch% <= -30 : %allow%</condition>'
         - 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=DOWN} <condition>%pitch% >= 30 : %allow%</condition>'
         - 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=STRAIGHT} <condition>%pitch% >= -10 && %pitch% <= 10 : %allow%</condition>'
-        #- 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=AUTO}'
     '7':
       chance: 70
       effects:
         - 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=UP} <condition>%pitch% <= -30 : %allow%</condition>'
         - 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=DOWN} <condition>%pitch% >= 30 : %allow%</condition>'
         - 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=STRAIGHT} <condition>%pitch% >= -10 && %pitch% <= 10 : %allow%</condition>'
-        #- 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=AUTO}'
     '8':
       chance: 80
       effects:
         - 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=UP} <condition>%pitch% <= -30 : %allow%</condition>'
         - 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=DOWN} <condition>%pitch% >= 30 : %allow%</condition>'
         - 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=STRAIGHT} <condition>%pitch% >= -10 && %pitch% <= 10 : %allow%</condition>'
-        #- 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=AUTO}'
     '9':
       chance: 100
       effects:
         - 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=UP} <condition>%pitch% <= -30 : %allow%</condition>'
         - 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=DOWN} <condition>%pitch% >= 30 : %allow%</condition>'
         - 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=STRAIGHT} <condition>%pitch% >= -10 && %pitch% <= 10 : %allow%</condition>'
-        #- 'BREAK_BLOCK @Tunnel{radiuscustom=1x3x5,mode=AUTO}'
-
 dodge:
   display: '%group-color%Dodge'
-  description: |-
-    Chance to dodge physical enemy,
-    chance increases when sneaking.
+  description: 'Chance to dodge physical enemy,
+
+    chance increases when sneaking.'
   applies-to: Armor
   type: DEFENSE
   group: ULTIMATE
@@ -3078,9 +2981,9 @@ dodge:
         - PLAY_SOUND:ENTITY_BAT_TAKEOFF:0.7 @Victim
 fumble:
   display: '%group-color%Fumble'
-  description: |-
-    Chance to explode enemy
-    when hit by their arrows.
+  description: 'Chance to explode enemy
+
+    when hit by their arrows.'
   applies-to: Chestplate
   type: DEFENSE_PROJECTILE
   group: LEGENDARY
@@ -3107,9 +3010,9 @@ fumble:
         - PLAY_SOUND:ENCHANT_THORNS_HIT:1:1 @Victim
 turmoil:
   display: '%group-color%Turmoil'
-  description: |-
-    Chance to prevent opponents
-    guards from spawning.
+  description: 'Chance to prevent opponents
+
+    guards from spawning.'
   applies-to: Armor
   type: DEFENSE
   group: LEGENDARY
@@ -3142,9 +3045,9 @@ turmoil:
         - DISABLE_ACTIVATION:undeadruse:4
 guardians:
   display: '%group-color%Guardians'
-  description: |-
-    A chance to spawn iron golems to
-    assist you and watch over you.
+  description: 'A chance to spawn iron golems to
+
+    assist you and watch over you.'
   applies-to: Armor
   type: DEFENSE
   settings:
@@ -3205,9 +3108,9 @@ guardians:
         - GUARD:IRON_GOLEM:8:4 @Victim
 iceaspect:
   display: '%group-color%Ice Aspect'
-  description: |-
-    A chance of causing the slowness
-    effect on your enemy.
+  description: 'A chance of causing the slowness
+
+    effect on your enemy.'
   applies-to: Swords
   type: ATTACK;ATTACK_MOB
   group: ULTIMATE
@@ -3231,9 +3134,9 @@ iceaspect:
         - POTION:SLOW:1:100 @Victim
 momentum:
   display: '%group-color%Momentum'
-  description: |-
-    Chance to gain speed boost
-    with fireworks.
+  description: 'Chance to gain speed boost
+
+    with fireworks.'
   applies-to: Elytra
   type: RIGHT_CLICK
   group: ELITE
@@ -3292,10 +3195,11 @@ reinforced:
         - DECREASE_DAMAGE:45
 restore:
   display: '%group-color%Restore'
-  description: |-
-    Upon breaking, item has a chance
+  description: 'Upon breaking, item has a chance
+
     to lose this enchantment and repair
-    half of its durability.
+
+    half of its durability.'
   applies-to: Tools
   type: ITEM_BREAK
   group: FABLED
@@ -3514,9 +3418,9 @@ poseidon:
         - INCREASE_DAMAGE:<random number>50-150</random number> @Victim
 safeguard:
   display: '%group-color%Safeguard'
-  description: |-
-    Chance to gain Damage Resistance
-    when defending.
+  description: 'Chance to gain Damage Resistance
+
+    when defending.'
   applies-to: Armor
   type: DEFENSE;DEFENSE_MOB
   group: ULTIMATE
@@ -3535,9 +3439,9 @@ safeguard:
         - POTION:DAMAGE_RESISTANCE:1:60 @Victim
 disappear:
   display: '%group-color%Disappear'
-  description: |-
-    Chance to become invisible when
-    low on health.
+  description: 'Chance to become invisible when
+
+    low on health.'
   applies-to: Armor
   type: DEFENSE;DEFENSE_MOB
   settings:
@@ -3605,9 +3509,9 @@ confuse:
         - POTION:CONFUSION:3:60 @Victim
 disintegrate:
   display: '%group-color%Disintegrate'
-  description: |-
-    Chance to deal extra durability damage to
-    all enemy armor with every attack.
+  description: 'Chance to deal extra durability damage to
+
+    all enemy armor with every attack.'
   applies-to: Swords
   type: ATTACK
   group: ULTIMATE
@@ -3636,9 +3540,9 @@ disintegrate:
         - ADD_DURABILITY_ARMOR:-2 @Victim
 shatter:
   display: '%group-color%Shatter'
-  description: |-
-    Chance to deal extra durability damage to
-    all enemy armor with every attack.
+  description: 'Chance to deal extra durability damage to
+
+    all enemy armor with every attack.'
   applies-to: Axes
   type: ATTACK
   group: ULTIMATE
@@ -3667,9 +3571,9 @@ shatter:
         - ADD_DURABILITY_ARMOR:-2 @Victim
 heavy:
   display: '%group-color%Heavy'
-  description: |-
-    Decreases damage from enemy bows
-    by 2% per level.
+  description: 'Decreases damage from enemy bows
+
+    by 2% per level.'
   applies-to: Armor
   type: DEFENSE;DEFENSE_PROJECTILE
   group: ULTIMATE
@@ -3828,10 +3732,11 @@ missile:
         - FIREBALL @Victim
 longbow:
   display: '%group-color%Longbow'
-  description: |-
-    Greatly increases damage dealt
+  description: 'Greatly increases damage dealt
+
     to enemy players that have
-    a bow in their hands.
+
+    a bow in their hands.'
   applies-to: Bow
   settings:
     showActionBar: true
@@ -3871,9 +3776,9 @@ longbow:
         - INCREASE_DAMAGE:<random number>50-100</random number> @Attacker
 tank:
   display: '%group-color%Tank'
-  description: |-
-    Chance to decreases damage from enemy
-    axes by 2% per level.
+  description: 'Chance to decreases damage from enemy
+
+    axes by 2% per level.'
   applies-to: Armor
   type: DEFENSE;DEFENSE_MOB
   group: ULTIMATE
@@ -3910,9 +3815,9 @@ tank:
         - DECREASE_DAMAGE:8 @Victim
 swordsman:
   display: '%group-color%Swordsman'
-  description: |-
-    Chance to reduces incoming damage while
-    wielding a sword by up to 22% at max level.
+  description: 'Chance to reduces incoming damage while
+
+    wielding a sword by up to 22% at max level.'
   applies-to: Armor
   type: DEFENSE;DEFENSE_MOB
   group: ULTIMATE
@@ -4013,9 +3918,9 @@ rebound:
         - ADD_HEALTH:6 @Attacker
 thunderlord:
   display: '%group-color%Thunderlord'
-  description: |-
-    Strike monsters with lightning
-    every 3 consecutive hits.
+  description: 'Strike monsters with lightning
+
+    every 3 consecutive hits.'
   applies-to: Weapons
   type: ATTACK_MOB
   group: LEGENDARY
@@ -4103,9 +4008,9 @@ endmaster:
         - INCREASE_DAMAGE:50
 creeperarmor:
   display: '%group-color%Creeper Armor'
-  description: |-
-    Chance to be immune to explosive damage, at
-    higher levels you have a chance to heal.
+  description: 'Chance to be immune to explosive damage, at
+
+    higher levels you have a chance to heal.'
   applies-to: Armor
   type: EXPLOSION
   group: ULTIMATE
@@ -4225,9 +4130,9 @@ aqua:
         - DOUBLE_DAMAGE
 judgement:
   display: '%group-color%Judgement'
-  description: |-
-    Chance of poisoning opponent and
-    gaining regeneration.
+  description: 'Chance of poisoning opponent and
+
+    gaining regeneration.'
   applies-to: Elytra
   type: DEFENSE;DEFENSE_MOB
   group: LEGENDARY
@@ -4266,9 +4171,9 @@ judgement:
         - POTION:REGENERATION:1:100 @Victim
 divert:
   display: '%group-color%Divert'
-  description: |-
-    Chance of poisoning opponent and
-    gaining regeneration.
+  description: 'Chance of poisoning opponent and
+
+    gaining regeneration.'
   applies-to: Armor
   type: DEFENSE;DEFENSE_MOB
   group: LEGENDARY
@@ -4465,9 +4370,9 @@ barbarian:
         - INCREASE_DAMAGE:<random number>25-100</random number> @Victim
 lucid:
   display: '%group-color%Lucid'
-  description: |-
-    Chance to cure blindness and
-    gain night vision when hit.
+  description: 'Chance to cure blindness and
+
+    gain night vision when hit.'
   applies-to: Armor
   type: DEFENSE;DEFENSE_MOB
   group: LEGENDARY
@@ -4602,9 +4507,9 @@ immolation:
         - BURN:60 @Aoe{radius=6,target=mobs}
 killaura:
   display: '%group-color%Kill Aura'
-  description: |-
-    Chance to kill multiple
-    monsters in radius.
+  description: 'Chance to kill multiple
+
+    monsters in radius.'
   applies-to: Swords
   group: LEGENDARY
   type: ATTACK_MOB
@@ -4674,9 +4579,9 @@ inquisitive:
         - EXP:<math>%exp% * (1.0 + 0.25 * %level%)</math> @Victim
 lifesteal:
   display: '%group-color%Lifesteal'
-  description: |-
-    A chance to steal health
-    when attacking.
+  description: 'A chance to steal health
+
+    when attacking.'
   applies-to: Swords
   type: ATTACK;ATTACK_MOB
   group: LEGENDARY
@@ -4710,7 +4615,9 @@ lifesteal:
         - STEAL_HEALTH:<random number>1-5</random number> @Attacker
 armored:
   display: '%group-color%Armored'
-  description: "Decreases damage from enemy\nswords by 2% per level."
+  description: 'Decreases damage from enemy
+
+    swords by 2% per level.'
   applies-to: Armor
   type: DEFENSE
   group: LEGENDARY
@@ -4747,9 +4654,9 @@ armored:
         - DECREASE_DAMAGE:8 @Attacker
 blacksmith:
   display: '%group-color%Blacksmith'
-  description: |-
-    Repair your weapon in exchange
-    for dealing less damage.
+  description: 'Repair your weapon in exchange
+
+    for dealing less damage.'
   applies-to: Axe
   type: ATTACK;ATTACK_MOB
   group: LEGENDARY
@@ -4793,9 +4700,9 @@ blacksmith:
         - PARTICLE:BLOCK_DUST:20:1
 immortal:
   display: '%group-color%Immortal'
-  description: |-
-    Chance to prevents your armor
-    from taking durability damage.
+  description: 'Chance to prevents your armor
+
+    from taking durability damage.'
   applies-to: Armor
   type: DEFENSE;DEFENSE_MOB
   group: FABLED
@@ -4875,9 +4782,9 @@ striker:
         - SPAWN_ARROWS @Victim
 sniper:
   display: '%group-color%Sniper'
-  description: |-
-    Headshots with bows
-    deal double damage.
+  description: 'Headshots with bows
+
+    deal double damage.'
   applies-to: Bow
   type: SHOOT;SHOOT_MOB
   settings:
@@ -4923,9 +4830,9 @@ sniper:
         - INCREASE_DAMAGE:100 @Attacker
 deadshot:
   display: '%group-color%Deadshot'
-  description: |-
-    Headshots with tridents
-    deal double damage.
+  description: 'Headshots with tridents
+
+    deal double damage.'
   applies-to: Trident
   type: SHOOT;SHOOT_MOB
   settings:
@@ -5120,9 +5027,9 @@ aegis:
         - POTION:SPEED:2:60
 plummet:
   display: '%group-color%Plummet'
-  description: |-
-    Deal damage to nearby mobs
-    when taking fall damage.
+  description: 'Deal damage to nearby mobs
+
+    when taking fall damage.'
   applies-to: Boots
   type: FALL_DAMAGE
   settings:
@@ -5198,10 +5105,11 @@ nightwalker:
         - POTION:SLOW:10:400 @Victim
 nulify:
   display: '%group-color%Nulify'
-  description: |-
-    Chance to deal double damage
+  description: 'Chance to deal double damage
+
     while leaving enemy blind.
-    Costs 40 souls / activation.
+
+    Costs 40 souls / activation.'
   applies-to: Weapons
   type: ATTACK
   group: FABLED
@@ -5247,9 +5155,9 @@ nulify:
         - PARTICLE:FLASH:4:0 @Victim
 diploid:
   display: '%group-color%Diploid'
-  description: |-
-    Chance to multiply mob drops.
-    Costs 5 souls / activation.
+  description: 'Chance to multiply mob drops.
+
+    Costs 5 souls / activation.'
   applies-to: Swords
   type: KILL_MOB
   group: FABLED
@@ -5288,9 +5196,9 @@ diploid:
         - MORE_DROPS:1
 multiplication:
   display: '%group-color%Multiplication'
-  description: |-
-    Chance to multiply ore drops.
-    Costs 5 souls / activation.
+  description: 'Chance to multiply ore drops.
+
+    Costs 5 souls / activation.'
   applies-to: Pickaxe
   type: MINING
   group: FABLED
@@ -5302,156 +5210,156 @@ multiplication:
       cooldown: 5
       settings:
         whitelist:
-          - "COAL_ORE"
-          - "COPPER_ORE"
-          - "IRON_ORE"
-          - "GOLD_ORE"
-          - "LAPIS_ORE"
-          - "REDSTONE_ORE"
-          - "DIAMOND_ORE"
-          - "EMERALD_ORE"
-          - "NETHER_QUARTZ_ORE"
-          - "NETHER_GOLD_ORE"
-          - "ANCIENT_DEBRIS"
-          - "DEEPSLATE_COAL_ORE"
-          - "DEEPSLATE_COPPER_ORE"
-          - "DEEPSLATE_IRON_ORE"
-          - "DEEPSLATE_GOLD_ORE"
-          - "DEEPSLATE_LAPIS_ORE"
-          - "DEEPSLATE_REDSTONE_ORE"
-          - "DEEPSLATE_DIAMOND_ORE"
-          - "DEEPSLATE_EMERALD_ORE"
+          - COAL_ORE
+          - COPPER_ORE
+          - IRON_ORE
+          - GOLD_ORE
+          - LAPIS_ORE
+          - REDSTONE_ORE
+          - DIAMOND_ORE
+          - EMERALD_ORE
+          - NETHER_QUARTZ_ORE
+          - NETHER_GOLD_ORE
+          - ANCIENT_DEBRIS
+          - DEEPSLATE_COAL_ORE
+          - DEEPSLATE_COPPER_ORE
+          - DEEPSLATE_IRON_ORE
+          - DEEPSLATE_GOLD_ORE
+          - DEEPSLATE_LAPIS_ORE
+          - DEEPSLATE_REDSTONE_ORE
+          - DEEPSLATE_DIAMOND_ORE
+          - DEEPSLATE_EMERALD_ORE
       conditions:
         - '%block type% contains ORE : %allow%'
         - '%souls on item% > 4 : %allow%'
       effects:
         - MORE_DROPS:1
-        - 'REMOVE_SOULS:5'
+        - REMOVE_SOULS:5
     '2':
       chance: 20
       cooldown: 5
       settings:
         whitelist:
-          - "COAL_ORE"
-          - "COPPER_ORE"
-          - "IRON_ORE"
-          - "GOLD_ORE"
-          - "LAPIS_ORE"
-          - "REDSTONE_ORE"
-          - "DIAMOND_ORE"
-          - "EMERALD_ORE"
-          - "NETHER_QUARTZ_ORE"
-          - "NETHER_GOLD_ORE"
-          - "ANCIENT_DEBRIS"
-          - "DEEPSLATE_COAL_ORE"
-          - "DEEPSLATE_COPPER_ORE"
-          - "DEEPSLATE_IRON_ORE"
-          - "DEEPSLATE_GOLD_ORE"
-          - "DEEPSLATE_LAPIS_ORE"
-          - "DEEPSLATE_REDSTONE_ORE"
-          - "DEEPSLATE_DIAMOND_ORE"
-          - "DEEPSLATE_EMERALD_ORE"
+          - COAL_ORE
+          - COPPER_ORE
+          - IRON_ORE
+          - GOLD_ORE
+          - LAPIS_ORE
+          - REDSTONE_ORE
+          - DIAMOND_ORE
+          - EMERALD_ORE
+          - NETHER_QUARTZ_ORE
+          - NETHER_GOLD_ORE
+          - ANCIENT_DEBRIS
+          - DEEPSLATE_COAL_ORE
+          - DEEPSLATE_COPPER_ORE
+          - DEEPSLATE_IRON_ORE
+          - DEEPSLATE_GOLD_ORE
+          - DEEPSLATE_LAPIS_ORE
+          - DEEPSLATE_REDSTONE_ORE
+          - DEEPSLATE_DIAMOND_ORE
+          - DEEPSLATE_EMERALD_ORE
       conditions:
         - '%block type% contains ORE : %allow%'
         - '%souls on item% > 4 : %allow%'
       effects:
         - MORE_DROPS:1
-        - 'REMOVE_SOULS:5'
+        - REMOVE_SOULS:5
     '3':
       chance: 25
       cooldown: 6
       settings:
         whitelist:
-          - "COAL_ORE"
-          - "COPPER_ORE"
-          - "IRON_ORE"
-          - "GOLD_ORE"
-          - "LAPIS_ORE"
-          - "REDSTONE_ORE"
-          - "DIAMOND_ORE"
-          - "EMERALD_ORE"
-          - "NETHER_QUARTZ_ORE"
-          - "NETHER_GOLD_ORE"
-          - "ANCIENT_DEBRIS"
-          - "DEEPSLATE_COAL_ORE"
-          - "DEEPSLATE_COPPER_ORE"
-          - "DEEPSLATE_IRON_ORE"
-          - "DEEPSLATE_GOLD_ORE"
-          - "DEEPSLATE_LAPIS_ORE"
-          - "DEEPSLATE_REDSTONE_ORE"
-          - "DEEPSLATE_DIAMOND_ORE"
-          - "DEEPSLATE_EMERALD_ORE"
+          - COAL_ORE
+          - COPPER_ORE
+          - IRON_ORE
+          - GOLD_ORE
+          - LAPIS_ORE
+          - REDSTONE_ORE
+          - DIAMOND_ORE
+          - EMERALD_ORE
+          - NETHER_QUARTZ_ORE
+          - NETHER_GOLD_ORE
+          - ANCIENT_DEBRIS
+          - DEEPSLATE_COAL_ORE
+          - DEEPSLATE_COPPER_ORE
+          - DEEPSLATE_IRON_ORE
+          - DEEPSLATE_GOLD_ORE
+          - DEEPSLATE_LAPIS_ORE
+          - DEEPSLATE_REDSTONE_ORE
+          - DEEPSLATE_DIAMOND_ORE
+          - DEEPSLATE_EMERALD_ORE
       conditions:
         - '%block type% contains ORE : %allow%'
         - '%souls on item% > 4 : %allow%'
       effects:
         - MORE_DROPS:1
-        - 'REMOVE_SOULS:5'
+        - REMOVE_SOULS:5
     '4':
       chance: 28
       cooldown: 7
       settings:
         whitelist:
-          - "COAL_ORE"
-          - "COPPER_ORE"
-          - "IRON_ORE"
-          - "GOLD_ORE"
-          - "LAPIS_ORE"
-          - "REDSTONE_ORE"
-          - "DIAMOND_ORE"
-          - "EMERALD_ORE"
-          - "NETHER_QUARTZ_ORE"
-          - "NETHER_GOLD_ORE"
-          - "ANCIENT_DEBRIS"
-          - "DEEPSLATE_COAL_ORE"
-          - "DEEPSLATE_COPPER_ORE"
-          - "DEEPSLATE_IRON_ORE"
-          - "DEEPSLATE_GOLD_ORE"
-          - "DEEPSLATE_LAPIS_ORE"
-          - "DEEPSLATE_REDSTONE_ORE"
-          - "DEEPSLATE_DIAMOND_ORE"
-          - "DEEPSLATE_EMERALD_ORE"
+          - COAL_ORE
+          - COPPER_ORE
+          - IRON_ORE
+          - GOLD_ORE
+          - LAPIS_ORE
+          - REDSTONE_ORE
+          - DIAMOND_ORE
+          - EMERALD_ORE
+          - NETHER_QUARTZ_ORE
+          - NETHER_GOLD_ORE
+          - ANCIENT_DEBRIS
+          - DEEPSLATE_COAL_ORE
+          - DEEPSLATE_COPPER_ORE
+          - DEEPSLATE_IRON_ORE
+          - DEEPSLATE_GOLD_ORE
+          - DEEPSLATE_LAPIS_ORE
+          - DEEPSLATE_REDSTONE_ORE
+          - DEEPSLATE_DIAMOND_ORE
+          - DEEPSLATE_EMERALD_ORE
       conditions:
         - '%block type% contains ORE : %allow%'
         - '%souls on item% > 4 : %allow%'
       effects:
         - MORE_DROPS:1
-        - 'REMOVE_SOULS:5'
+        - REMOVE_SOULS:5
     '5':
       chance: 30
       cooldown: 8
       settings:
         whitelist:
-          - "COAL_ORE"
-          - "COPPER_ORE"
-          - "IRON_ORE"
-          - "GOLD_ORE"
-          - "LAPIS_ORE"
-          - "REDSTONE_ORE"
-          - "DIAMOND_ORE"
-          - "EMERALD_ORE"
-          - "NETHER_QUARTZ_ORE"
-          - "NETHER_GOLD_ORE"
-          - "ANCIENT_DEBRIS"
-          - "DEEPSLATE_COAL_ORE"
-          - "DEEPSLATE_COPPER_ORE"
-          - "DEEPSLATE_IRON_ORE"
-          - "DEEPSLATE_GOLD_ORE"
-          - "DEEPSLATE_LAPIS_ORE"
-          - "DEEPSLATE_REDSTONE_ORE"
-          - "DEEPSLATE_DIAMOND_ORE"
-          - "DEEPSLATE_EMERALD_ORE"
+          - COAL_ORE
+          - COPPER_ORE
+          - IRON_ORE
+          - GOLD_ORE
+          - LAPIS_ORE
+          - REDSTONE_ORE
+          - DIAMOND_ORE
+          - EMERALD_ORE
+          - NETHER_QUARTZ_ORE
+          - NETHER_GOLD_ORE
+          - ANCIENT_DEBRIS
+          - DEEPSLATE_COAL_ORE
+          - DEEPSLATE_COPPER_ORE
+          - DEEPSLATE_IRON_ORE
+          - DEEPSLATE_GOLD_ORE
+          - DEEPSLATE_LAPIS_ORE
+          - DEEPSLATE_REDSTONE_ORE
+          - DEEPSLATE_DIAMOND_ORE
+          - DEEPSLATE_EMERALD_ORE
       conditions:
         - '%block type% contains ORE : %allow%'
         - '%souls on item% > 4 : %allow%'
       effects:
         - MORE_DROPS:1
-        - 'REMOVE_SOULS:5'
+        - REMOVE_SOULS:5
 spiritmaster:
   display: '%group-color%Spiritmaster'
-  description: |-
-    Chance to get more souls
-    from killing players.
+  description: 'Chance to get more souls
+
+    from killing players.'
   applies-to: Swords
   type: KILL_PLAYER
   group: FABLED
@@ -5475,9 +5383,9 @@ spiritmaster:
         - PARTICLE:HEART:1:0
 axeofspirits:
   display: '%group-color%Axe of Spirits'
-  description: |-
-    Chance to get more souls
-    from killing players.
+  description: 'Chance to get more souls
+
+    from killing players.'
   applies-to: Axes
   type: KILL_PLAYER
   group: FABLED
@@ -5596,4 +5504,681 @@ magnet:
       cooldown: 5
       effects:
         - PULL_CLOSER:3 @Victim
+autoreel:
+  display: '%group-color%Auto Reel'
+  description: Automatically reels in the fishing rod when it gets a bite.
+  applies-to: Fishing Rod
+  type: BITE_HOOK
+  group: ULTIMATE
+  settings:
+    showActionBar: true
+  applies:
+    - FISHING_ROD
+  levels:
+    '1':
+      chance: 25
+      effects:
+        - AUTO_REEL
+    '2':
+      chance: 50
+      effects:
+        - AUTO_REEL
+    '3':
+      chance: 75
+      effects:
+        - AUTO_REEL
+    '4':
+      effects:
+        - AUTO_REEL
+planter:
+  display: '%group-color%Planter'
+  description: 'Plant seeds in a 3x3 area
 
+    by shift+right-clicking.'
+  applies-to: Hoes
+  type: RIGHT_CLICK
+  settings:
+    showActionBar: true
+  group: ULTIMATE
+  applies:
+    - ALL_HOE
+  levels:
+    '1':
+      conditions:
+        - '%player is sneaking% = true : %allow%'
+      cooldown: 3
+      effects:
+        - PLANT_SEEDS:1
+    '2':
+      conditions:
+        - '%player is sneaking% = true : %allow%'
+      cooldown: 2
+      effects:
+        - PLANT_SEEDS:1
+    '3':
+      conditions:
+        - '%player is sneaking% = true : %allow%'
+      effects:
+        - PLANT_SEEDS:1
+potatoplanter:
+  display: '%group-color%Potato Planter'
+  description: 'Plant potatoes in a 3x3 area
+
+    by shift+right-clicking.'
+  applies-to: Hoes
+  type: RIGHT_CLICK
+  settings:
+    showActionBar: true
+  group: ULTIMATE
+  applies:
+    - ALL_HOE
+  levels:
+    '1':
+      conditions:
+        - '%player is sneaking% = true : %allow%'
+      cooldown: 3
+      effects:
+        - PLANT_SEEDS:1:POTATO
+    '2':
+      conditions:
+        - '%player is sneaking% = true : %allow%'
+      cooldown: 2
+      effects:
+        - PLANT_SEEDS:1:POTATO
+    '3':
+      conditions:
+        - '%player is sneaking% = true : %allow%'
+      effects:
+        - PLANT_SEEDS:1:POTATO
+carrotplanter:
+  display: '%group-color%Carrot Planter'
+  description: 'Plant carrots in a 3x3 area
+
+    by shift+right-clicking.'
+  applies-to: Hoes
+  type: RIGHT_CLICK
+  group: ULTIMATE
+  settings:
+    showActionBar: true
+  applies:
+    - ALL_HOE
+  levels:
+    '1':
+      conditions:
+        - '%player is sneaking% = true : %allow%'
+      cooldown: 3
+      effects:
+        - PLANT_SEEDS:1:CARROT
+    '2':
+      conditions:
+        - '%player is sneaking% = true : %allow%'
+      cooldown: 2
+      effects:
+        - PLANT_SEEDS:1:CARROT
+    '3':
+      conditions:
+        - '%player is sneaking% = true : %allow%'
+      effects:
+        - PLANT_SEEDS:2:CARROT
+replanter:
+  display: '%group-color%Replanter'
+  description: Replants crops when you break them.
+  applies-to: Hoes
+  type: MINING
+  group: UNIQUE
+  applies:
+    - ALL_HOE
+  levels:
+    '1':
+      conditions:
+        - '%is crop% = false : %stop%'
+        - '%is fully grown% = false : %stop%'
+      effects:
+        - PLANT_SEEDS:0:%block drop type%
+wings:
+  display: '%group-color%Wings'
+  description: Allows flying when worn.
+  applies-to: Boots
+  type: EFFECT_STATIC
+  group: LEGENDARY
+  applies:
+    - ALL_BOOTS
+  levels:
+    '1':
+      effects:
+        - FLY
+explosivedemise:
+  display: '%group-color%Explosive Demise'
+  description: 'Summon creepers as your guards
+
+    when near death.'
+  applies-to: Leggings
+  type: DEFENSE;DEFENSE_MOB
+  settings:
+    showActionBar: true
+  group: UNIQUE
+  applies:
+    - ALL_LEGGINGS
+  levels:
+    '1':
+      chance: 13
+      cooldown: 3
+      conditions:
+        - '%victim health% > 6 : %stop%'
+      effects:
+        - GUARD:CREEPER:8:1:@Victim
+        - POTION:BLINDNESS:0:40 @Attacker
+    '2':
+      chance: 17
+      cooldown: 3
+      conditions:
+        - '%victim health% > 6 : %stop%'
+      effects:
+        - GUARD:CREEPER:8:1:@Victim
+        - POTION:BLINDNESS:0:60 @Attacker
+    '3':
+      chance: 24
+      cooldown: 3
+      conditions:
+        - '%victim health% > 7 : %stop%'
+      effects:
+        - GUARD:CREEPER:8:1:@Victim
+        - POTION:BLINDNESS:0:100 @Attacker
+    '4':
+      chance: 30
+      cooldown: 3
+      conditions:
+        - '%victim health% > 7 : %stop%'
+      effects:
+        - GUARD:CREEPER:8:1:@Victim
+        - POTION:BLINDNESS:1:40 @Attacker
+    '5':
+      chance: 38
+      cooldown: 3
+      conditions:
+        - '%victim health% > 8 : %stop%'
+      effects:
+        - GUARD:CREEPER:8:2:@Victim
+        - POTION:BLINDNESS:1:80 @Attacker
+    '6':
+      chance: 46
+      cooldown: 3
+      conditions:
+        - '%victim health% > 8 : %stop%'
+      effects:
+        - GUARD:CREEPER:8:2:@Victim
+        - POTION:BLINDNESS:1:120 @Attacker
+    '7':
+      chance: 55
+      cooldown: 3
+      conditions:
+        - '%victim health% > 8 : %stop%'
+      effects:
+        - GUARD:CREEPER:8:2:@Victim
+        - POTION:BLINDNESS:2:60 @Attacker
+    '8':
+      chance: 69
+      cooldown: 3
+      conditions:
+        - '%victim health% > 8 : %stop%'
+      effects:
+        - GUARD:CREEPER:8:3:@Victim
+        - POTION:BLINDNESS:2:100 @Attacker
+paralyze:
+  display: '%group-color%Paralyze'
+  description: 'Gives lightning effect and a chance
+
+    for slowness and slow swinging.'
+  applies-to: Swords, Axes
+  type: ATTACK;ATTACK_MOB
+  group: ELITE
+  applies:
+    - ALL_SWORD
+    - ALL_AXE
+  levels:
+    '1':
+      chance: 7
+      cooldown: 3
+      effects:
+        - LIGHTNING @Victim
+        - EXTINGUISH @Victim
+        - POTION:SLOW:0:60 @Victim
+        - POTION:SLOW_DIGGING:0:60 @Victim
+    '2':
+      chance: 10
+      cooldown: 3
+      effects:
+        - LIGHTNING @Victim
+        - EXTINGUISH @Victim
+        - POTION:SLOW:0:100 @Victim
+        - POTION:SLOW_DIGGING:0:100 @Victim
+    '3':
+      chance: 13
+      cooldown: 3
+      effects:
+        - LIGHTNING @Victim
+        - EXTINGUISH @Victim
+        - POTION:SLOW:1:60 @Victim
+        - POTION:SLOW_DIGGING:1:60 @Victim
+    '4':
+      chance: 16
+      cooldown: 3
+      effects:
+        - LIGHTNING @Victim
+        - EXTINGUISH @Victim
+        - POTION:SLOW:1:100 @Victim
+        - POTION:SLOW_DIGGING:1:100 @Victim
+undeadruse:
+  display: '%group-color%Undead Ruse'
+  description: 'When hit you have a chance to spawn zombie
+
+    hordes to distract and disorient your opponents.'
+  applies-to: Boots
+  type: DEFENSE;DEFENSE_MOB
+  settings:
+    showActionBar: true
+  group: ELITE
+  applies:
+    - ALL_BOOTS
+  levels:
+    '1':
+      chance: 3
+      cooldown: 6
+      effects:
+        - GUARD:ZOMBIE:8:2:@Victim
+    '2':
+      chance: 4
+      cooldown: 6
+      effects:
+        - GUARD:ZOMBIE:8:2:@Victim
+    '3':
+      chance: 5
+      cooldown: 6
+      effects:
+        - GUARD:ZOMBIE:8:2:@Victim
+    '4':
+      chance: 6
+      cooldown: 6
+      effects:
+        - GUARD:ZOMBIE:8:2:@Victim
+    '5':
+      chance: 7
+      cooldown: 6
+      effects:
+        - GUARD:ZOMBIE:8:2:@Victim
+    '6':
+      chance: 8
+      cooldown: 6
+      effects:
+        - GUARD:ZOMBIE:8:3:@Victim
+    '7':
+      chance: 10
+      cooldown: 6
+      effects:
+        - GUARD:ZOMBIE:8:3:@Victim
+    '8':
+      chance: 14
+      cooldown: 6
+      effects:
+        - GUARD:ZOMBIE:8:4:@Victim
+    '9':
+      chance: 18
+      cooldown: 6
+      effects:
+        - GUARD:ZOMBIE:8:4:@Victim
+    '10':
+      chance: 22
+      cooldown: 6
+      effects:
+        - GUARD:ZOMBIE:8:5:@Victim
+extinguish:
+  display: '%group-color%Extinguish'
+  description: 'Chance to extinguish yourself
+
+    when on fire.'
+  applies-to: Leggings
+  type: DEFENSE;DEFENSE_MOB;FIRE
+  group: ELITE
+  applies:
+    - ALL_LEGGINGS
+  levels:
+    '1':
+      chance: 20
+      effects:
+        - WAIT:1
+        - EXTINGUISH @Victim
+    '2':
+      chance: 60
+      effects:
+        - WAIT:1
+        - EXTINGUISH @Victim
+    '3':
+      chance: 80
+      effects:
+        - WAIT:1
+        - EXTINGUISH @Victim
+rocketescape:
+  display: '%group-color%Rocket Escape'
+  description: Blast off into the air at low HP.
+  applies-to: Boots
+  type: DEFENSE;DEFENSE_MOB
+  settings:
+    showActionBar: true
+  group: ELITE
+  applies:
+    - ALL_BOOTS
+  levels:
+    '1':
+      chance: 20
+      cooldown: 8
+      conditions:
+        - '%victim health% > 6 : %stop%'
+      effects:
+        - BOOST:UP:20 @Victim
+    '2':
+      chance: 34
+      cooldown: 8
+      conditions:
+        - '%victim health% > 6 : %stop%'
+      effects:
+        - BOOST:UP:25 @Victim
+    '3':
+      chance: 40
+      cooldown: 8
+      conditions:
+        - '%victim health% > 6 : %stop%'
+      effects:
+        - BOOST:UP:30 @Victim
+bleed:
+  display: '%group-color%Bleed'
+  description: Make your opponent bleed.
+  applies-to: Axes
+  type: ATTACK;ATTACK_MOB
+  settings:
+    showActionBar: true
+  group: ULTIMATE
+  applies:
+    - ALL_AXE
+  levels:
+    '1':
+      chance: 8
+      effects:
+        - POTION:SLOW:0:100 @Victim
+        - DO_HARM:<random number>1-3</random number> @Victim
+        - WAIT:20
+        - DO_HARM:<random number>1-3</random number> @Victim
+        - WAIT:20
+        - DO_HARM:<random number>1-3</random number> @Victim
+    '2':
+      chance: 15
+      effects:
+        - POTION:SLOW:0:100 @Victim
+        - DO_HARM:<random number>1-3</random number> @Victim
+        - WAIT:20
+        - DO_HARM:<random number>1-3</random number> @Victim
+        - WAIT:20
+        - DO_HARM:<random number>1-3</random number> @Victim
+    '3':
+      chance: 23
+      effects:
+        - POTION:SLOW:0:100 @Victim
+        - DO_HARM:<random number>1-3</random number> @Victim
+        - WAIT:20
+        - DO_HARM:<random number>1-3</random number> @Victim
+        - WAIT:20
+        - DO_HARM:<random number>1-3</random number> @Victim
+    '4':
+      chance: 30
+      effects:
+        - POTION:SLOW:0:100 @Victim
+        - DO_HARM:<random number>1-3</random number> @Victim
+        - WAIT:20
+        - DO_HARM:<random number>1-3</random number> @Victim
+        - WAIT:20
+        - DO_HARM:<random number>1-3</random number> @Victim
+    '5':
+      chance: 44
+      effects:
+        - POTION:SLOW:0:100 @Victim
+        - DO_HARM:<random number>1-3</random number> @Victim
+        - WAIT:20
+        - DO_HARM:<random number>1-3</random number> @Victim
+        - WAIT:20
+        - DO_HARM:<random number>1-3</random number> @Victim
+    '6':
+      chance: 60
+      effects:
+        - POTION:SLOW:0:100 @Victim
+        - DO_HARM:<random number>1-3</random number> @Victim
+        - WAIT:20
+        - DO_HARM:<random number>1-3</random number> @Victim
+        - WAIT:20
+        - DO_HARM:<random number>1-3</random number> @Victim
+convulse:
+  display: '%group-color%Convulse'
+  description: 'Chance to throw your
+
+    attackers into the air.'
+  applies-to: Boots
+  type: DEFENSE;DEFENSE_MOB
+  group: LEGENDARY
+  applies:
+    - ALL_BOOTS
+  levels:
+    '1':
+      chance: 8
+      cooldown: 10
+      effects:
+        - BOOST:UP:5 @Attacker
+    '2':
+      chance: 10
+      cooldown: 10
+      effects:
+        - BOOST:UP:6 @Attacker
+    '3':
+      chance: 12
+      cooldown: 10
+      effects:
+        - BOOST:UP:7 @Attacker
+    '4':
+      chance: 14
+      cooldown: 10
+      effects:
+        - BOOST:UP:8 @Attacker
+    '5':
+      chance: 16
+      cooldown: 10
+      effects:
+        - BOOST:UP:9 @Attacker
+    '6':
+      chance: 18
+      cooldown: 10
+      effects:
+        - BOOST:UP:10 @Attacker
+overload:
+  display: '%group-color%Overload'
+  description: Unlocks additional hearts.
+  applies-to: Armor
+  type: EFFECT_STATIC
+  group: LEGENDARY
+  applies:
+    - ALL_ARMOR
+  levels:
+    '1':
+      effects:
+        - POTION:HEALTH_BOOST:0
+    '2':
+      effects:
+        - POTION:HEALTH_BOOST:1
+    '3':
+      effects:
+        - POTION:HEALTH_BOOST:2
+phoenix:
+  display: '%group-color%Phoenix'
+  description: Chance to revive yourself when killed.
+  applies-to: Chestplates
+  type: DEATH
+  group: FABLED
+  applies:
+    - ALL_CHESTPLATE
+  levels:
+    '1':
+      chance: 5
+      cooldown: 20
+      conditions:
+        - '%victim has enchantment in CHESTPLATE of phoenix% = true : %allow%'
+      effects:
+        - REVIVE @Victim
+    '2':
+      chance: 7
+      cooldown: 20
+      conditions:
+        - '%victim has enchantment in CHESTPLATE of phoenix% = true : %allow%'
+      effects:
+        - REVIVE @Victim
+    '3':
+      chance: 9
+      cooldown: 20
+      conditions:
+        - '%victim has enchantment in CHESTPLATE of phoenix% = true : %allow%'
+      effects:
+        - REVIVE @Victim
+suspend:
+  display: '%group-color%Suspend'
+  description: Chance to cause no knockback to mobs.
+  applies-to: Swords
+  type: ATTACK_MOB
+  group: ELITE
+  applies:
+    - ALL_SWORD
+  levels:
+    '1':
+      chance: 40
+      effects:
+        - STOP_KNOCKBACK @Victim
+    '2':
+      chance: 80
+      effects:
+        - STOP_KNOCKBACK @Victim
+    '3':
+      effects:
+        - STOP_KNOCKBACK @Victim
+launch:
+  display: '%group-color%Launch'
+  description: Launch yourself by right-clicking.
+  applies-to: Swords
+  type: RIGHT_CLICK
+  settings:
+    showActionBar: true
+  group: LEGENDARY
+  applies:
+    - ALL_SWORD
+  levels:
+    '1':
+      chance: 20
+      cooldown: 15
+      effects:
+        - BOOST:UP:8
+        - PARTICLE:CLOUD:20:2
+    '2':
+      chance: 27
+      cooldown: 15
+      effects:
+        - BOOST:UP:9
+        - PARTICLE:CLOUD:20:2
+    '3':
+      chance: 35
+      cooldown: 10
+      effects:
+        - BOOST:UP:10
+        - PARTICLE:CLOUD:20:2
+slingshot:
+  display: '%group-color%Slingshot'
+  description: Boost yourself into flight by right-clicking.
+  applies-to: Elytra
+  type: RIGHT_CLICK
+  group: LEGENDARY
+  applies:
+    - ELYTRA
+  levels:
+    '1':
+      chance: 20
+      cooldown: 15
+      conditions:
+        - '%is holding% contains FIREWORK : %stop%'
+      effects:
+        - BOOST:UP:10
+    '2':
+      chance: 40
+      cooldown: 10
+      conditions:
+        - '%is holding% contains FIREWORK : %stop%'
+      effects:
+        - BOOST:UP:12
+    '3':
+      chance: 50
+      cooldown: 5
+      conditions:
+        - '%is holding% contains FIREWORK : %stop%'
+      effects:
+        - BOOST:UP:16
+rush:
+  display: '%group-color%Rush'
+  description: 'Chance of speed boost when
+
+    taking off with elytra.
+
+    Costs 10 souls / activation.'
+  applies-to: Elytra
+  type: ELYTRA_FLY
+  group: FABLED
+  applies:
+    - ELYTRA
+  levels:
+    '1':
+      chance: 15
+      cooldown: 5
+      conditions:
+        - '%souls on item% < 10 : %stop%'
+      effects:
+        - REMOVE_SOULS:10
+        - POTION:SPEED:3:60
+    '2':
+      chance: 25
+      cooldown: 5
+      conditions:
+        - '%souls on item% < 10 : %stop%'
+      effects:
+        - REMOVE_SOULS:10
+        - POTION:SPEED:4:60
+    '3':
+      chance: 26
+      cooldown: 5
+      conditions:
+        - '%souls on item% < 10 : %stop%'
+      effects:
+        - REMOVE_SOULS:10
+        - POTION:SPEED:5:60
+callallies:
+  display: Call to Allies
+  description: 'Call your allies to your aid
+
+    if you are in danger.'
+  applies-to: Goat horn
+  type: HORN
+  group: ULTIMATE
+  applies:
+    - GOAT_HORN
+  levels:
+    '1':
+      cooldown: 60
+      effects:
+        - GUARD:IRON_GOLEM:3:2:%player name%'s Ally:true @Aoe{radius=5,target=all}
+    '2':
+      cooldown: 45
+      effects:
+        - GUARD:IRON_GOLEM:4:2:%player name%'s Ally:true @Aoe{radius=5,target=all}
+    '3':
+      cooldown: 30
+      effects:
+        - GUARD:IRON_GOLEM:5:2:%player name%'s Ally:true @Aoe{radius=5,target=all}

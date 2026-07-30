@@ -1,0 +1,179 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0032] HoldItemTrigger: 
+
+AE PATCH REASON: 
+AE PATCH FIX: 
+AE PATCH RISK: 
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/HoldItemTrigger.java b/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/HoldItemTrigger.java
+--- a/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/HoldItemTrigger.java	2026-07-30 10:27:31.660350051 +0000
++++ b/net/advancedplugins/ae/impl/effects/effects/mechanics/triggers/internal/HoldItemTrigger.java	2026-07-30 12:27:56.991471431 +0000
+@@ -4,14 +4,14 @@
+ import java.util.HashSet;
+ import java.util.Map;
+ import java.util.UUID;
+-import lombok.Generated;
++import net.advancedplugins.ae.impl.effects.effects.EffectsHandler;
+ import net.advancedplugins.ae.impl.effects.effects.actions.AdvancedTrigger;
+ import net.advancedplugins.ae.impl.effects.effects.actions.utils.RollItemType;
+ import net.advancedplugins.ae.impl.effects.effects.actions.utils.StackItem;
+ import net.advancedplugins.ae.impl.utils.ASManager;
+ import net.advancedplugins.ae.impl.utils.Pair;
+-import net.advancedplugins.ae.impl.utils.SchedulerUtils;
+ import net.advancedplugins.ae.impl.utils.nbt.utils.MinecraftVersion;
++import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
+ import org.bukkit.Material;
+ import org.bukkit.entity.LivingEntity;
+ import org.bukkit.entity.Player;
+@@ -111,67 +111,67 @@
+       priority = EventPriority.HIGHEST,
+       ignoreCancelled = true
+    )
+-   public void onInvClick(InventoryClickEvent var1) {
+-      Player var2 = (Player)var1.getWhoClicked();
+-      int var3 = var1.getSlot();
+-      int var4 = var2.getInventory().getHeldItemSlot();
+-      ItemStack var5 = var1.getCurrentItem();
+-      ItemStack var6 = var1.getCursor();
+-      switch (var1.getAction()) {
+-         case HOTBAR_SWAP:
+-            if (var4 == var1.getHotbarButton() && var1.getHotbarButton() != -1) {
+-               this.executeCheck(var2, var2.getInventory().getItem(var1.getHotbarButton()), var5);
+-            } else {
+-               if (var3 == 40 && MinecraftVersion.getVersionNumber() >= 1160 && var1.getClick() == ClickType.SWAP_OFFHAND) {
+-                  return;
+-               }
+-
+-               if (MinecraftVersion.getVersionNumber() >= 1160 && var1.getClick() == ClickType.SWAP_OFFHAND) {
+-                  this.executeOffhandCheck(var2, var2.getInventory().getItemInOffHand(), var5);
+-               }
+-            }
+-            break;
+-         case HOTBAR_MOVE_AND_READD:
+-            if (var1.getHotbarButton() != -1) {
+-               this.executeCheck(var2, var2.getInventory().getItem(var1.getHotbarButton()), var5);
+-            }
+-            break;
+-         case SWAP_WITH_CURSOR:
+-            if (var4 == var1.getHotbarButton() && var1.getHotbarButton() != -1) {
+-               this.executeCheck(var2, var2.getInventory().getItem(var1.getHotbarButton()), var5);
+-            }
+-            break;
+-         case MOVE_TO_OTHER_INVENTORY:
+-            if (!(var1.getInventory() instanceof PlayerInventory) && var4 != var3) {
+-               SchedulerUtils.runTaskLater(() -> this.executeCheck(var2, null, var2.getItemInHand()));
+-            } else if (var4 == var3) {
+-               this.executeCheck(var2, var5, null);
+-            }
+-      }
+-
+-      if (var5 != null) {
+-         if (var1.getClickedInventory() instanceof PlayerInventory) {
+-            if (var3 == var4) {
+-               this.executeCheck(var2, var5, var6);
+-            }
+-
+-            if (var3 == 40) {
+-               ItemStack var7 = var6.clone();
+-               ItemStack var8 = var2.getInventory().getItemInOffHand().clone();
+-               SchedulerUtils.runTaskLater(() -> {
+-                  if (var7.equals(var2.getInventory().getItemInOffHand())) {
+-                     this.executeOffhandCheck(var2, var8, var7);
+-                  }
+-               });
+-            }
+-         }
+-      } else if (var6 != null && var3 == var4) {
+-         if (var1.getSlotType().equals(SlotType.QUICKBAR) && var1.getHotbarButton() == -1) {
+-            this.executeCheck(var2, null, var6);
+-         } else {
+-            this.executeCheck(var2, var6, null);
+-         }
+-      }
++    public void onInvClick(InventoryClickEvent event) {
++       Player player = (Player)event.getWhoClicked();
++       int slot = event.getSlot();
++       int heldSlot = player.getInventory().getHeldItemSlot();
++       ItemStack currentItem = event.getCurrentItem();
++       ItemStack cursor = event.getCursor();
++       switch (event.getAction()) {
++          case HOTBAR_SWAP:
++             if (heldSlot == event.getHotbarButton() && event.getHotbarButton() != -1) {
++                this.executeCheck(player, player.getInventory().getItem(event.getHotbarButton()), currentItem);
++             } else {
++                if (slot == 40 && MinecraftVersion.getVersionNumber() >= 1160 && event.getClick() == ClickType.SWAP_OFFHAND) {
++                   return;
++                }
++
++                if (MinecraftVersion.getVersionNumber() >= 1160 && event.getClick() == ClickType.SWAP_OFFHAND) {
++                   this.executeOffhandCheck(player, player.getInventory().getItemInOffHand(), currentItem);
++                }
++             }
++             break;
++          case HOTBAR_MOVE_AND_READD:
++             if (event.getHotbarButton() != -1) {
++                this.executeCheck(player, player.getInventory().getItem(event.getHotbarButton()), currentItem);
++             }
++             break;
++          case SWAP_WITH_CURSOR:
++             if (heldSlot == event.getHotbarButton() && event.getHotbarButton() != -1) {
++                this.executeCheck(player, player.getInventory().getItem(event.getHotbarButton()), currentItem);
++             }
++             break;
++          case MOVE_TO_OTHER_INVENTORY:
++             if (!(event.getInventory() instanceof PlayerInventory) && heldSlot != slot) {
++                player.getScheduler().runDelayed(EffectsHandler.getInstance(), task -> this.executeCheck(player, null, player.getItemInHand()), null, 1L);
++             } else if (heldSlot == slot) {
++                this.executeCheck(player, currentItem, null);
++             }
++       }
++
++       if (currentItem != null) {
++          if (event.getClickedInventory() instanceof PlayerInventory) {
++             if (slot == heldSlot) {
++                this.executeCheck(player, currentItem, cursor);
++             }
++
++             if (slot == 40) {
++                ItemStack cursorClone = cursor.clone();
++                ItemStack offHandClone = player.getInventory().getItemInOffHand().clone();
++                player.getScheduler().runDelayed(EffectsHandler.getInstance(), task -> {
++                   if (cursorClone.equals(player.getInventory().getItemInOffHand())) {
++                      this.executeOffhandCheck(player, offHandClone, cursorClone);
++                   }
++                }, null, 1L);
++             }
++          }
++        } else if (cursor != null && slot == heldSlot) {
++          if (event.getSlotType().equals(SlotType.QUICKBAR) && event.getHotbarButton() == -1) {
++             this.executeCheck(player, null, cursor);
++          } else {
++             this.executeCheck(player, cursor, null);
++          }
++       }
+    }
+ 
+    @EventHandler(
+@@ -255,15 +255,14 @@
+    }
+ 
+    @EventHandler
+-   public void onPlayerJoin(PlayerJoinEvent var1) {
+-      SchedulerUtils.runTaskLater(() -> {
+-         Player var2 = var1.getPlayer();
+-         this.runCheck(var2.getItemInHand(), var2, false, false);
+-         this.runCheck(var2.getInventory().getItemInOffHand(), var2, true, false);
+-      }, 20L);
++   public void onPlayerJoin(PlayerJoinEvent event) {
++      Player player = event.getPlayer();
++      player.getScheduler().runDelayed(EffectsHandler.getInstance(), task -> {
++         this.runCheck(player.getItemInHand(), player, false, false);
++         this.runCheck(player.getInventory().getItemInOffHand(), player, true, false);
++      }, null, 20L);
+    }
+ 
+-   @Generated
+    public static HoldItemTrigger getHoldItemTrigger() {
+       return holdItemTrigger;
+    }

@@ -1,0 +1,75 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0028] TridentShootHandler: 
+
+AE PATCH REASON: 
+AE PATCH FIX: 
+AE PATCH RISK: 
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/utils/TridentShootHandler.java b/net/advancedplugins/ae/impl/effects/effects/effects/utils/TridentShootHandler.java
+--- a/net/advancedplugins/ae/impl/effects/effects/effects/utils/TridentShootHandler.java	2026-07-30 10:27:31.669350132 +0000
++++ b/net/advancedplugins/ae/impl/effects/effects/effects/utils/TridentShootHandler.java	2026-07-30 12:20:31.502525995 +0000
+@@ -3,7 +3,9 @@
+ import java.util.HashMap;
+ import java.util.Map;
+ import java.util.UUID;
+-import net.advancedplugins.ae.impl.utils.SchedulerUtils;
++import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
++import net.advancedplugins.ae.impl.effects.effects.EffectsHandler;
++import org.bukkit.Bukkit;
+ import org.bukkit.entity.EntityType;
+ import org.bukkit.entity.LivingEntity;
+ import org.bukkit.entity.Trident;
+@@ -21,29 +23,29 @@
+       priority = EventPriority.MONITOR,
+       ignoreCancelled = true
+    )
+-   public void onShoot(ProjectileLaunchEvent var1) {
+-      if (var1.getEntity() instanceof Trident) {
+-         if (var1.getEntity().getShooter() instanceof LivingEntity) {
+-            LivingEntity var2 = (LivingEntity)var1.getEntity().getShooter();
+-            savedTridents.put(var2.getUniqueId(), var2.getEquipment().getItemInHand().clone());
+-         }
+-      }
+-   }
++    public void onShoot(ProjectileLaunchEvent event) {
++       if (event.getEntity() instanceof Trident) {
++          if (event.getEntity().getShooter() instanceof LivingEntity) {
++             LivingEntity shooter = (LivingEntity)event.getEntity().getShooter();
++             savedTridents.put(shooter.getUniqueId(), shooter.getEquipment().getItemInHand().clone());
++          }
++       }
++    }
+ 
+-   public static ItemStack getItem(UUID var0) {
+-      return savedTridents.get(var0);
+-   }
++    public static ItemStack getItem(UUID uuid) {
++       return savedTridents.get(uuid);
++    }
+ 
+-   @EventHandler(
+-      priority = EventPriority.MONITOR,
+-      ignoreCancelled = true
+-   )
+-   public void onLang(ProjectileHitEvent var1) {
+-      if (var1.getEntity().getType() == EntityType.TRIDENT) {
+-         if (var1.getEntity().getShooter() instanceof LivingEntity) {
+-            LivingEntity var2 = (LivingEntity)var1.getEntity().getShooter();
+-            SchedulerUtils.runTaskLater(() -> savedTridents.remove(var2.getUniqueId()));
+-         }
+-      }
+-   }
++    @EventHandler(
++       priority = EventPriority.MONITOR,
++       ignoreCancelled = true
++    )
++    public void onLang(ProjectileHitEvent event) {
++       if (event.getEntity().getType() == EntityType.TRIDENT) {
++          if (event.getEntity().getShooter() instanceof LivingEntity) {
++             LivingEntity shooter = (LivingEntity)event.getEntity().getShooter();
++             Bukkit.getGlobalRegionScheduler().runDelayed(EffectsHandler.getInstance(), task -> savedTridents.remove(shooter.getUniqueId()), 1L);
++          }
++       }
++    }
+ }

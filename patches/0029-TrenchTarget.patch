@@ -1,0 +1,312 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0013] TrenchTarget: Rename obfuscated variables to descriptive names
+
+AE PATCH REASON: Decompiled variable names (var1-var34) make block-target logic unmaintainable and hinder Folia migration debugging.
+AE PATCH FIX: Rename all obfuscated variables to descriptive names: var0->yaw/pitch, var1-var3->effect/targetStr/task, var4->classified, var5-var7->radiusX/Y/Z, var10->locations, var11->origin, var14->originLoc, var15->world, classified loop variables. Rename processBlock/handleCustomBlockMetadata parameters consistently.
+AE PATCH RISK: LOW - Refactor only, no behavioral or API changes.
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/effects/mechanics/targets/internal/TrenchTarget.java b/net/advancedplugins/ae/impl/effects/effects/mechanics/targets/internal/TrenchTarget.java
+--- a/net/advancedplugins/ae/impl/effects/effects/mechanics/targets/internal/TrenchTarget.java	2026-07-30 10:27:31.657350024 +0000
++++ b/net/advancedplugins/ae/impl/effects/effects/mechanics/targets/internal/TrenchTarget.java	2026-07-30 11:35:43.538250530 +0000
+@@ -28,136 +28,136 @@
+       super("Trench");
+    }
+ 
+-   public static BlockFace getPlayerFacing(float var0, float var1) {
+-      if (var1 <= -80.0F) {
++   public static BlockFace getPlayerFacing(float yaw, float pitch) {
++      if (pitch <= -80.0F) {
+          return BlockFace.UP;
+-      } else if (var1 >= 80.0F) {
++      } else if (pitch >= 80.0F) {
+          return BlockFace.DOWN;
+       } else {
+-         if (var0 < 0.0F) {
+-            var0 += 360.0F;
++         if (yaw < 0.0F) {
++            yaw += 360.0F;
+          }
+ 
+-         if (var0 >= 315.0F || var0 < 45.0F) {
++         if (yaw >= 315.0F || yaw < 45.0F) {
+             return BlockFace.SOUTH;
+-         } else if (var0 < 135.0F) {
++         } else if (yaw < 135.0F) {
+             return BlockFace.WEST;
+          } else {
+-            return var0 < 225.0F ? BlockFace.NORTH : BlockFace.EAST;
++            return yaw < 225.0F ? BlockFace.NORTH : BlockFace.EAST;
+          }
+       }
+    }
+ 
+    @Override
+-   public TargetResults getTargets(String var1, String var2, ExecutionTask var3) {
+-      HashMap var4 = this.classifyTarget(var2);
+-      boolean var8 = false;
+-      int var5;
+-      int var6;
+-      int var7;
+-      if (var4.containsKey(TargetArgument.RADIUS_CUSTOM)) {
+-         String[] var9 = ((String)var4.get(TargetArgument.RADIUS_CUSTOM)).split("x");
+-         var5 = ASManager.parseInt(var9.length > 0 ? var9[0] : "0");
+-         var6 = ASManager.parseInt(var9.length > 1 ? var9[1] : "0");
+-         var7 = ASManager.parseInt(var9.length > 2 ? var9[2] : "0");
+-         var8 = true;
+-         if (var5 % 2 == 0 || var6 % 2 == 0 || var7 % 2 == 0) {
+-            var3.reportIssue(var1, "Trench supports only odd numbers in order to work properly");
++   public TargetResults getTargets(String effect, String targetStr, ExecutionTask task) {
++      HashMap classified = this.classifyTarget(targetStr);
++      boolean useCustomRadius = false;
++      int radiusX;
++      int radiusY;
++      int radiusZ;
++      if (classified.containsKey(TargetArgument.RADIUS_CUSTOM)) {
++         String[] parts = ((String)classified.get(TargetArgument.RADIUS_CUSTOM)).split("x");
++         radiusX = ASManager.parseInt(parts.length > 0 ? parts[0] : "0");
++         radiusY = ASManager.parseInt(parts.length > 1 ? parts[1] : "0");
++         radiusZ = ASManager.parseInt(parts.length > 2 ? parts[2] : "0");
++         useCustomRadius = true;
++         if (radiusX % 2 == 0 || radiusY % 2 == 0 || radiusZ % 2 == 0) {
++            task.reportIssue(effect, "Trench supports only odd numbers in order to work properly");
+          }
+       } else {
+-         int var28 = ASManager.parseInt(var4.getOrDefault(TargetArgument.RADIUS, "0"));
+-         if (var28 == 0) {
+-            var28 = 3;
++          int radius = ASManager.parseInt((String)classified.getOrDefault(TargetArgument.RADIUS, "0"));
++         if (radius == 0) {
++            radius = 3;
+          }
+ 
+-         if (var28 % 2 == 0) {
+-            var3.reportIssue(var1, "Trench supports only odd numbers in order to work properly");
++         if (radius % 2 == 0) {
++            task.reportIssue(effect, "Trench supports only odd numbers in order to work properly");
+          }
+ 
+-         var28 = (var28 - 1) / 2;
+-         var7 = var28;
+-         var6 = var28;
+-         var5 = var28;
++         radius = (radius - 1) / 2;
++         radiusZ = radius;
++         radiusY = radius;
++         radiusX = radius;
+       }
+ 
+-      boolean var30 = ASManager.parseBoolean(var4.getOrDefault(TargetArgument.IGNORE_TOOL, "false"), false);
+-      ArrayList var10 = new ArrayList();
+-      Block var11 = var3.getBuilder().getBlock();
+-      if (var11 == null) {
+-         return TargetResults.builder().targetLocations(var10).build();
+-      } else if (var11.getType().name().equalsIgnoreCase("FIRE")) {
+-         return TargetResults.builder().targetLocations(var10).build();
++      boolean ignoreTool = ASManager.parseBoolean((String)classified.getOrDefault(TargetArgument.IGNORE_TOOL, "false"), false);
++      ArrayList<Location> locations = new ArrayList<>();
++      Block origin = task.getBuilder().getBlock();
++      if (origin == null) {
++         return TargetResults.builder().targetLocations(locations).build();
++      } else if (origin.getType().name().equalsIgnoreCase("FIRE")) {
++         return TargetResults.builder().targetLocations(locations).build();
+       } else {
+-         List var12 = var3.getAbility().getWhitelist();
+-         List var13 = var3.getAbility().getBlacklist();
+-         if (var12 != null && !var12.isEmpty()) {
+-            if (!var12.contains(var11.getType().name())) {
+-               return TargetResults.builder().targetLocations(var10).build();
+-            }
+-         } else if (var13 != null && !var13.isEmpty() && var13.contains(var11.getType().name())) {
+-            return TargetResults.builder().targetLocations(var10).build();
+-         }
+-
+-         Location var14 = var11.getLocation();
+-         World var15 = var14.getWorld();
+-         if (var8) {
+-            Location var16 = var3.getBuilder().getMain().getLocation();
+-            BlockFace var17 = getPlayerFacing(var16.getYaw(), var16.getPitch());
+-            Vector var18 = getRightVector(var17);
+-            Vector var19 = getUpVector(var17);
+-            Vector var20 = var17.getDirection();
+-            int var21 = (var5 - 1) / 2;
+-            int var22 = (var6 - 1) / 2;
+-
+-            for (int var23 = -var22; var23 <= var22; var23++) {
+-               for (int var24 = -var21; var24 <= var21; var24++) {
+-                  for (int var25 = 0; var25 < var7; var25++) {
+-                     Vector var26 = var18.clone().multiply(var24).add(var19.clone().multiply(var23)).add(var20.clone().multiply(var25));
+-                     Block var27 = var14.getBlock().getRelative(var26.getBlockX(), var26.getBlockY(), var26.getBlockZ());
+-                     processBlock(var27, var11, var14, var30, var3, var10);
++         List whitelist = task.getAbility().getWhitelist();
++         List blacklist = task.getAbility().getBlacklist();
++         if (whitelist != null && !whitelist.isEmpty()) {
++            if (!whitelist.contains(origin.getType().name())) {
++               return TargetResults.builder().targetLocations(locations).build();
++            }
++         } else if (blacklist != null && !blacklist.isEmpty() && blacklist.contains(origin.getType().name())) {
++            return TargetResults.builder().targetLocations(locations).build();
++         }
++
++         Location originLoc = origin.getLocation();
++         World world = originLoc.getWorld();
++         if (useCustomRadius) {
++            Location playerLoc = task.getBuilder().getMain().getLocation();
++            BlockFace facing = getPlayerFacing(playerLoc.getYaw(), playerLoc.getPitch());
++            Vector right = getRightVector(facing);
++            Vector up = getUpVector(facing);
++            Vector direction = facing.getDirection();
++            int halfX = (radiusX - 1) / 2;
++            int halfZ = (radiusY - 1) / 2;
++
++            for (int dz = -halfZ; dz <= halfZ; dz++) {
++               for (int dx = -halfX; dx <= halfX; dx++) {
++                  for (int depth = 0; depth < radiusZ; depth++) {
++                     Vector offset = right.clone().multiply(dx).add(up.clone().multiply(dz)).add(direction.clone().multiply(depth));
++                     Block target = originLoc.getBlock().getRelative(offset.getBlockX(), offset.getBlockY(), offset.getBlockZ());
++                     processBlock(target, origin, originLoc, ignoreTool, task, locations);
+                   }
+                }
+             }
+          } else {
+-            for (int var31 = var14.getBlockX() - var5; var31 <= var14.getBlockX() + var5; var31++) {
+-               for (int var32 = var14.getBlockZ() - var7; var32 <= var14.getBlockZ() + var7; var32++) {
+-                  for (int var33 = var14.getBlockY() - var6; var33 <= var14.getBlockY() + var6; var33++) {
+-                     Block var34 = var15.getBlockAt(var31, var33, var32);
+-                     processBlock(var34, var11, var14, var30, var3, var10);
++            for (int bx = originLoc.getBlockX() - radiusX; bx <= originLoc.getBlockX() + radiusX; bx++) {
++               for (int bz = originLoc.getBlockZ() - radiusZ; bz <= originLoc.getBlockZ() + radiusZ; bz++) {
++                  for (int by = originLoc.getBlockY() - radiusY; by <= originLoc.getBlockY() + radiusY; by++) {
++                     Block target = world.getBlockAt(bx, by, bz);
++                     processBlock(target, origin, originLoc, ignoreTool, task, locations);
+                   }
+                }
+             }
+          }
+ 
+          if (SettingValues.isTrenchMoveItemsToInventory()) {
+-            var3.getBuilder().getDrops().getSettings().setAddToInventory(true);
++            task.getBuilder().getDrops().getSettings().setAddToInventory(true);
+          }
+ 
+-         return TargetResults.builder().targetLocations(var10).build();
++         return TargetResults.builder().targetLocations(locations).build();
+       }
+    }
+ 
+-   public static void processBlock(Block var0, Block var1, Location var2, boolean var3, ExecutionTask var4, List<Location> var5) {
+-      if (!var0.equals(var2.getBlock()) && !var0.getType().name().equals("AIR") && !var0.isLiquid()) {
+-         if (!HooksHandler.isEnabled(HookPlugin.SLIMEFUN) || !((SlimeFunHook)HooksHandler.getHook(HookPlugin.SLIMEFUN)).isSlimefunItem(var0)) {
++   public static void processBlock(Block block, Block originBlock, Location originLocation, boolean ignoreTool, ExecutionTask task, List<Location> targets) {
++      if (!block.equals(originLocation.getBlock()) && !block.getType().name().equals("AIR") && !block.isLiquid()) {
++         if (!HooksHandler.isEnabled(HookPlugin.SLIMEFUN) || !((SlimeFunHook)HooksHandler.getHook(HookPlugin.SLIMEFUN)).isSlimefunItem(block)) {
+             if (!HooksHandler.isEnabled(HookPlugin.PROTECTIONSTONES)
+-               || !((ProtectionStonesHook)HooksHandler.getHook(HookPlugin.PROTECTIONSTONES)).isProtectionStone(var0)) {
+-               if (var3 || ASManager.isCorrectTool(var4.getBuilder().getItem(), var0.getType())) {
+-                  if (!var0.hasMetadata("cancelBreak")) {
+-                     if (!SettingValues.getTrenchBlacklist().contains(var0.getType())) {
+-                        if (!var0.getType().name().contains("SHULKER_BOX")) {
+-                           List var8 = var4.getAbility().getWhitelist();
+-                           List var7 = var4.getAbility().getBlacklist();
+-                           if (var8 != null && !var8.isEmpty()) {
+-                              if (!var8.contains(var0.getType().name())) {
++               || !((ProtectionStonesHook)HooksHandler.getHook(HookPlugin.PROTECTIONSTONES)).isProtectionStone(block)) {
++               if (ignoreTool || ASManager.isCorrectTool(task.getBuilder().getItem(), block.getType())) {
++                  if (!block.hasMetadata("cancelBreak")) {
++                     if (!SettingValues.getTrenchBlacklist().contains(block.getType())) {
++                        if (!block.getType().name().contains("SHULKER_BOX")) {
++                           List whitelist = task.getAbility().getWhitelist();
++                           List blacklist = task.getAbility().getBlacklist();
++                           if (whitelist != null && !whitelist.isEmpty()) {
++                              if (!whitelist.contains(block.getType().name())) {
+                                  return;
+                               }
+-                           } else if (var7 != null && !var7.isEmpty() && var7.contains(var0.getType().name())) {
++                           } else if (blacklist != null && !blacklist.isEmpty() && blacklist.contains(block.getType().name())) {
+                               return;
+                            }
+ 
+-                           handleCustomBlockMetadata(var0, var1, var2, var3, var4, var5);
+-                           var5.add(var0.getLocation());
++                           handleCustomBlockMetadata(block, originBlock, originLocation, ignoreTool, task, targets);
++                           targets.add(block.getLocation());
+                         }
+                      }
+                   }
+@@ -166,16 +166,16 @@
+          }
+       } else {
+          if (HooksHandler.isEnabled(HookPlugin.ITEMSADDER)) {
+-            ItemsAdderHook var6 = (ItemsAdderHook)HooksHandler.getHook(HookPlugin.ITEMSADDER);
+-            if (var6.isCustomBlock(var0)) {
+-               var0.setMetadata("ae-skip-trigger", new FixedMetadataValue(EffectsHandler.getInstance(), true));
++            ItemsAdderHook iaHook = (ItemsAdderHook)HooksHandler.getHook(HookPlugin.ITEMSADDER);
++            if (iaHook.isCustomBlock(block)) {
++               block.setMetadata("ae-skip-trigger", new FixedMetadataValue(EffectsHandler.getInstance(), true));
+             }
+          }
+       }
+    }
+ 
+-   public static Vector getRightVector(BlockFace var0) {
+-      return switch (var0) {
++   public static Vector getRightVector(BlockFace face) {
++      return switch (face) {
+          case NORTH -> new Vector(-1, 0, 0);
+          case SOUTH, UP, DOWN -> new Vector(1, 0, 0);
+          case EAST -> new Vector(0, 0, 1);
+@@ -184,8 +184,8 @@
+       };
+    }
+ 
+-   public static Vector getUpVector(BlockFace var0) {
+-      return switch (var0) {
++   public static Vector getUpVector(BlockFace face) {
++      return switch (face) {
+          case NORTH, SOUTH, EAST, WEST -> new Vector(0, 1, 0);
+          case UP -> new Vector(0, 0, -1);
+          case DOWN -> new Vector(0, 0, 1);
+@@ -193,30 +193,30 @@
+       };
+    }
+ 
+-   private static void handleCustomBlockMetadata(Block var0, Block var1, Location var2, boolean var3, ExecutionTask var4, List<Location> var5) {
++   private static void handleCustomBlockMetadata(Block block, Block originBlock, Location originLocation, boolean ignoreTool, ExecutionTask task, List<Location> targets) {
+       if (HooksHandler.isEnabled(HookPlugin.ITEMSADDER)) {
+-         ItemsAdderHook var6 = (ItemsAdderHook)HooksHandler.getHook(HookPlugin.ITEMSADDER);
+-         if (var6.isCustomBlock(var0) && (var3 || var6.canBeBrokenWith(var4.getBuilder().getItem(), var0))) {
+-            var0.setMetadata("ae_custom_block_break", new FixedMetadataValue(EffectsHandler.getInstance(), true));
+-            if (var0.equals(var2.getBlock())) {
+-               var1.setMetadata("ae-skip-trigger", new FixedMetadataValue(EffectsHandler.getInstance(), true));
++         ItemsAdderHook iaHook = (ItemsAdderHook)HooksHandler.getHook(HookPlugin.ITEMSADDER);
++         if (iaHook.isCustomBlock(block) && (ignoreTool || iaHook.canBeBrokenWith(task.getBuilder().getItem(), block))) {
++            block.setMetadata("ae_custom_block_break", new FixedMetadataValue(EffectsHandler.getInstance(), true));
++            if (block.equals(originLocation.getBlock())) {
++               originBlock.setMetadata("ae-skip-trigger", new FixedMetadataValue(EffectsHandler.getInstance(), true));
+                return;
+             } else {
+-               var5.add(var0.getLocation());
++               targets.add(block.getLocation());
+                return;
+             }
+          }
+       }
+ 
+       if (HooksHandler.isEnabled(HookPlugin.ORAXEN)) {
+-         OraxenHook var7 = (OraxenHook)HooksHandler.getHook(HookPlugin.ORAXEN);
+-         if (var7.isCustomBlock(var0) && (var3 || var7.canBeBrokenWith(var4.getBuilder().getItem(), var0))) {
+-            if (var0.equals(var2.getBlock())) {
+-               var1.setMetadata("ae-oraxen-cancel", new FixedMetadataValue(EffectsHandler.getInstance(), true));
++         OraxenHook oraHook = (OraxenHook)HooksHandler.getHook(HookPlugin.ORAXEN);
++         if (oraHook.isCustomBlock(block) && (ignoreTool || oraHook.canBeBrokenWith(task.getBuilder().getItem(), block))) {
++            if (block.equals(originLocation.getBlock())) {
++               originBlock.setMetadata("ae-oraxen-cancel", new FixedMetadataValue(EffectsHandler.getInstance(), true));
+             }
+ 
+-            var0.setMetadata("ae_custom_block_break", new FixedMetadataValue(EffectsHandler.getInstance(), true));
+-            var5.add(var0.getLocation());
++            block.setMetadata("ae_custom_block_break", new FixedMetadataValue(EffectsHandler.getInstance(), true));
++            targets.add(block.getLocation());
+             return;
+          }
+       }

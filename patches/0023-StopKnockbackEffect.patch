@@ -1,0 +1,30 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0023] StopKnockbackEffect: 
+
+AE PATCH REASON: 
+AE PATCH FIX: 
+AE PATCH RISK: 
+
+---
+diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/StopKnockbackEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/StopKnockbackEffect.java
+--- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/StopKnockbackEffect.java	2026-07-30 10:27:31.668350123 +0000
++++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/StopKnockbackEffect.java	2026-07-30 12:21:32.693066503 +0000
+@@ -2,7 +2,8 @@
+ 
+ import net.advancedplugins.ae.impl.effects.effects.actions.execution.ExecutionTask;
+ import net.advancedplugins.ae.impl.effects.effects.effects.AdvancedEffect;
+-import net.advancedplugins.ae.impl.utils.SchedulerUtils;
++import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
++import net.advancedplugins.ae.impl.utils.ASManager;
+ import org.bukkit.entity.LivingEntity;
+ import org.bukkit.plugin.java.JavaPlugin;
+ import org.bukkit.util.Vector;
+@@ -14,7 +15,7 @@
+ 
+    @Override
+    public boolean executeEffect(ExecutionTask var1, LivingEntity var2, String[] var3) {
+-      SchedulerUtils.runTaskLater(() -> var2.setVelocity(new Vector(0, 0, 0)));
++       var2.getScheduler().runDelayed(ASManager.getInstance(), task -> var2.setVelocity(new Vector(0, 0, 0)), null, 1L);
+       return true;
+    }
+ }
