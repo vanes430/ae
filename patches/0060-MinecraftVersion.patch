@@ -8,7 +8,7 @@ AE PATCH RISK: LOW
 ---
 diff --git a/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java b/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java
 --- a/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java	2026-07-30 10:27:31.677350204 +0000
-+++ b/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java	2026-07-31 00:12:30.009288283 +0000
++++ b/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java	2026-07-31 00:13:47.228926728 +0000
 @@ -3,7 +3,6 @@
  import java.util.HashMap;
  import java.util.Map;
@@ -17,7 +17,7 @@ diff --git a/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java b
  import org.bukkit.Bukkit;
  import org.bukkit.plugin.java.JavaPlugin;
  
-@@ -63,9 +62,10 @@
+@@ -63,9 +62,9 @@
           this.put("1.21.9", MinecraftVersion.MC1_21_R6);
           this.put("1.21.10", MinecraftVersion.MC1_21_R7);
           this.put("1.21.11", MinecraftVersion.MC1_21_R7);
@@ -26,12 +26,11 @@ diff --git a/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java b
 -      }
 +          this.put("26.1", MinecraftVersion.MC26_1);
 +          this.put("26.1.1", MinecraftVersion.MC26_1);
-+          this.put("26.1.2", MinecraftVersion.MC26_1);
 +       }
     };
     private final int versionId;
     public final boolean mojangMapping;
-@@ -87,33 +87,26 @@
+@@ -87,33 +86,13 @@
           return version;
        } else {
           try {
@@ -50,26 +49,15 @@ diff --git a/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java b
 -                     version = (MinecraftVersion)var4.getValue();
 -                  }
 -               }
-+            String ver = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
-+            version = valueOf(ver.replace("v", "MC"));
-+         } catch (Exception e) {
-+            String bukkitVer = Bukkit.getVersion();
-+            String mcVer = null;
-+            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("MC:\\s*([0-9]+\\.[0-9]+(?:\\.[0-9]+)?)").matcher(bukkitVer);
-+            if (matcher.find()) {
-+               mcVer = matcher.group(1);
-             }
+-            }
 -
 -            if (version == null) {
 -               version = Unknown;
-+            if (mcVer == null) {
-+               mcVer = Bukkit.getServer().getBukkitVersion().split("-")[0];
-+            }
-+            version = VERSION_TO_REVISION.getOrDefault(mcVer, Unknown);
-+            if (version == Unknown) {
-+               version = MC1_21_R7;
-+               Bukkit.getServer().getLogger().info("[AdvancedEnchantments] Unknown Minecraft version pattern (" + Bukkit.getServer().getBukkitVersion() + "), falling back to MC1_21_R7.");
-             }
+-            }
++            String ver = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
++            version = valueOf(ver.replace("v", "MC"));
++         } catch (Exception e) {
++            version = MC26_1;
           }
  
           isPaper = Package.getPackage("com.destroystokyo.paper") != null;
@@ -80,7 +68,7 @@ diff --git a/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java b
           return version;
        }
     }
-@@ -144,7 +137,7 @@
+@@ -144,7 +123,7 @@
        } else {
           try {
              hasGsonSupport = true;
@@ -89,7 +77,7 @@ diff --git a/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java b
              hasGsonSupport = false;
           }
  
-@@ -152,28 +145,25 @@
+@@ -152,28 +131,25 @@
        }
     }
  
