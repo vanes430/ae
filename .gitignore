@@ -22,5 +22,8 @@ patches-backup.zip
 # Accidental JAR drops
 *.jar
 
+# Local diagnostic scripts (not part of project)
+tools/scripts/*.py
+
 # Local Baguette server source (diagnostic tool, not part of project)
 /Baguette/
