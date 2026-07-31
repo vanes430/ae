@@ -1,9 +1,10 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0051] HooksHandler: 
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: HooksHandler: Replace FoliaScheduler.runTaskLater with GlobalRegionScheduler
 
-AE PATCH REASON: 
-AE PATCH FIX: 
-AE PATCH RISK: 
+AE PATCH REASON: FoliaScheduler.runTaskLater delegation is incompatible with Folia region-threaded lifecycle; delayed faction hook registration must run on the global region scheduler. Lombok @Generated noise removed and raw ImmutableMap builder calls lack type safety.
+AE PATCH FIX: Replace FoliaScheduler.runTaskLater with native Bukkit.getGlobalRegionScheduler().runDelayed. Remove FoliaScheduler and lombok.Generated imports, add ScheduledTask and Consumer imports. Add explicit type witness ImmutableMap.<HookPlugin, PluginHookInstance>builder() in three places. Remove @Generated annotation from getHolograms.
+AE PATCH RISK: LOW - MIGRATE: FoliaScheduler → GlobalRegionScheduler. LOMBOK: @Generated removed. TY: explicit ImmutableMap generics. No behavior change.
 
 ---
 diff --git a/net/advancedplugins/ae/impl/utils/hooks/HooksHandler.java b/net/advancedplugins/ae/impl/utils/hooks/HooksHandler.java

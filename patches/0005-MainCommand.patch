@@ -1,9 +1,10 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0005] MainCommand: 
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: MainCommand: Replace Bukkit.getScheduler().runTaskAsynchronously with AsyncScheduler
 
-AE PATCH REASON: 
-AE PATCH FIX: 
-AE PATCH RISK: 
+AE PATCH REASON: Bukkit.getScheduler().runTaskAsynchronously is rejected by Folia (UnsupportedOperationException on region-threaded architecture).
+AE PATCH FIX: Replace both Bukkit.getScheduler().runTaskAsynchronously calls with Bukkit.getAsyncScheduler().runNow(Core.getInstance(), (t) -> ...) for the info-link and backup commands.
+AE PATCH RISK: LOW - MIGRATE: Bukkit scheduler → AsyncScheduler. No behavior change.
 
 ---
 diff --git a/net/advancedplugins/ae/handlers/commands/MainCommand.java b/net/advancedplugins/ae/handlers/commands/MainCommand.java

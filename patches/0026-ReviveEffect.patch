@@ -1,9 +1,10 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0026] ReviveEffect: 
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: ReviveEffect: Replace BukkitRunnable with EntityScheduler
 
-AE PATCH REASON: 
-AE PATCH FIX: 
-AE PATCH RISK: 
+AE PATCH REASON: BukkitRunnable.runTask uses the Bukkit scheduler, incompatible with Folia region-threaded architecture and crashes at runtime.
+AE PATCH FIX: Replace anonymous BukkitRunnable runTask with entity getScheduler().run (retired null). Remove BukkitRunnable import.
+AE PATCH RISK: LOW - MIGRATE: BukkitRunnable → EntityScheduler. No behavior change.
 
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/ReviveEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/ReviveEffect.java

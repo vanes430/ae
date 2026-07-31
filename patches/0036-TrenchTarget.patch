@@ -1,5 +1,6 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0013] TrenchTarget: Rename obfuscated variables to descriptive names
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: TrenchTarget: Rename obfuscated variables to descriptive names
 
 AE PATCH REASON: Decompiled variable names (var1-var34) make block-target logic unmaintainable and hinder Folia migration debugging.
 AE PATCH FIX: Rename all obfuscated variables to descriptive names: var0->yaw/pitch, var1-var3->effect/targetStr/task, var4->classified, var5-var7->radiusX/Y/Z, var10->locations, var11->origin, var14->originLoc, var15->world, classified loop variables. Rename processBlock/handleCustomBlockMetadata parameters consistently.

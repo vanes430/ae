@@ -1,9 +1,10 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0016] FlyEffect: 
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: FlyEffect: Replace SchedulerUtils.runTaskLater with player scheduler runDelayed
 
-AE PATCH REASON: 
-AE PATCH FIX: 
-AE PATCH RISK: 
+AE PATCH REASON: SchedulerUtils is stripped and throws UnsupportedOperationException on Folia; flight toggle and expiry must run on the player's region thread.
+AE PATCH FIX: Replace SchedulerUtils.runTaskLater with player.getScheduler().runDelayed (EntityScheduler, retired=null). Swap SchedulerUtils import for EffectsHandler import. Rename obfuscated vars (var1→task, var2→entity, var3→args, var4→player, var5→durationMs, var7→endTime).
+AE PATCH RISK: LOW - MIGRATE: SchedulerUtils → EntityScheduler runDelayed. RF: var rename. No behavior change.
 
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/FlyEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/FlyEffect.java

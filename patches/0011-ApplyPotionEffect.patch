@@ -1,5 +1,6 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0006] ApplyPotionEffect: Thread safety and SchedulerUtils removal
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: ApplyPotionEffect: Thread safety and SchedulerUtils removal
 
 AE PATCH REASON: HashMap is not thread-safe for region-thread access; SchedulerUtils bypasses Folia scheduler lifecycle.
 AE PATCH FIX: Replace HashMap with ConcurrentHashMap for activatedPermanentPotions. Remove SchedulerUtils import, replace health queue scheduler with Bukkit.getGlobalRegionScheduler().runAtFixedRate(). Remove @Generated lombok annotations. Rename obfuscated variables to meaningful names.

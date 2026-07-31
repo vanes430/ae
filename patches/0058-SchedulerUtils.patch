@@ -1,5 +1,6 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0023] SchedulerUtils: Strip all delegation methods
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: SchedulerUtils: Strip all delegation methods
 
 AE PATCH REASON: Scheduling delegation layer is no longer needed after migration to native Folia schedulers; keeping it would allow bypassing Folia lifecycle management.
 AE PATCH FIX: Remove all static scheduling delegation methods. Replace class with a private constructor that throws UnsupportedOperationException to prevent instantiation.

@@ -1,5 +1,6 @@
-From: Folia Compatibility Patch
-Subject: [PATCH] WaterWalkerEffect: Replace Bukkit.getScheduler().runTaskLater with native Folia schedulers
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: WaterWalkerEffect: Replace Bukkit.getScheduler().runTaskLater with native Folia schedulers
 
 AE PATCH REASON: Bukkit.getScheduler().runTaskLater makes code incompatible with Folia region-threaded architecture and crashes at runtime (UnsupportedOperationException from stripped SchedulerUtils or direct Bukkit.getScheduler() call rejected by Folia).
 AE PATCH FIX: Replace Bukkit.getScheduler().runTaskLater and cancelTask with native Folia Bukkit.getRegionScheduler().runDelayed. Remove dead removalTasks/clearQueue code. Replace HashMap with ConcurrentHashMap. Rename obfuscated vars.

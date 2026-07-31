@@ -1,5 +1,6 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0021] FoliaScheduler: Strip all scheduling methods, keep only isFolia flag
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: FoliaScheduler: Strip all scheduling methods, keep only isFolia flag
 
 AE PATCH REASON: Scheduling delegation layer bypasses Folia scheduler lifecycle and is no longer needed after direct native scheduler migration.
 AE PATCH FIX: Remove all scheduling delegation methods (runTask, runTaskLater, runTaskTimer, runTaskAsynchronously, cancelAll) and inner Task class. Keep only isFolia flag, checkFolia() method and isFolia() accessor. Remove unused imports.

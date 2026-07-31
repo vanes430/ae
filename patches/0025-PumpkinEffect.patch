@@ -1,9 +1,10 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0025] PumpkinEffect: 
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: PumpkinEffect: Replace Bukkit.getScheduler().runTaskLater with EntityScheduler and drop legacy version branch
 
-AE PATCH REASON: 
-AE PATCH FIX: 
-AE PATCH RISK: 
+AE PATCH REASON: Bukkit.getScheduler().runTaskLater crashes on Folia region threads; MinecraftVersion.isNew() branch is dead code on modern versions; raw ArrayList lacks type safety.
+AE PATCH FIX: Replace Bukkit.getScheduler().runTaskLater with entity getScheduler().runDelayed (retired null). Drop MinecraftVersion.isNew() ternary, use ItemStack directly. Add diamond to ArrayList<ItemStack>.
+AE PATCH RISK: LOW - MIGRATE: Bukkit scheduler → EntityScheduler. DROP: legacy version branch. RF: raw type diamond. No behavior change.
 
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/PumpkinEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/PumpkinEffect.java

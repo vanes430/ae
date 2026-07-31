@@ -1,9 +1,10 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0042] DownloadSetup: 
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: DownloadSetup: Replace SchedulerUtils.runTaskAsync with AsyncScheduler and FileUtils with Files.copy
 
-AE PATCH REASON: 
-AE PATCH FIX: 
-AE PATCH RISK: 
+AE PATCH REASON: SchedulerUtils.runTaskAsync crashes on Folia (stripped class throws UnsupportedOperationException); org.apache.commons.io.FileUtils dependency dropped to keep JAR self-contained.
+AE PATCH FIX: Replace SchedulerUtils.runTaskAsync with Bukkit.getAsyncScheduler().runNow(EffectsHandler.getInstance(), ...) to keep downloads off the main thread. Replace org.apache.commons.io.FileUtils.copyFile with java.nio.file.Files.copy and StandardCopyOption.REPLACE_EXISTING, declaring throws IOException. Rename obfuscated vars.
+AE PATCH RISK: LOW - MIGRATE: SchedulerUtils → AsyncScheduler. DEP: FileUtils → Files.copy. RF: var rename. No behavior change.
 
 ---
 diff --git a/net/advancedplugins/ae/handlers/netbackend/DownloadSetup.java b/net/advancedplugins/ae/handlers/netbackend/DownloadSetup.java

@@ -1,9 +1,10 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0035] Combo: 
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: Combo: Replace SchedulerUtils.runTaskTimerAsync with AsyncScheduler fixed-rate task
 
-AE PATCH REASON: 
-AE PATCH FIX: 
-AE PATCH RISK: 
+AE PATCH REASON: SchedulerUtils.runTaskTimerAsync makes code incompatible with Folia region-threaded architecture and crashes at runtime (UnsupportedOperationException from stripped SchedulerUtils). Lombok @Generated annotations are decompiler noise.
+AE PATCH FIX: Replace SchedulerUtils.runTaskTimerAsync static-block cleanup timer with Bukkit.getAsyncScheduler().runAtFixedRate(EffectsHandler.getInstance(), task, 1000L, 1000L, TimeUnit.MILLISECONDS), preserving the 20-tick expiry sweep. Remove @Generated annotations from private constructor and ComboEntry. Rename obfuscated vars (uuid, key, combo, insertTime).
+AE PATCH RISK: LOW - MIGRATE: SchedulerUtils → AsyncScheduler. LOMBOK: @Generated removed. RF: var rename. No behavior change.
 
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/utils/Combo.java b/net/advancedplugins/ae/impl/effects/effects/utils/Combo.java

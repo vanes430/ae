@@ -1,5 +1,6 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0005] DamageHandler: Remove BukkitRunnable, migrate revive to EntityScheduler
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: DamageHandler: Remove BukkitRunnable, migrate revive to EntityScheduler
 
 AE PATCH REASON: BukkitRunnable is incompatible with Folia server architecture; obfuscated variable names reduce maintainability.
 AE PATCH FIX: Remove BukkitRunnable import. Replace BukkitRunnable in revive() with player.getScheduler().runDelayed(). Use teleportAsync() instead of teleport(). Rename var1/var2/var3 to descriptive parameter names.

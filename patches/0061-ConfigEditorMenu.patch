@@ -1,9 +1,10 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0050] ConfigEditorMenu: 
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: ConfigEditorMenu: Replace SchedulerUtils.runTask with entity scheduler in chat handler
 
-AE PATCH REASON: 
-AE PATCH FIX: 
-AE PATCH RISK: 
+AE PATCH REASON: SchedulerUtils is stripped on Folia and crashes with UnsupportedOperationException; AsyncPlayerChatEvent fires on the async thread so opening the inventory must hop back to the player's region thread; Lombok @Generated noise and obfuscated var names reduce maintainability.
+AE PATCH FIX: Replace SchedulerUtils.runTask with native this.editor.getScheduler().run (EntityScheduler) in onCreate. Remove lombok.Generated import and @Generated annotations. Add EffectsHandler and ScheduledTask imports. Add List<KeyInfo> generic type and rename var1/var2 to event/name.
+AE PATCH RISK: LOW - MIGRATE: SchedulerUtils → EntityScheduler. LOMBOK: @Generated removed. RF: var rename + generics. No behavior change.
 
 ---
 diff --git a/net/advancedplugins/ae/impl/utils/editor/ConfigEditorMenu.java b/net/advancedplugins/ae/impl/utils/editor/ConfigEditorMenu.java

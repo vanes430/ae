@@ -1,9 +1,10 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0058] SmeltMaterial: 
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: SmeltMaterial: Replace deprecated Material.getMaterial(String) with matchMaterial
 
-AE PATCH REASON: 
-AE PATCH FIX: 
-AE PATCH RISK: 
+AE PATCH REASON: Material.getMaterial(String) is deprecated and inconsistent with modern Paper material resolution; matchMaterial is the supported lookup.
+AE PATCH FIX: Replace five Material.getMaterial("...") calls (DEEPSLATE, SMOOTH_SANDSTONE, SMOOTH_BASALT, SPONGE, SMOOTH_RED_SANDSTONE) with Material.matchMaterial("...").
+AE PATCH RISK: LOW - API: Material.getMaterial → matchMaterial. No behavior change.
 
 ---
 diff --git a/net/advancedplugins/ae/impl/utils/abilities/SmeltMaterial.java b/net/advancedplugins/ae/impl/utils/abilities/SmeltMaterial.java

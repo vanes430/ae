@@ -1,9 +1,10 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0045] ASManager: 
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: ASManager: EntityScheduler migration, Paper material registry lookups, Lombok removal
 
-AE PATCH REASON: 
-AE PATCH FIX: 
-AE PATCH RISK: 
+AE PATCH REASON: SchedulerUtils.runTaskLater crashes on Folia region threads; Material.getMaterial(String) lookups break on modern versions for renamed/legacy materials; Lombok @Generated annotations are decompiler noise; StringConcatFactory call is a decompiler artifact.
+AE PATCH FIX: Replace SchedulerUtils.runTaskLater with var0.getScheduler().runDelayed(Core.getInstance(), ..., null, 1L) (EntityScheduler). Migrate material lookups to org.bukkit.Registry.MATERIAL.get(NamespacedKey.minecraft(...)) with matchMaterial fallback. Add WOOD_→WOODEN_, _SPADE→_SHOVEL renames and new aliases (INK_SAC, BEEF, POPPY, etc.), remove LEGACY_AIR. Replace StringConcatFactory with NumberFormat.format. Add explicit generics to ImmutableList/ImmutableMap builders. Remove @Generated, add throws IOException to unZip/fetchJsonFromUrl/serializeItem/deserializeItem.
+AE PATCH RISK: MEDIUM - MIGRATE: SchedulerUtils → EntityScheduler. API: Registry.MATERIAL lookups, new material aliases, throws declarations. NOISE: Lombok/raw types stripped. Material name resolution may differ for edge cases.
 
 ---
 diff --git a/net/advancedplugins/ae/impl/utils/ASManager.java b/net/advancedplugins/ae/impl/utils/ASManager.java

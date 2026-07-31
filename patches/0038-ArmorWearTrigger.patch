@@ -1,5 +1,6 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0013] ArmorWearTrigger: Remove SchedulerUtils and lombok, migrate to EntityScheduler
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: ArmorWearTrigger: Remove SchedulerUtils and lombok, migrate to EntityScheduler
 
 AE PATCH REASON: SchedulerUtils delegation layer is incompatible with Folia; obfuscated variable names reduce maintainability.
 AE PATCH FIX: Remove SchedulerUtils and lombok imports. Replace SchedulerUtils.runTaskLater() calls with player.getScheduler().runDelayed(). Rename obfuscated variables to meaningful names. Add player null checks for Folia thread safety.

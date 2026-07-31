@@ -1,9 +1,10 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0056] ItemDurability: 
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: ItemDurability: Use version-safe durability read, remove Lombok @Generated
 
-AE PATCH REASON: 
-AE PATCH FIX: 
-AE PATCH RISK: 
+AE PATCH REASON: this.item.getDurability() is deprecated and returns legacy durability damage that misreports damage on 1.13+; Lombok @Generated annotations are decompiler noise.
+AE PATCH FIX: Replace this.item.getDurability() with this.getDurabilityVersionSafe() which reads Damageable meta damage on 1.13+ and falls back to item.getDurability() on older versions. Remove @Generated annotations and lombok.Generated import.
+AE PATCH RISK: LOW - API: deprecated getDurability() → getDurabilityVersionSafe(). NOISE: Lombok removed. No behavior change.
 
 ---
 diff --git a/net/advancedplugins/ae/impl/utils/ItemDurability.java b/net/advancedplugins/ae/impl/utils/ItemDurability.java

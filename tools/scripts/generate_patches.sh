@@ -39,7 +39,7 @@ for oldpatch in "$PATCHES_DIR"/*.patch; do
   [ -f "$oldpatch" ] || continue
   base=$(basename "$oldpatch" .patch)
   classname="${base#*-}"
-  header=$(awk '/^---$/ { sep=1; print; next } sep==0 { print }' "$oldpatch")
+  header=$(awk '/^---$/ { sep=1; print; next } sep==0 { print }' "$oldpatch" | sed -E 's/\[PATCH( [0-9]+)?\] //' | grep -v '^Date: ')
   if echo "$header" | grep -q '^---$'; then
     HEADERS["$classname"]="$header"
     echo "  saved header for $classname"
@@ -71,10 +71,12 @@ while read -r relpath; do
   tmp="$PATCHES_DIR/.tmp-$patchname"
   if [ -n "${HEADERS["$filename"]:+x}" ]; then
     printf '%s\n' "${HEADERS["$filename"]}" > "$tmp"
+    sed -i "2i Date: $(date -R)" "$tmp"
   else
     cat > "$tmp" << HEADER
-From: Folia Compatibility Patch
-Subject: [PATCH ${num}] ${filename}: 
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: $(date -R)
+Subject: ${filename}: 
 
 AE PATCH REASON: 
 AE PATCH FIX: 

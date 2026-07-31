@@ -1,5 +1,6 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0022] ReallyFastBlockHandler: Thread safety and native Folia scheduling
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: ReallyFastBlockHandler: Thread safety and native Folia scheduling
 
 AE PATCH REASON: HashMap is not thread-safe for region-thread access; FoliaScheduler delegation is no longer needed after direct native scheduler migration.
 AE PATCH FIX: Replace HashMap with ConcurrentHashMap for handlers map. Replace FoliaScheduler.runTask() with native Bukkit.getRegionScheduler().execute() and Bukkit.getGlobalRegionScheduler().execute() calls. Rename var1/var2/var3 to descriptive names.

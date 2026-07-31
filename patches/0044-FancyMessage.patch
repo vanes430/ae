@@ -7,17 +7,17 @@ AE PATCH FIX: Rename var1/var2/var3 to meaningful names throughout constructor, 
 AE PATCH RISK: LOW
 
 ---
-diff --git a/net/advancedplugins/ae/impl/utils/fanciful/FancyMessage.java b/net/advancedplugins/ae/impl/utils/fanciful/FancyMessage.java
---- a/net/advancedplugins/ae/impl/utils/fanciful/FancyMessage.java	2026-07-30 10:27:31.671350150 +0000
-+++ b/net/advancedplugins/ae/impl/utils/fanciful/FancyMessage.java	2026-07-30 10:28:05.919658906 +0000
-@@ -30,12 +30,12 @@
+diff --git a/net/advancedplugins/ae/utils/fanciful/FancyMessage.java b/net/advancedplugins/ae/utils/fanciful/FancyMessage.java
+--- a/net/advancedplugins/ae/utils/fanciful/FancyMessage.java	2026-07-30 10:27:31.679350222 +0000
++++ b/net/advancedplugins/ae/utils/fanciful/FancyMessage.java	2026-07-30 10:28:05.890658644 +0000
+@@ -36,12 +36,12 @@
     private String jsonString;
     private boolean dirty;
  
 -   public FancyMessage(String var1) {
--      this(TextualComponent.rawText(var1));
+-      this(TextualComponent.rawText(ColorUtils.format(var1)));
 +   public FancyMessage(String firstPartText) {
-+      this(TextualComponent.rawText(firstPartText));
++      this(TextualComponent.rawText(ColorUtils.format(firstPartText)));
     }
  
 -   private FancyMessage(TextualComponent var1) {
@@ -27,7 +27,7 @@ diff --git a/net/advancedplugins/ae/impl/utils/fanciful/FancyMessage.java b/net/
        this.jsonString = null;
        this.dirty = false;
     }
-@@ -44,262 +44,262 @@
+@@ -50,262 +50,262 @@
        this((TextualComponent)null);
     }
  
@@ -375,7 +375,7 @@ diff --git a/net/advancedplugins/ae/impl/utils/fanciful/FancyMessage.java b/net/
 -   public FancyMessage formattedTooltip(Iterable<FancyMessage> var1) {
 -      return this.formattedTooltip(ArrayWrapper.toArray(var1, FancyMessage.class));
 +   public FancyMessage formattedTooltip(Iterable<FancyMessage> lines) {
-+      return this.formattedTooltip(ArrayWrapper.toArray(lines, FancyMessage.class));
++      return this.formattedTooltip((FancyMessage[])ArrayWrapper.toArray(lines, FancyMessage.class));
     }
  
 -   public FancyMessage translationReplacements(String... var1) {
@@ -401,13 +401,13 @@ diff --git a/net/advancedplugins/ae/impl/utils/fanciful/FancyMessage.java b/net/
 -   public FancyMessage translationReplacements(Iterable<FancyMessage> var1) {
 -      return this.translationReplacements(ArrayWrapper.toArray(var1, FancyMessage.class));
 +   public FancyMessage translationReplacements(Iterable<FancyMessage> replacements) {
-+      return this.translationReplacements(ArrayWrapper.toArray(replacements, FancyMessage.class));
++      return this.translationReplacements((FancyMessage[])ArrayWrapper.toArray(replacements, FancyMessage.class));
     }
  
 -   public FancyMessage then(String var1) {
--      return this.then(TextualComponent.rawText(var1));
+-      return this.then(TextualComponent.rawText(ColorUtils.format(var1)));
 +   public FancyMessage then(String text) {
-+      return this.then(TextualComponent.rawText(text));
++      return this.then(TextualComponent.rawText(ColorUtils.format(text)));
     }
  
 -   private FancyMessage then(TextualComponent var1) {
@@ -420,7 +420,7 @@ diff --git a/net/advancedplugins/ae/impl/utils/fanciful/FancyMessage.java b/net/
           this.dirty = true;
           return this;
        }
-@@ -316,17 +316,17 @@
+@@ -322,17 +322,17 @@
     }
  
     @Override
@@ -444,27 +444,30 @@ diff --git a/net/advancedplugins/ae/impl/utils/fanciful/FancyMessage.java b/net/
        }
     }
  
-@@ -334,84 +334,84 @@
+@@ -340,84 +340,84 @@
        if (!this.dirty && this.jsonString != null) {
           return this.jsonString;
        } else {
 -         StringWriter var1 = new StringWriter();
 -         JsonWriter var2 = new JsonWriter(var1);
-+         StringWriter string = new StringWriter();
-+         JsonWriter json = new JsonWriter(string);
++      StringWriter string = new StringWriter();
++      JsonWriter json = new JsonWriter(string);
  
-          try {
+-         try {
 -            this.writeJson(var2);
 -            var2.close();
 -         } catch (IOException var4) {
-+            this.writeJson(json);
-+            json.close();
-+         } catch (IOException ioException) {
-             throw new RuntimeException("invalid message");
-          }
+-            throw new RuntimeException("invalid message");
+-         }
++      try {
++         this.writeJson(json);
++         json.close();
++      } catch (IOException ioException) {
++         throw new RuntimeException("invalid message");
++      }
  
 -         this.jsonString = var1.toString();
-+         this.jsonString = string.toString();
++      this.jsonString = string.toString();
           this.dirty = false;
           return this.jsonString;
        }

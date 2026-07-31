@@ -1,5 +1,6 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0027] AdvancedWeapon: Add attribute system support and imports
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: AdvancedWeapon: Add attribute system support and imports
 
 AE PATCH REASON: Weapon system needs UUID, Attribute, and AttributeModifier imports for attribute-based stat modification. Obfuscated variable names hinder maintainability.
 AE PATCH FIX: Add imports for UUID, Attribute, AttributeModifier. Add attribute parsing logic in getItem() to read attributes config section and apply AttributeModifiers to item meta. Rename obfuscated variables to descriptive names throughout.

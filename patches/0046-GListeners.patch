@@ -1,9 +1,10 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0046] GListeners: 
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: GListeners: Replace legacy ItemStack data-value constructor with named materials
 
-AE PATCH REASON: 
-AE PATCH FIX: 
-AE PATCH RISK: 
+AE PATCH REASON: Legacy ItemStack(Material, int, short) damage-value constructor is deprecated and removed on modern Bukkit/Paper versions after the 1.13 flattening; it fails to compile against current Paper API.
+AE PATCH FIX: Replace new ItemStack(Material.GLASS, 1, (short)5) with LIME_STAINED_GLASS in the remove-item GUI and drop the meaningless (short)5 data value from the REDSTONE_BLOCK confirm-delete item.
+AE PATCH RISK: LOW - API: legacy ItemStack damage-value constructor → named materials. No behavior change.
 
 ---
 diff --git a/net/advancedplugins/ae/features/gkits/editor/GListeners.java b/net/advancedplugins/ae/features/gkits/editor/GListeners.java

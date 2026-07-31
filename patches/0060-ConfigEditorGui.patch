@@ -1,9 +1,10 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0049] ConfigEditorGui: 
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: ConfigEditorGui: Replace SchedulerUtils.runTaskLater with player EntityScheduler
 
-AE PATCH REASON: 
-AE PATCH FIX: 
-AE PATCH RISK: 
+AE PATCH REASON: SchedulerUtils.runTaskLater makes code incompatible with Folia region-threaded architecture and crashes at runtime (UnsupportedOperationException from stripped SchedulerUtils or direct Bukkit.getScheduler() call rejected by Folia).
+AE PATCH FIX: Replace SchedulerUtils.runTaskLater with this.editor.getScheduler().runDelayed(EffectsHandler.getInstance(), ..., null, 1L) so chat-input validation and GUI reopen run on the player's region thread. Add ScheduledTask and EffectsHandler imports, remove SchedulerUtils import. Add explicit generics to raw List usages.
+AE PATCH RISK: LOW - MIGRATE: SchedulerUtils → EntityScheduler. GENERIC: raw List typed. No behavior change.
 
 ---
 diff --git a/net/advancedplugins/ae/impl/utils/editor/ConfigEditorGui.java b/net/advancedplugins/ae/impl/utils/editor/ConfigEditorGui.java

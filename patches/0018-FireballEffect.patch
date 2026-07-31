@@ -1,5 +1,6 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0009] FireballEffect: Rename variables for maintainability
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: FireballEffect: Rename variables for maintainability
 
 AE PATCH REASON: Obfuscated variable names hinder maintainability and comprehension.
 AE PATCH FIX: Rename var1/var2/var3 to descriptive names throughout the file. Replace teleport() with teleportAsync().

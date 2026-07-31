@@ -1,5 +1,6 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0004] ExecutionTask: Remove SchedulerUtils and BukkitRunnable, migrate to Folia
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: ExecutionTask: Remove SchedulerUtils and BukkitRunnable, migrate to Folia
 
 AE PATCH REASON: SchedulerUtils and BukkitRunnable are incompatible with Folia server architecture.
 AE PATCH FIX: Remove SchedulerUtils and BukkitRunnable imports. Replace BukkitRunnable with Folia RegionScheduler.runDelayed() and EntityScheduler.runDelayed(). Remove @Generated lombok annotations. Rename obfuscated variables to meaningful names throughout.

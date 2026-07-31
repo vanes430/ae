@@ -1,9 +1,10 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0022] IgnoreArmorDamageEffect: 
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: IgnoreArmorDamageEffect: Replace Bukkit scheduler and legacy durability API with EntityScheduler and Damageable item meta
 
-AE PATCH REASON: 
-AE PATCH FIX: 
-AE PATCH RISK: 
+AE PATCH REASON: Bukkit.getScheduler().scheduleSyncDelayedTask is incompatible with Folia region-threaded architecture and crashes at runtime (UnsupportedOperationException); legacy ItemStack.getDurability()/setDurability() are removed in modern Paper API so the code no longer compiles.
+AE PATCH FIX: Replace scheduleSyncDelayedTask with var2.getScheduler().run (EntityScheduler, retired=null). Replace durability getters/setters with Damageable item meta (getDamage/setDamage via instanceof guard with setItemMeta write-back). Add Damageable/ItemMeta imports.
+AE PATCH RISK: LOW - MIGRATE: Bukkit scheduler → EntityScheduler. API: getDurability/setDurability → Damageable damage. SAFE: instanceof null-guard. No behavior change.
 
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/IgnoreArmorDamageEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/IgnoreArmorDamageEffect.java

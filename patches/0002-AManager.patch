@@ -1,9 +1,10 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0002] AManager: 
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: AManager: Replace SchedulerUtils with native Folia schedulers and Registry-based material lookup
 
-AE PATCH REASON: 
-AE PATCH FIX: 
-AE PATCH RISK: 
+AE PATCH REASON: SchedulerUtils delegation layer crashes on Folia region threads (stripped class throws UnsupportedOperationException); Material.getMaterial with legacy names and matchMaterial(bool) path break on new Minecraft versions; missing legacy aliases drop items.
+AE PATCH FIX: Replace SchedulerUtils.runTask with Bukkit.getRegionScheduler().run(Core.getInstance(), location, ...) and SchedulerUtils.runTaskLater with player.getScheduler().runDelayed(..., null, 1L). Add Registry.MATERIAL.get(NamespacedKey) lookup with matchMaterial fallback, replace Material.getMaterial with matchMaterial, add missing legacy material aliases (WOOD_DOOR, COMMAND, PISTON_BASE, WORKBENCH, INK_SACK, etc.).
+AE PATCH RISK: LOW - MIGRATE: SchedulerUtils → RegionScheduler/EntityScheduler. API: Registry.MATERIAL fallback chain. MAP: legacy aliases. No behavior change.
 
 ---
 diff --git a/net/advancedplugins/ae/utils/AManager.java b/net/advancedplugins/ae/utils/AManager.java

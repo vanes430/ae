@@ -1,5 +1,6 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0003] ArmorListener: Migrate SchedulerUtils to EntityScheduler
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: ArmorListener: Migrate SchedulerUtils to EntityScheduler
 
 AE PATCH REASON: SchedulerUtils delegation layer is incompatible with Folia scheduler lifecycle; obfuscated variable names reduce maintainability.
 AE PATCH FIX: Remove SchedulerUtils import. Replace SchedulerUtils.runTaskTimer() event queue with per-player EntityScheduler.runDelayed() calls in addToQueue. Migrate from BukkitRunnable to ScheduledTask. Rename obfuscated variables to meaningful names.

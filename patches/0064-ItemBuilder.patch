@@ -1,9 +1,10 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0065] ItemBuilder: 
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: ItemBuilder: Replace deprecated ItemStack.setDurability with Damageable ItemMeta
 
-AE PATCH REASON: 
-AE PATCH FIX: 
-AE PATCH RISK: 
+AE PATCH REASON: ItemStack.setDurability and the 3-arg ItemStack(Material, int, short) constructor are deprecated and removed/no-op on modern Paper versions; durability now lives in Damageable ItemMeta.
+AE PATCH FIX: Replace the legacy 3-arg ItemStack constructor with new ItemStack(Material, int) plus Damageable ItemMeta.setDamage applied when durability is above 0. Rewrite setDurability and setInfinityDurability to route through ItemMeta.setDamage instead of ItemStack.setDurability.
+AE PATCH RISK: LOW - API: setDurability/legacy constructor → Damageable ItemMeta.setDamage. No behavior change.
 
 ---
 diff --git a/net/advancedplugins/ae/impl/utils/items/ItemBuilder.java b/net/advancedplugins/ae/impl/utils/items/ItemBuilder.java

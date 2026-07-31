@@ -1,5 +1,6 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0017] AdminChatListener: Thread safety and EntityScheduler migration
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: AdminChatListener: Thread safety and EntityScheduler migration
 
 AE PATCH REASON: ArrayList is not thread-safe for Folia region-thread scheduling; Bukkit.getScheduler() incompatible with Folia.
 AE PATCH FIX: Replace ArrayList with Collections.synchronizedList for listening list. Migrate Bukkit.getScheduler().runTask() to event.getPlayer().getScheduler().run(). Rename obfuscated variables to meaningful names.

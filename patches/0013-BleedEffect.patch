@@ -1,9 +1,10 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0013] BleedEffect: 
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: BleedEffect: Replace BukkitRunnable timer with entity scheduler runAtFixedRate
 
-AE PATCH REASON: 
-AE PATCH FIX: 
-AE PATCH RISK: 
+AE PATCH REASON: Anonymous BukkitRunnable + runTaskTimer is incompatible with Folia region-threaded architecture and crashes at runtime (UnsupportedOperationException); a per-entity repeating task must run on the entity's own region thread.
+AE PATCH FIX: Replace anonymous BukkitRunnable + runTaskTimer with var2.getScheduler().runAtFixedRate (EntityScheduler, retired=null). Convert mutable anonymous-class fields loop/lastDeath to local finals (loop via int[1] array) and replace this.cancel() with task.cancel(). Swap BukkitRunnable import for ScheduledTask/Consumer imports.
+AE PATCH RISK: LOW - MIGRATE: BukkitRunnable → EntityScheduler runAtFixedRate. No behavior change.
 
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/BleedEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/BleedEffect.java

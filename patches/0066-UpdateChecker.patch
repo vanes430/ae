@@ -1,5 +1,6 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0026] UpdateChecker: Disable update checker for personal use
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: UpdateChecker: Disable update checker for personal use
 
 AE PATCH REASON: UpdateChecker calls external URLs on plugin startup, which is unnecessary for personal use and adds latency.
 AE PATCH FIX: Strip all version-checking logic. Replace checkUpdate() body with a no-op comment. Remove unused imports.

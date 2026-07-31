@@ -1,5 +1,6 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0007] BoostEffect: Rename variables and migrate to EntityScheduler
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: BoostEffect: Rename variables and migrate to EntityScheduler
 
 AE PATCH REASON: Obfuscated variable names hinder maintainability; Bukkit.getScheduler() incompatible with Folia.
 AE PATCH FIX: Rename var1/var2/var3 to meaningful names throughout. Migrate Bukkit.getScheduler().runTaskLater() to target.getScheduler().runDelayed().

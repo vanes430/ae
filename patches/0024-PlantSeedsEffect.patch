@@ -1,5 +1,6 @@
-From: Folia Compatibility Patch
-Subject: [PATCH] PlantSeedsEffect: Replace SchedulerUtils.runTaskLater with native Folia schedulers
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: PlantSeedsEffect: Replace SchedulerUtils.runTaskLater with native Folia schedulers
 
 AE PATCH REASON: SchedulerUtils.runTaskLater makes code incompatible with Folia region-threaded architecture and crashes at runtime (UnsupportedOperationException from stripped SchedulerUtils or direct Bukkit.getScheduler() call rejected by Folia).
 AE PATCH FIX: Replace SchedulerUtils.runTaskLater call with native Bukkit.getRegionScheduler().runDelayed. Inline all block-finding logic before scheduling the setType call. Move inventory check before scheduling for correctness. Rename obfuscated vars.

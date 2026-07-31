@@ -1,9 +1,10 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0040] GrindstoneListener: 
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: GrindstoneListener: Replace SchedulerUtils.runTaskLater with player EntityScheduler
 
-AE PATCH REASON: 
-AE PATCH FIX: 
-AE PATCH RISK: 
+AE PATCH REASON: SchedulerUtils.runTaskLater makes code incompatible with Folia region-threaded architecture and crashes at runtime (UnsupportedOperationException from stripped SchedulerUtils or direct Bukkit.getScheduler() call rejected by Folia).
+AE PATCH FIX: Replace both SchedulerUtils.runTaskLater calls with event.getWhoClicked().getScheduler().runDelayed(Core.getInstance(), ..., null, 1L) so the delayed grindstone handling runs on the player's region thread. Add ScheduledTask and Core imports. Add explicit type to Entry loop. Rename obfuscated vars.
+AE PATCH RISK: LOW - MIGRATE: SchedulerUtils → EntityScheduler. RF: var rename. No behavior change.
 
 ---
 diff --git a/net/advancedplugins/ae/globallisteners/listeners/GrindstoneListener.java b/net/advancedplugins/ae/globallisteners/listeners/GrindstoneListener.java

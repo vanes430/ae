@@ -1,5 +1,6 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0018] ReloadEvent: Migrate Bukkit scheduler to GlobalRegionScheduler
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: ReloadEvent: Migrate Bukkit scheduler to GlobalRegionScheduler
 
 AE PATCH REASON: Bukkit.getScheduler() is incompatible with Folia server architecture.
 AE PATCH FIX: Replace Bukkit.getScheduler().runTaskLater() with Bukkit.getGlobalRegionScheduler().runDelayed(). Rename event variable.

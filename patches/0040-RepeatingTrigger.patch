@@ -1,5 +1,6 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0014] RepeatingTrigger: Migrate to Folia ScheduledTask with ConcurrentHashMap
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: RepeatingTrigger: Migrate to Folia ScheduledTask with ConcurrentHashMap
 
 AE PATCH REASON: HashMap is not thread-safe for region-thread access; BukkitRunnable/BukkitTask are incompatible with Folia.
 AE PATCH FIX: Replace HashMap with ConcurrentHashMap for repeaters map. Replace BukkitRunnable/BukkitTask with Folia ScheduledTask. Migrate runTaskTimer() to entity.getScheduler().runAtFixedRate(). Remove @Generated lombok annotations. Add proper task cancellation tracking.

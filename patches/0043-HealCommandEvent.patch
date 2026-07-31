@@ -1,9 +1,10 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0036] HealCommandEvent: 
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: HealCommandEvent: Replace SchedulerUtils.runTaskLater with player EntityScheduler
 
-AE PATCH REASON: 
-AE PATCH FIX: 
-AE PATCH RISK: 
+AE PATCH REASON: SchedulerUtils.runTaskLater makes code incompatible with Folia region-threaded architecture and crashes at runtime (UnsupportedOperationException from stripped SchedulerUtils).
+AE PATCH FIX: Replace SchedulerUtils.runTaskLater with target.getScheduler().runDelayed(EffectsHandler.getInstance(), task, null, 1L) for post-/heal armor and held-item rechecks. Rename obfuscated vars (event, message, args, target, slot, item).
+AE PATCH RISK: LOW - MIGRATE: SchedulerUtils → Player EntityScheduler. RF: var rename. No behavior change.
 
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/patches/HealCommandEvent.java b/net/advancedplugins/ae/impl/effects/patches/HealCommandEvent.java

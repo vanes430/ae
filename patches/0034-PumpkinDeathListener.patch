@@ -1,9 +1,10 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0034] PumpkinDeathListener: 
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: PumpkinDeathListener: Replace BukkitRunnable with GlobalRegionScheduler
 
-AE PATCH REASON: 
-AE PATCH FIX: 
-AE PATCH RISK: 
+AE PATCH REASON: BukkitRunnable.runTaskLater uses the Bukkit scheduler, incompatible with Folia region-threaded architecture and crashes at runtime.
+AE PATCH FIX: Replace anonymous BukkitRunnable runTaskLater with Bukkit.getGlobalRegionScheduler().runDelayed. Remove BukkitRunnable import; add Bukkit import.
+AE PATCH RISK: LOW - MIGRATE: BukkitRunnable → GlobalRegionScheduler. No behavior change.
 
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/utils/PumpkinDeathListener.java b/net/advancedplugins/ae/impl/effects/effects/effects/utils/PumpkinDeathListener.java

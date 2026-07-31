@@ -1,9 +1,10 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0045] GEditorContent: 
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: GEditorContent: Replace legacy ItemStack data-value constructor with named stained glass materials
 
-AE PATCH REASON: 
-AE PATCH FIX: 
-AE PATCH RISK: 
+AE PATCH REASON: Legacy ItemStack(Material, int, short) damage-value constructor is deprecated and removed on modern Bukkit/Paper versions after the 1.13 flattening; it fails to compile against current Paper API.
+AE PATCH FIX: Replace new ItemStack(Material.GLASS, 1, (short)15/5/14) with named stained-glass materials BLACK_STAINED_GLASS, LIME_STAINED_GLASS and RED_STAINED_GLASS, preserving the original glass colors.
+AE PATCH RISK: LOW - API: legacy ItemStack damage-value constructor → named materials. No behavior change.
 
 ---
 diff --git a/net/advancedplugins/ae/features/gkits/editor/GEditorContent.java b/net/advancedplugins/ae/features/gkits/editor/GEditorContent.java

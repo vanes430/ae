@@ -1,9 +1,10 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0015] ConsoleCommandEffect: 
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: ConsoleCommandEffect: Replace Bukkit.getScheduler().runTask with GlobalRegionScheduler
 
-AE PATCH REASON: 
-AE PATCH FIX: 
-AE PATCH RISK: 
+AE PATCH REASON: Bukkit.getScheduler().runTask is rejected by Folia region-threaded architecture and crashes at runtime (UnsupportedOperationException); console command dispatch from async context needs a global scheduler hop.
+AE PATCH FIX: Replace Bukkit.getScheduler().runTask with native Bukkit.getGlobalRegionScheduler().run in the off-primary-thread branch.
+AE PATCH RISK: LOW - MIGRATE: Bukkit scheduler → GlobalRegionScheduler. No behavior change.
 
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/ConsoleCommandEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/ConsoleCommandEffect.java

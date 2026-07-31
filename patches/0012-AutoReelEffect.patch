@@ -1,9 +1,10 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0011] AutoReelEffect: 
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: AutoReelEffect: Replace SchedulerUtils.runTask with native Folia entity scheduler
 
-AE PATCH REASON: 
-AE PATCH FIX: 
-AE PATCH RISK: 
+AE PATCH REASON: SchedulerUtils.runTask crashes on Folia region threads (stripped class throws UnsupportedOperationException); obfuscated var names reduce maintainability.
+AE PATCH FIX: Replace SchedulerUtils.runTask with player.getScheduler().run(EffectsHandler.getInstance(), scheduledTask -> ..., null) so hook retrieval and PlayerFishEvent firing happen on the player's region thread. Rename obfuscated vars.
+AE PATCH RISK: LOW - MIGRATE: SchedulerUtils → EntityScheduler. RF: var rename. No behavior change.
 
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/AutoReelEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/AutoReelEffect.java

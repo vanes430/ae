@@ -1,5 +1,6 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0001] Core: Folia scheduling migration and cleanup
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: Core: Folia scheduling migration and cleanup
 
 AE PATCH REASON: Bukkit scheduler is incompatible with Folia; SchedulerUtils delegation layer bypasses Folia lifecycle; obfuscated variable names reduce maintainability.
 AE PATCH FIX: Migrate BukkitRunnable and Bukkit.getScheduler() calls to GlobalRegionScheduler/AsyncScheduler. Remove SchedulerUtils import, replace with native Folia scheduling. Rename var1/var2/var3 to meaningful names. Add Registry check and ReallyFastBlockHandler import. Remove BlockModifyListener registration.

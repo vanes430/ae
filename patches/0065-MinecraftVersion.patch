@@ -1,5 +1,6 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0025] MinecraftVersion: Fix version parsing and remove lombok
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: MinecraftVersion: Fix version parsing and remove lombok
 
 AE PATCH REASON: Minecraft version parsing fails on some server versions (Paper/Folia) where NMS package name format differs. @Generated lombok annotations add unnecessary noise.
 AE PATCH FIX: Replace fallback version parsing with regex-based extraction of MC version from Bukkit.getVersion() string. Add fallback to MC1_21_R7 for unknown versions with informative log message. Remove @Generated annotations from accessor methods.

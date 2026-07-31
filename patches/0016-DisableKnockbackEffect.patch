@@ -1,9 +1,10 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0013] DisableKnockbackEffect: 
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: DisableKnockbackEffect: Replace SchedulerUtils.runTaskLater with entity scheduler runDelayed
 
-AE PATCH REASON: 
-AE PATCH FIX: 
-AE PATCH RISK: 
+AE PATCH REASON: SchedulerUtils is stripped and throws UnsupportedOperationException on Folia; the velocity reset is entity-bound and must run on the entity's region thread.
+AE PATCH FIX: Replace SchedulerUtils.runTaskLater with var2.getScheduler().runDelayed (EntityScheduler, retired=null, 1 tick). Drop SchedulerUtils import, add ScheduledTask import.
+AE PATCH RISK: LOW - MIGRATE: SchedulerUtils → EntityScheduler runDelayed. No behavior change.
 
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/DisableKnockbackEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/DisableKnockbackEffect.java

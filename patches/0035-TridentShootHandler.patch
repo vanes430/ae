@@ -1,9 +1,10 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0028] TridentShootHandler: 
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: TridentShootHandler: Replace SchedulerUtils.runTaskLater with GlobalRegionScheduler and rename obfuscated vars
 
-AE PATCH REASON: 
-AE PATCH FIX: 
-AE PATCH RISK: 
+AE PATCH REASON: SchedulerUtils is stripped and throws UnsupportedOperationException on Folia; delayed trident cleanup must run on a Folia scheduler; obfuscated variable names reduce maintainability.
+AE PATCH FIX: Replace SchedulerUtils.runTaskLater with Bukkit.getGlobalRegionScheduler().runDelayed (1L tick). Remove SchedulerUtils import; add ScheduledTask, EffectsHandler, and Bukkit imports. Rename var1/var2/var0 to event/shooter/uuid.
+AE PATCH RISK: LOW - MIGRATE: SchedulerUtils → GlobalRegionScheduler. RF: var rename. No behavior change.
 
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/utils/TridentShootHandler.java b/net/advancedplugins/ae/impl/effects/effects/effects/utils/TridentShootHandler.java

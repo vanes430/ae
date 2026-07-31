@@ -1,5 +1,6 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0014] VeinTarget: Rename obfuscated variables and extract BFS methods
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: VeinTarget: Rename obfuscated variables and extract BFS methods
 
 AE PATCH REASON: Decompiled variable names (var1-var10) and monolithic method structure hinder maintainability and Folia debugging.
 AE PATCH FIX: Rename all obfuscated variables to descriptive names: var1-var3->effect/targetStr/task, var4->depth, var5->results, var6->origin, etc. Extract recursive BFS block-finding into named findConnectedBlocks/floodFill methods for clarity.

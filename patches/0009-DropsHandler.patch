@@ -1,9 +1,10 @@
-From: Folia Compatibility Patch
-Subject: [PATCH 0008] DropsHandler: 
+From: Shimazu <vanessimbolon2020@gmail.com>
+Date: Fri, 31 Jul 2026 02:19:04 +0000
+Subject: DropsHandler: Replace SchedulerUtils with native Folia schedulers and remove Lombok/raw-type noise
 
-AE PATCH REASON: 
-AE PATCH FIX: 
-AE PATCH RISK: 
+AE PATCH REASON: SchedulerUtils.runTaskLater crashes on Folia region threads (stripped class throws UnsupportedOperationException); Lombok @Generated annotations and raw ArrayList types are decompiler noise; handleTallBlock returns unused byte via deprecated getData().
+AE PATCH FIX: Replace SchedulerUtils.runTaskLater with Bukkit.getRegionScheduler().runDelayed(EffectsHandler.getInstance(), block.getLocation(), scheduledTask -> ..., 1L) for ItemsAdder/Oraxen block removal. Strip @Generated annotations, add diamond generics to raw ArrayLists, change handleTallBlock to void dropping getData() return, cast var58 to Material, rename obfuscated vars.
+AE PATCH RISK: LOW - MIGRATE: SchedulerUtils → RegionScheduler. LOMBOK: @Generated stripped. GENERIC: raw ArrayList → diamond. RF: var rename. No behavior change.
 
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/actions/handlers/DropsHandler.java b/net/advancedplugins/ae/impl/effects/effects/actions/handlers/DropsHandler.java
