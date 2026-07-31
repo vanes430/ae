@@ -72,7 +72,7 @@ java {
         java {
             srcDir("src-patched")
             patchedFiles.forEach { include(it) }
-            exclude("**/MainCommand.java")
+            // MainCommand now patched — compiled from src-patched
         }
         resources {
             srcDir("src-patched/main/resources")
