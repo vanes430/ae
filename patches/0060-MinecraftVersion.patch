@@ -8,7 +8,7 @@ AE PATCH RISK: LOW
 ---
 diff --git a/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java b/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java
 --- a/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java	2026-07-30 10:27:31.677350204 +0000
-+++ b/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java	2026-07-30 10:28:05.923658942 +0000
++++ b/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java	2026-07-31 00:12:30.009288283 +0000
 @@ -3,7 +3,6 @@
  import java.util.HashMap;
  import java.util.Map;
@@ -17,7 +17,21 @@ diff --git a/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java b
  import org.bukkit.Bukkit;
  import org.bukkit.plugin.java.JavaPlugin;
  
-@@ -87,33 +86,26 @@
+@@ -63,9 +62,10 @@
+          this.put("1.21.9", MinecraftVersion.MC1_21_R6);
+          this.put("1.21.10", MinecraftVersion.MC1_21_R7);
+          this.put("1.21.11", MinecraftVersion.MC1_21_R7);
+-         this.put("26.1", MinecraftVersion.MC26_1);
+-         this.put("26.1.1", MinecraftVersion.MC26_1);
+-      }
++          this.put("26.1", MinecraftVersion.MC26_1);
++          this.put("26.1.1", MinecraftVersion.MC26_1);
++          this.put("26.1.2", MinecraftVersion.MC26_1);
++       }
+    };
+    private final int versionId;
+    public final boolean mojangMapping;
+@@ -87,33 +87,26 @@
           return version;
        } else {
           try {
@@ -66,7 +80,7 @@ diff --git a/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java b
           return version;
        }
     }
-@@ -144,7 +136,7 @@
+@@ -144,7 +137,7 @@
        } else {
           try {
              hasGsonSupport = true;
@@ -75,7 +89,7 @@ diff --git a/net/advancedplugins/ae/impl/utils/nbt/utils/MinecraftVersion.java b
              hasGsonSupport = false;
           }
  
-@@ -152,28 +144,25 @@
+@@ -152,28 +145,25 @@
        }
     }
  
