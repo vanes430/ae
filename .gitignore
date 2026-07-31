@@ -21,3 +21,6 @@ patches-backup.zip
 
 # Accidental JAR drops
 *.jar
+
+# Local Baguette server source (diagnostic tool, not part of project)
+/Baguette/

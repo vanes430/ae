@@ -1,0 +1,35 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0056] ItemDurability: 
+
+AE PATCH REASON: 
+AE PATCH FIX: 
+AE PATCH RISK: 
+
+---
+diff --git a/net/advancedplugins/ae/impl/utils/ItemDurability.java b/net/advancedplugins/ae/impl/utils/ItemDurability.java
+--- a/net/advancedplugins/ae/impl/utils/ItemDurability.java	2026-07-30 10:27:31.677350204 +0000
++++ b/net/advancedplugins/ae/impl/utils/ItemDurability.java	2026-07-31 00:53:30.896816121 +0000
+@@ -1,6 +1,5 @@
+ package net.advancedplugins.ae.impl.utils;
+ 
+-import lombok.Generated;
+ import net.advancedplugins.ae.impl.utils.hooks.HookPlugin;
+ import net.advancedplugins.ae.impl.utils.hooks.HooksHandler;
+ import net.advancedplugins.ae.impl.utils.hooks.plugins.ItemsAdderHook;
+@@ -135,7 +134,7 @@
+    public int getDurability() {
+       return this.itemsAdder
+          ? this.getMaxDurability() - ((ItemsAdderHook)HooksHandler.getHook(HookPlugin.ITEMSADDER)).getCustomItemDurability(this.item)
+-         : this.item.getDurability();
++         : this.getDurabilityVersionSafe();
+    }
+ 
+    public ItemDurability setDurability(int var1) {
+@@ -178,7 +177,6 @@
+       return this;
+    }
+ 
+-   @Generated
+    public int getDealtDamage() {
+       return this.dealtDamage;
+    }

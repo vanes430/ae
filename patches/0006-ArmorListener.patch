@@ -8,7 +8,7 @@ AE PATCH RISK: LOW
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/armorutils/ArmorListener.java b/net/advancedplugins/ae/impl/effects/armorutils/ArmorListener.java
 --- a/net/advancedplugins/ae/impl/effects/armorutils/ArmorListener.java	2026-07-30 10:27:31.670350141 +0000
-+++ b/net/advancedplugins/ae/impl/effects/armorutils/ArmorListener.java	2026-07-30 10:28:05.841658203 +0000
++++ b/net/advancedplugins/ae/impl/effects/armorutils/ArmorListener.java	2026-07-31 00:51:26.262849495 +0000
 @@ -5,7 +5,6 @@
  import java.util.List;
  import java.util.Objects;
@@ -17,7 +17,16 @@ diff --git a/net/advancedplugins/ae/impl/effects/armorutils/ArmorListener.java b
  import net.advancedplugins.ae.impl.utils.hooks.HookPlugin;
  import net.advancedplugins.ae.impl.utils.hooks.HooksHandler;
  import net.advancedplugins.ae.impl.utils.hooks.plugins.ItemsAdderHook;
-@@ -58,228 +57,222 @@
+@@ -29,6 +28,8 @@
+ import org.bukkit.event.player.PlayerItemBreakEvent;
+ import org.bukkit.event.player.PlayerRespawnEvent;
+ import org.bukkit.inventory.EntityEquipment;
++import org.bukkit.inventory.meta.Damageable;
++import org.bukkit.inventory.meta.ItemMeta;
+ import org.bukkit.inventory.ItemStack;
+ import org.bukkit.inventory.PlayerInventory;
+ 
+@@ -58,228 +59,222 @@
     private final ArrayDeque<ArmorEquipEvent> eventQueue = new ArrayDeque<>();
  
     public ArmorListener() {
@@ -375,7 +384,7 @@ diff --git a/net/advancedplugins/ae/impl/effects/armorutils/ArmorListener.java b
                             }
                          }
                       }
-@@ -293,70 +286,70 @@
+@@ -293,70 +288,70 @@
     @EventHandler(
        priority = EventPriority.HIGHEST
     )
@@ -480,7 +489,7 @@ diff --git a/net/advancedplugins/ae/impl/effects/armorutils/ArmorListener.java b
                 }
              }
           }
-@@ -366,16 +359,16 @@
+@@ -366,16 +361,16 @@
     @EventHandler(
        priority = EventPriority.HIGHEST
     )
@@ -507,7 +516,7 @@ diff --git a/net/advancedplugins/ae/impl/effects/armorutils/ArmorListener.java b
                 }
              }
           }
-@@ -385,28 +378,28 @@
+@@ -385,28 +380,32 @@
     @EventHandler(
        priority = EventPriority.HIGHEST
     )
@@ -531,7 +540,11 @@ diff --git a/net/advancedplugins/ae/impl/effects/armorutils/ArmorListener.java b
 +         if (armorEquipEvent.isCancelled()) {
 +            ItemStack restoredItem = event.getBrokenItem().clone();
 +            restoredItem.setAmount(1);
-+            restoredItem.setDurability((short)(restoredItem.getDurability() - 1));
++            ItemMeta meta = restoredItem.getItemMeta();
++            if (meta instanceof Damageable d) {
++                d.setDamage(Math.max(0, d.getDamage() - 1));
++                restoredItem.setItemMeta(meta);
++            }
 +            switch (armorType) {
                 case HELMET:
 -                  var3.getInventory().setHelmet(var5);
@@ -551,7 +564,7 @@ diff --git a/net/advancedplugins/ae/impl/effects/armorutils/ArmorListener.java b
              }
           }
        }
-@@ -415,11 +408,11 @@
+@@ -415,11 +414,11 @@
     @EventHandler(
        priority = EventPriority.HIGHEST
     )

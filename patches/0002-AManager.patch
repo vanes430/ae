@@ -8,7 +8,7 @@ AE PATCH RISK:
 ---
 diff --git a/net/advancedplugins/ae/utils/AManager.java b/net/advancedplugins/ae/utils/AManager.java
 --- a/net/advancedplugins/ae/utils/AManager.java	2026-07-30 10:27:31.679350222 +0000
-+++ b/net/advancedplugins/ae/utils/AManager.java	2026-07-30 12:22:02.192327276 +0000
++++ b/net/advancedplugins/ae/utils/AManager.java	2026-07-31 01:45:10.887755787 +0000
 @@ -26,7 +26,7 @@
  import net.advancedplugins.ae.impl.utils.ASManager;
  import net.advancedplugins.ae.impl.utils.ColorUtils;
@@ -18,7 +18,67 @@ diff --git a/net/advancedplugins/ae/utils/AManager.java b/net/advancedplugins/ae
  import net.advancedplugins.ae.impl.utils.TryCatchMethodShort;
  import net.advancedplugins.ae.impl.utils.evalex.Expression;
  import net.advancedplugins.ae.impl.utils.nbt.utils.MinecraftVersion;
-@@ -611,7 +611,7 @@
+@@ -37,6 +37,8 @@
+ import org.bukkit.Bukkit;
+ import org.bukkit.Location;
+ import org.bukkit.Material;
++import org.bukkit.NamespacedKey;
++import org.bukkit.Registry;
+ import org.bukkit.WorldBorder;
+ import org.bukkit.block.Block;
+ import org.bukkit.block.BlockFace;
+@@ -246,20 +248,33 @@
+                var0 = var0.replace("WOOD_", "WOODEN_");
+             }
+ 
+-            for (Entry var6 : newMaterials.entrySet()) {
+-               if (((String)var6.getKey()).equalsIgnoreCase(var0)) {
+-                  var0 = (String)var6.getValue();
+-                  break;
+-               }
+-            }
++             for (Entry var6 : newMaterials.entrySet()) {
++                if (((String)var6.getKey()).equalsIgnoreCase(var0)) {
++                   var0 = (String)var6.getValue();
++                   break;
++                }
++             }
++
++             if (var0.endsWith("_SPADE")) {
++                var0 = var0.replace("_SPADE", "_SHOVEL");
++             }
+ 
+-            if (canAddColor(var0) && !startsWithColor(var0)) {
++             if (canAddColor(var0) && !startsWithColor(var0)) {
+                var0 = addColor(var0, var2);
+             }
+          }
+ 
+          try {
+-            Material var8 = var3 && MinecraftVersion.isNew() ? Material.matchMaterial(var0, true) : Material.matchMaterial(var0);
++            Material var8 = null;
++            if (MinecraftVersion.isNew()) {
++               try {
++                  var8 = Registry.MATERIAL.get(NamespacedKey.minecraft(var0.toLowerCase(Locale.ROOT)));
++               } catch (Exception var10) {
++               }
++            }
++          if (var8 == null) {
++             var8 = Material.matchMaterial(var0, false);
++          }
+             return !MinecraftVersion.isNew() ? new ItemStack(var8, var1, (short)((byte)var2)) : new ItemStack(var8, var1);
+          } catch (Exception var7) {
+             if (!var3 && MinecraftVersion.isNew()) {
+@@ -425,7 +440,7 @@
+       } else {
+          String var1 = var0.name();
+          var1 = var1.replace("WALL_", "");
+-         return Material.getMaterial(var1);
++          return Material.matchMaterial(var1);
+       }
+    }
+ 
+@@ -611,7 +626,7 @@
  
     public static void dropItem(Location var0, ItemStack... var1) {
        if (!Bukkit.isPrimaryThread()) {
@@ -27,7 +87,7 @@ diff --git a/net/advancedplugins/ae/utils/AManager.java b/net/advancedplugins/ae
        }
  
        for (ItemStack var3 : condense(var1)) {
-@@ -642,10 +642,10 @@
+@@ -642,10 +657,10 @@
     }
  
     public static void resetPlayerHealth(Player var0, double var1) {
@@ -40,3 +100,40 @@ diff --git a/net/advancedplugins/ae/utils/AManager.java b/net/advancedplugins/ae
     }
  
     public static int getEmptySlotOtherThan(int var0, Player var1) {
+@@ -1054,7 +1069,14 @@
+    }
+ 
+    private static boolean addMaterial(Set<Material> var0, String var1) {
+-      Material var2 = Material.matchMaterial(var1);
++      Material var2 = null;
++      if (MinecraftVersion.isNew()) {
++         try {
++            var2 = Registry.MATERIAL.get(NamespacedKey.minecraft(var1.toLowerCase(Locale.ROOT)));
++         } catch (Exception var4) {
++         }
++      }
++      if (var2 == null) var2 = Material.matchMaterial(var1);
+       if (var2 == null) {
+          ItemStack var3 = matchMaterial(var1, 1, 0, true, false);
+          if (var3 == null) {
+@@ -1215,9 +1237,19 @@
+       newMaterials.put("FIREWORK_CHARGE", "FIREWORK_STAR");
+       newMaterials.put("FIREBALL", "FIRE_CHARGE");
+       newMaterials.put("SULPHUR", "GUNPOWDER");
++      newMaterials.put("WOOD_DOOR", "OAK_DOOR");
++      newMaterials.put("COMMAND", "COMMAND_BLOCK");
++      newMaterials.put("PISTON_BASE", "PISTON");
+       newMaterials.put("SKULL_ITEM", "PLAYER_HEAD");
++      newMaterials.put("WORKBENCH", "CRAFTING_TABLE");
++      newMaterials.put("BOOK_AND_QUILL", "WRITABLE_BOOK");
+       newMaterials.put("THIN_GLASS", "GLASS_PANE");
+       newMaterials.put("STORAGE_MINECART", "CHEST_MINECART");
+-      newMaterials.put("BREWING_STAND_ITEM", "LEGACY_BREWING_STAND_ITEM");
++      newMaterials.put("BREWING_STAND_ITEM", "BREWING_STAND");
++      newMaterials.put("INK_SACK", "INK_SAC");
++      newMaterials.put("RAW_BEEF", "BEEF");
++      newMaterials.put("FIREWORK", "FIREWORK_ROCKET");
++      newMaterials.put("RED_ROSE", "POPPY");
++      newMaterials.put("MONSTER_EGG", "CREEPER_SPAWN_EGG");
+    }
+ }

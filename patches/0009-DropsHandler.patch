@@ -8,7 +8,7 @@ AE PATCH RISK:
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/actions/handlers/DropsHandler.java b/net/advancedplugins/ae/impl/effects/effects/actions/handlers/DropsHandler.java
 --- a/net/advancedplugins/ae/impl/effects/effects/actions/handlers/DropsHandler.java	2026-07-30 10:27:31.669350132 +0000
-+++ b/net/advancedplugins/ae/impl/effects/effects/actions/handlers/DropsHandler.java	2026-07-30 12:31:14.644227255 +0000
++++ b/net/advancedplugins/ae/impl/effects/effects/actions/handlers/DropsHandler.java	2026-07-31 00:21:41.524796133 +0000
 @@ -8,7 +8,6 @@
  import java.util.Map.Entry;
  import java.util.concurrent.ConcurrentHashMap;
@@ -111,7 +111,26 @@ diff --git a/net/advancedplugins/ae/impl/effects/effects/actions/handlers/DropsH
              if (this.builder.getEvent() instanceof BlockBreakEvent var2x && var2x.getBlock().equals(var1x)) {
                 return false;
              }
-@@ -596,17 +594,14 @@
+@@ -575,17 +573,13 @@
+       }
+    }
+ 
+-   private byte handleTallBlock(Block var1) {
+-      byte var2 = var1.getData();
++   private void handleTallBlock(Block var1) {
+       if (ASManager.isTall(var1.getType())) {
+          Block var3 = var1.getRelative(BlockFace.DOWN);
+          if (var1.getType() == var3.getType()) {
+-            var2 = var3.getData();
+             var3.setType(Material.AIR);
+          }
+       }
+-
+-      return var2;
+    }
+ 
+    public List<Block> getAllBlocks() {
+@@ -596,17 +590,14 @@
        this.dropsMap.remove(var1.getLocation());
     }
  

@@ -8,19 +8,65 @@ AE PATCH RISK:
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/IgnoreArmorDamageEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/IgnoreArmorDamageEffect.java
 --- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/IgnoreArmorDamageEffect.java	2026-07-30 10:27:31.667350114 +0000
-+++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/IgnoreArmorDamageEffect.java	2026-07-30 23:41:07.715941456 +0000
-@@ -22,7 +22,7 @@
-          var4.getLeggings() == null ? 0 : var4.getLeggings().getDurability(),
-          var4.getBoots() == null ? 0 : var4.getBoots().getDurability()
++++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/IgnoreArmorDamageEffect.java	2026-07-31 00:51:15.699767770 +0000
+@@ -6,6 +6,8 @@
+ import org.bukkit.Bukkit;
+ import org.bukkit.entity.LivingEntity;
+ import org.bukkit.inventory.EntityEquipment;
++import org.bukkit.inventory.meta.Damageable;
++import org.bukkit.inventory.meta.ItemMeta;
+ import org.bukkit.plugin.java.JavaPlugin;
+ 
+ public class IgnoreArmorDamageEffect extends AdvancedEffect {
+@@ -17,28 +19,44 @@
+    public boolean executeEffect(ExecutionTask var1, LivingEntity var2, String[] var3) {
+       EntityEquipment var4 = var2.getEquipment();
+       short[] var5 = new short[]{
+-         var4.getHelmet() == null ? 0 : var4.getHelmet().getDurability(),
+-         var4.getChestplate() == null ? 0 : var4.getChestplate().getDurability(),
+-         var4.getLeggings() == null ? 0 : var4.getLeggings().getDurability(),
+-         var4.getBoots() == null ? 0 : var4.getBoots().getDurability()
++         var4.getHelmet() == null ? 0 : (short)(var4.getHelmet().getItemMeta() instanceof Damageable d ? d.getDamage() : 0),
++         var4.getChestplate() == null ? 0 : (short)(var4.getChestplate().getItemMeta() instanceof Damageable d ? d.getDamage() : 0),
++         var4.getLeggings() == null ? 0 : (short)(var4.getLeggings().getItemMeta() instanceof Damageable d ? d.getDamage() : 0),
++         var4.getBoots() == null ? 0 : (short)(var4.getBoots().getItemMeta() instanceof Damageable d ? d.getDamage() : 0)
        };
 -      Bukkit.getScheduler().scheduleSyncDelayedTask(EffectsHandler.getInstance(), () -> {
 +      var2.getScheduler().run(EffectsHandler.getInstance(), (t) -> {
           if (var4.getHelmet() != null) {
-             var4.getHelmet().setDurability((short)(var5[0] + 1));
+-            var4.getHelmet().setDurability((short)(var5[0] + 1));
++            ItemMeta meta = var4.getHelmet().getItemMeta();
++            if (meta instanceof Damageable d) {
++               d.setDamage(var5[0] + 1);
++               var4.getHelmet().setItemMeta(meta);
++            }
           }
-@@ -38,7 +38,7 @@
+ 
+          if (var4.getChestplate() != null) {
+-            var4.getChestplate().setDurability((short)(var5[1] + 1));
++            ItemMeta meta = var4.getChestplate().getItemMeta();
++            if (meta instanceof Damageable d) {
++               d.setDamage(var5[1] + 1);
++               var4.getChestplate().setItemMeta(meta);
++            }
+          }
+ 
+          if (var4.getLeggings() != null) {
+-            var4.getLeggings().setDurability((short)(var5[2] + 1));
++            ItemMeta meta = var4.getLeggings().getItemMeta();
++            if (meta instanceof Damageable d) {
++               d.setDamage(var5[2] + 1);
++               var4.getLeggings().setItemMeta(meta);
++            }
+          }
+ 
           if (var4.getBoots() != null) {
-             var4.getBoots().setDurability((short)(var5[3] + 1));
+-            var4.getBoots().setDurability((short)(var5[3] + 1));
++            ItemMeta meta = var4.getBoots().getItemMeta();
++            if (meta instanceof Damageable d) {
++               d.setDamage(var5[3] + 1);
++               var4.getBoots().setItemMeta(meta);
++            }
           }
 -      }, 0L);
 +      }, null);

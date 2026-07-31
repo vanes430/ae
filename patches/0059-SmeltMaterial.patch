@@ -1,0 +1,44 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0058] SmeltMaterial: 
+
+AE PATCH REASON: 
+AE PATCH FIX: 
+AE PATCH RISK: 
+
+---
+diff --git a/net/advancedplugins/ae/impl/utils/abilities/SmeltMaterial.java b/net/advancedplugins/ae/impl/utils/abilities/SmeltMaterial.java
+--- a/net/advancedplugins/ae/impl/utils/abilities/SmeltMaterial.java	2026-07-30 10:27:31.678350213 +0000
++++ b/net/advancedplugins/ae/impl/utils/abilities/SmeltMaterial.java	2026-07-31 00:30:59.919292758 +0000
+@@ -19,7 +19,7 @@
+ 
+          switch (var1) {
+             case "COBBLED_DEEPSLATE":
+-               return new ItemStack(Material.getMaterial("DEEPSLATE"));
++               return new ItemStack(Material.matchMaterial("DEEPSLATE"));
+             case "COBBLESTONE":
+                return new ItemStack(Material.STONE);
+             case "DEEPSLATE_COAL_ORE":
+@@ -58,9 +58,9 @@
+             case "SAND":
+                return new ItemStack(Material.GLASS);
+             case "SANDSTONE":
+-               return new ItemStack(Material.getMaterial("SMOOTH_SANDSTONE"));
++               return new ItemStack(Material.matchMaterial("SMOOTH_SANDSTONE"));
+             case "BASALT":
+-               return new ItemStack(Material.getMaterial("SMOOTH_BASALT"));
++               return new ItemStack(Material.matchMaterial("SMOOTH_BASALT"));
+             case "NETHERRACK":
+                return new ItemStack(Material.matchMaterial("NETHER_BRICK"));
+             case "CLAY":
+@@ -68,9 +68,9 @@
+             case "CLAY_BALL":
+                return new ItemBuilder(Material.matchMaterial("BRICK")).setAmount(var0.getAmount()).toItemStack();
+             case "WET_SPONGE":
+-               return new ItemStack(Material.getMaterial("SPONGE"));
++               return new ItemStack(Material.matchMaterial("SPONGE"));
+             case "RED_SANDSTONE":
+-               return new ItemStack(Material.getMaterial("SMOOTH_RED_SANDSTONE"));
++               return new ItemStack(Material.matchMaterial("SMOOTH_RED_SANDSTONE"));
+             default:
+                return new ItemStack(var0);
+          }

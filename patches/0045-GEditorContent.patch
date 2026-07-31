@@ -1,0 +1,34 @@
+From: Folia Compatibility Patch
+Subject: [PATCH 0045] GEditorContent: 
+
+AE PATCH REASON: 
+AE PATCH FIX: 
+AE PATCH RISK: 
+
+---
+diff --git a/net/advancedplugins/ae/features/gkits/editor/GEditorContent.java b/net/advancedplugins/ae/features/gkits/editor/GEditorContent.java
+--- a/net/advancedplugins/ae/features/gkits/editor/GEditorContent.java	2026-07-30 10:27:31.681350240 +0000
++++ b/net/advancedplugins/ae/features/gkits/editor/GEditorContent.java	2026-07-31 00:31:12.024389898 +0000
+@@ -21,7 +21,7 @@
+ 
+    public void openInventory() {
+       Inventory var1 = Bukkit.createInventory(null, 36, "§eGContent:§6 " + this.kit);
+-      ItemStack var2 = new ItemStack(Material.GLASS, 1, (short)15);
++      ItemStack var2 = new ItemStack(Material.BLACK_STAINED_GLASS);
+       ItemMeta var3 = var2.getItemMeta();
+       var3.setDisplayName(" ");
+       var2.setItemMeta(var3);
+@@ -30,11 +30,11 @@
+          var1.setItem(var5, var2);
+       }
+ 
+-      ItemStack var10 = new ItemStack(Material.GLASS, 1, (short)5);
++      ItemStack var10 = new ItemStack(Material.LIME_STAINED_GLASS);
+       ItemMeta var11 = var10.getItemMeta();
+       var11.setDisplayName("§aSave Kit");
+       var10.setItemMeta(var11);
+-      ItemStack var6 = new ItemStack(Material.GLASS, 1, (short)14);
++      ItemStack var6 = new ItemStack(Material.RED_STAINED_GLASS);
+       ItemMeta var7 = var6.getItemMeta();
+       var7.setDisplayName("§cCancel Progress");
+       var6.setItemMeta(var7);

@@ -8,10 +8,13 @@ AE PATCH RISK:
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/PumpkinEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/PumpkinEffect.java
 --- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/PumpkinEffect.java	2026-07-30 10:27:31.665350096 +0000
-+++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/PumpkinEffect.java	2026-07-30 23:41:09.748954507 +0000
-@@ -30,18 +30,18 @@
++++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/PumpkinEffect.java	2026-07-31 00:31:14.396408931 +0000
+@@ -28,20 +28,20 @@
+          return true;
+       } else {
           ItemStack var6 = new ItemStack(ASManager.matchMaterial(var5, 1, 0));
-          var2.getEquipment().setHelmet(MinecraftVersion.isNew() ? var6 : new ItemStack(Material.PUMPKIN, 1, (short)4));
+-         var2.getEquipment().setHelmet(MinecraftVersion.isNew() ? var6 : new ItemStack(Material.PUMPKIN, 1, (short)4));
++         var2.getEquipment().setHelmet(var6);
           PumpkinDeathListener var7 = new PumpkinDeathListener(var4, var6.getType(), ASManager.parseInt(var3[0]), var2);
 -         Bukkit.getScheduler().runTaskLater(EffectsHandler.getInstance(), () -> {
 +         var2.getScheduler().runDelayed(EffectsHandler.getInstance(), (t) -> {
