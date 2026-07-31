@@ -8,7 +8,7 @@ AE PATCH RISK: LOW - MIGRATE: Bukkit scheduler → RegionScheduler. DROP: dead c
 ---
 diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/LavaWalkerEffect.java b/net/advancedplugins/ae/impl/effects/effects/effects/internal/LavaWalkerEffect.java
 --- a/net/advancedplugins/ae/impl/effects/effects/effects/internal/LavaWalkerEffect.java	2026-07-30 10:27:31.663350078 +0000
-+++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/LavaWalkerEffect.java	2026-07-30 12:09:35.459791469 +0000
++++ b/net/advancedplugins/ae/impl/effects/effects/effects/internal/LavaWalkerEffect.java	2026-07-31 00:05:37.254852593 +0000
 @@ -5,12 +5,12 @@
  import java.util.List;
  import java.util.Map;
@@ -23,7 +23,7 @@ diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/LavaWa
  import net.advancedplugins.ae.impl.utils.ReallyFastBlockHandler;
  import net.advancedplugins.ae.impl.utils.hooks.HookPlugin;
  import net.advancedplugins.ae.impl.utils.hooks.HooksHandler;
-@@ -30,117 +30,95 @@
+@@ -30,117 +30,99 @@
  import org.bukkit.plugin.java.JavaPlugin;
  
  public class LavaWalkerEffect extends AdvancedEffect {
@@ -192,14 +192,17 @@ diff --git a/net/advancedplugins/ae/impl/effects/effects/effects/internal/LavaWa
           }
 -      }, 100L).getTaskId();
 -      removalTasks.remove(var3);
--   }
--
++      }, 100L);
++      ReallyFastBlockHandler.getForWorld(player.getWorld()).setType(Material.OBSIDIAN, targetBlocks);
+    }
+ 
 -   public static void clearQueue() {
 -      removalTasks.forEach((var0, var1) -> {
 -         Bukkit.getScheduler().cancelTask(var0);
 -         ReallyFastBlockHandler.getForWorld(var1.getKey()[0].getWorld()).setType(var1.getValue(), var1.getKey());
 -      });
-+      }, 100L);
-+      ReallyFastBlockHandler.getForWorld(player.getWorld()).setType(Material.OBSIDIAN, targetBlocks);
-    }
+-   }
++   // Called by EffectStorage.unload() via reflection-less static call.
++   // Original cancelled Bukkit tasks; region scheduler handles lifecycle.
++   public static void clearQueue() {}
  }
